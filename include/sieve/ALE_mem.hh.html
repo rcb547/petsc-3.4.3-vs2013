@@ -1,0 +1,928 @@
+<center><a href="ALE_mem.hh">Actual source code: ALE_mem.hh</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="http://www.mcs.anl.gov/petsc/petsc-current/include/sieve/ALE_mem.hh.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2013-10-15T17:08:26+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>petsc-3.4.3 2013-10-15</b></div>
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#ifndef included_ALE_mem_hh</font>
+<a name="line2">  2: </a><strong><font color="#228B22">#define included_ALE_mem_hh</font></strong>
+<a name="line3">  3: </a>// This should be included indirectly -- only by including ALE.hh
+
+<a name="line5">  5: </a><font color="#A020F0">#include &lt;assert.h&gt;</font>
+<a name="line6">  6: </a><font color="#A020F0">#include &lt;deque&gt;</font>
+<a name="line7">  7: </a><font color="#A020F0">#include &lt;iostream&gt;</font>
+<a name="line8">  8: </a><font color="#A020F0">#include &lt;map&gt;</font>
+<a name="line9">  9: </a><font color="#A020F0">#include &lt;memory&gt;</font>
+<a name="line10"> 10: </a><font color="#A020F0">#include &lt;cstdlib&gt;</font>
+<a name="line11"> 11: </a><font color="#A020F0">#include &lt;typeinfo&gt;</font>
+<a name="line12"> 12: </a><font color="#A020F0">#include &lt;petscsys.h&gt;</font>
+<a name="line13"> 13: </a><font color="#A020F0">#include &lt;sieve/ALE_log.hh&gt;</font>
+
+<a name="line15"> 15: </a><font color="#A020F0">#ifdef ALE_HAVE_CXX_ABI</font>
+<a name="line16"> 16: </a><font color="#A020F0">#include &lt;cxxabi.h&gt;</font>
+<a name="line17"> 17: </a><font color="#A020F0">#endif</font>
+
+<a name="line19"> 19: </a>namespace ALE {
+<a name="line20"> 20: </a>  class MemoryLogger;
+<a name="line21"> 21: </a>}
+<a name="line22"> 22: </a>extern ALE::MemoryLogger Petsc_MemoryLogger;
+
+<a name="line24"> 24: </a>namespace ALE {
+<a name="line25"> 25: </a>  class MemoryLogger {
+<a name="line26"> 26: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line27"> 27: </a>    <font color="#4169E1">struct Log</font> {
+<a name="line28"> 28: </a>      long long num;
+<a name="line29"> 29: </a>      long long total;
+<a name="line30"> 30: </a><strong><font color="#FF0000">      std:</font></strong>:map&lt;std::string, long long&gt; items;
+
+<a name="line32"> 32: </a>      Log(): num(0), total(0) {};
+<a name="line33"> 33: </a>    };
+<a name="line34"> 34: </a>    <font color="#4169E1">typedef</font> std::map&lt;std::string, std::pair&lt;Log, Log&gt; &gt; stageLog;
+<a name="line35"> 35: </a>    <font color="#4169E1">typedef</font> std::deque&lt;std::string&gt;                     names;
+<a name="line36"> 36: </a><strong><font color="#FF0000">  protected:</font></strong>
+<a name="line37"> 37: </a>    int      _debug;
+<a name="line38"> 38: </a>    <A href="../../docs/manualpages/Sys/MPI_Comm.html#MPI_Comm">MPI_Comm</A> _comm;
+<a name="line39"> 39: </a>    int      rank;
+<a name="line40"> 40: </a>    names    stageNames;
+<a name="line41"> 41: </a>    stageLog stages;
+<a name="line42"> 42: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line43"> 43: </a>    MemoryLogger(): _debug(0), _comm(MPI_COMM_NULL), rank(-1) {
+<a name="line44"> 44: </a>      stageNames.push_front(<font color="#666666">"</font><font color="#4169E1">default</font>");
+<a name="line45"> 45: </a>    };
+<a name="line46"> 46: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line47"> 47: </a>    ~MemoryLogger() {};
+<a name="line48"> 48: </a>    static MemoryLogger&amp; singleton() {
+<a name="line49"> 49: </a>      <font color="#4169E1">if</font> (Petsc_MemoryLogger.comm() == MPI_COMM_NULL) {
+<a name="line50"> 50: </a>        Petsc_MemoryLogger.setComm(<A href="../../docs/manualpages/Sys/PETSC_COMM_WORLD.html#PETSC_COMM_WORLD">PETSC_COMM_WORLD</A>);
+<a name="line51"> 51: </a>      }
+<a name="line52"> 52: </a>      <font color="#4169E1">return</font> Petsc_MemoryLogger;
+<a name="line53"> 53: </a>    };
+<a name="line54"> 54: </a>    int  debug() {<font color="#4169E1">return</font> _debug;};
+<a name="line55"> 55: </a>    void setDebug(int debug) {_debug = debug;};
+<a name="line56"> 56: </a>    <A href="../../docs/manualpages/Sys/MPI_Comm.html#MPI_Comm">MPI_Comm</A> comm() {<font color="#4169E1">return</font> _comm;};
+<a name="line57"> 57: </a>    void     setComm(<A href="../../docs/manualpages/Sys/MPI_Comm.html#MPI_Comm">MPI_Comm</A> comm) {
+<a name="line58"> 58: </a>      _comm = comm;
+<a name="line59"> 59: </a>      <A href="http://www.mcs.anl.gov/mpi/www/www3/MPI_Comm_rank.html#MPI_Comm_rank">MPI_Comm_rank</A>(_comm, &amp;rank);
+<a name="line60"> 60: </a>    };
+<a name="line61"> 61: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line62"> 62: </a>    void stagePush(const std::string&amp; name) {
+<a name="line63"> 63: </a>      <font color="#4169E1">for</font>(names::const_iterator s_iter = stageNames.begin(); s_iter != stageNames.end(); ++s_iter) {
+<a name="line64"> 64: </a>        <font color="#4169E1">if</font> (*s_iter == name) throw ALE::Exception(std::string(<font color="#666666">"Cannot push duplicate stage name '"</font>)+name+std::string(<font color="#666666">"'."</font>));
+<a name="line65"> 65: </a>      }
+<a name="line66"> 66: </a>      stageNames.push_front(name);
+<a name="line67"> 67: </a>      <font color="#4169E1">if</font> (_debug) {
+<a name="line68"> 68: </a><strong><font color="#FF0000">        std:</font></strong>:cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;rank&lt;&lt;<font color="#666666">"]Pushing stage "</font> &lt;&lt; name &lt;&lt; <font color="#666666">":"</font> &lt;&lt; std::endl;
+<a name="line69"> 69: </a>        <font color="#4169E1">for</font>(names::const_iterator s_iter = stageNames.begin(); s_iter != stageNames.end(); ++s_iter) {
+<a name="line70"> 70: </a><strong><font color="#FF0000">          std:</font></strong>:cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;rank&lt;&lt;<font color="#666666">"]  "</font> &lt;&lt; *s_iter &lt;&lt; <font color="#666666">": "</font> &lt;&lt; stages[*s_iter].first.num  &lt;&lt; <font color="#666666">" acalls  "</font> &lt;&lt; stages[*s_iter].first.total  &lt;&lt; <font color="#666666">" bytes"</font> &lt;&lt; std::endl;
+<a name="line71"> 71: </a><strong><font color="#FF0000">          std:</font></strong>:cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;rank&lt;&lt;<font color="#666666">"]  "</font> &lt;&lt; *s_iter &lt;&lt; <font color="#666666">": "</font> &lt;&lt; stages[*s_iter].second.num &lt;&lt; <font color="#666666">" dcalls  "</font> &lt;&lt; stages[*s_iter].second.total &lt;&lt; <font color="#666666">" bytes"</font> &lt;&lt; std::endl;
+<a name="line72"> 72: </a>        }
+<a name="line73"> 73: </a>      }
+<a name="line74"> 74: </a>    };
+<a name="line75"> 75: </a>    void stagePop() {
+<a name="line76"> 76: </a>      <font color="#4169E1">if</font> (_debug) {
+<a name="line77"> 77: </a><strong><font color="#FF0000">        std:</font></strong>:cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;rank&lt;&lt;<font color="#666666">"]Popping stage "</font> &lt;&lt; stageNames.front() &lt;&lt; <font color="#666666">":"</font> &lt;&lt; std::endl;
+<a name="line78"> 78: </a>        <font color="#4169E1">for</font>(names::const_iterator s_iter = stageNames.begin(); s_iter != stageNames.end(); ++s_iter) {
+<a name="line79"> 79: </a><strong><font color="#FF0000">          std:</font></strong>:cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;rank&lt;&lt;<font color="#666666">"]  "</font> &lt;&lt; *s_iter &lt;&lt; <font color="#666666">": "</font> &lt;&lt; stages[*s_iter].first.num  &lt;&lt; <font color="#666666">" acalls  "</font> &lt;&lt; stages[*s_iter].first.total  &lt;&lt; <font color="#666666">" bytes"</font> &lt;&lt; std::endl;
+<a name="line80"> 80: </a><strong><font color="#FF0000">          std:</font></strong>:cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;rank&lt;&lt;<font color="#666666">"]  "</font> &lt;&lt; *s_iter &lt;&lt; <font color="#666666">": "</font> &lt;&lt; stages[*s_iter].second.num &lt;&lt; <font color="#666666">" dcalls  "</font> &lt;&lt; stages[*s_iter].second.total &lt;&lt; <font color="#666666">" bytes"</font> &lt;&lt; std::endl;
+<a name="line81"> 81: </a>        }
+<a name="line82"> 82: </a>      }
+<a name="line83"> 83: </a>      stageNames.pop_front();
+<a name="line84"> 84: </a>    };
+<a name="line85"> 85: </a>    void logAllocation(const std::string&amp; className, int bytes) {
+<a name="line86"> 86: </a>      <font color="#4169E1">for</font>(names::const_iterator s_iter = stageNames.begin(); s_iter != stageNames.end(); ++s_iter) {
+<a name="line87"> 87: </a>        logAllocation(*s_iter, className, bytes);
+<a name="line88"> 88: </a>      }
+<a name="line89"> 89: </a>    };
+<a name="line90"> 90: </a>    void logAllocation(const std::string&amp; stage, const std::string&amp; className, int bytes) {
+<a name="line91"> 91: </a>      <font color="#4169E1">if</font> (_debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;rank&lt;&lt;<font color="#666666">"]Allocating "</font> &lt;&lt; bytes &lt;&lt; <font color="#666666">" bytes for class "</font> &lt;&lt; className &lt;&lt; std::endl;}
+<a name="line92"> 92: </a>      stages[stage].first.num++;
+<a name="line93"> 93: </a>      stages[stage].first.total += bytes;
+<a name="line94"> 94: </a>      stages[stage].first.items[className] += bytes;
+<a name="line95"> 95: </a>    };
+<a name="line96"> 96: </a>    void logDeallocation(const std::string&amp; className, int bytes) {
+<a name="line97"> 97: </a>      <font color="#4169E1">for</font>(names::const_iterator s_iter = stageNames.begin(); s_iter != stageNames.end(); ++s_iter) {
+<a name="line98"> 98: </a>        logDeallocation(*s_iter, className, bytes);
+<a name="line99"> 99: </a>      }
+<a name="line100">100: </a>    };
+<a name="line101">101: </a>    void logDeallocation(const std::string&amp; stage, const std::string&amp; className, int bytes) {
+<a name="line102">102: </a>      <font color="#4169E1">if</font> (_debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;rank&lt;&lt;<font color="#666666">"]Deallocating "</font> &lt;&lt; bytes &lt;&lt; <font color="#666666">" bytes for class "</font> &lt;&lt; className &lt;&lt; std::endl;}
+<a name="line103">103: </a>      stages[stage].second.num++;
+<a name="line104">104: </a>      stages[stage].second.total += bytes;
+<a name="line105">105: </a>      stages[stage].second.items[className] += bytes;
+<a name="line106">106: </a>    };
+<a name="line107">107: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line108">108: </a>    long long getNumAllocations() {<font color="#4169E1">return</font> getNumAllocations(stageNames.front());};
+<a name="line109">109: </a>    long long getNumAllocations(const std::string&amp; stage) {<font color="#4169E1">return</font> stages[stage].first.num;};
+<a name="line110">110: </a>    long long getNumDeallocations() {<font color="#4169E1">return</font> getNumDeallocations(stageNames.front());};
+<a name="line111">111: </a>    long long getNumDeallocations(const std::string&amp; stage) {<font color="#4169E1">return</font> stages[stage].second.num;};
+<a name="line112">112: </a>    long long getAllocationTotal() {<font color="#4169E1">return</font> getAllocationTotal(stageNames.front());};
+<a name="line113">113: </a>    long long getAllocationTotal(const std::string&amp; stage) {<font color="#4169E1">return</font> stages[stage].first.total;};
+<a name="line114">114: </a>    long long getDeallocationTotal() {<font color="#4169E1">return</font> getDeallocationTotal(stageNames.front());};
+<a name="line115">115: </a>    long long getDeallocationTotal(const std::string&amp; stage) {<font color="#4169E1">return</font> stages[stage].second.total;};
+<a name="line116">116: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line117">117: </a>    void show() {
+<a name="line118">118: </a><strong><font color="#FF0000">      std:</font></strong>:cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;rank&lt;&lt;<font color="#666666">"]Memory Stages:"</font> &lt;&lt; std::endl;
+<a name="line119">119: </a>      <font color="#4169E1">for</font>(stageLog::const_iterator s_iter = stages.begin(); s_iter != stages.end(); ++s_iter) {
+<a name="line120">120: </a><strong><font color="#FF0000">        std:</font></strong>:cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;rank&lt;&lt;<font color="#666666">"]  "</font> &lt;&lt; s_iter-&gt;first &lt;&lt; <font color="#666666">": "</font> &lt;&lt; s_iter-&gt;second.first.num  &lt;&lt; <font color="#666666">" acalls  "</font> &lt;&lt; s_iter-&gt;second.first.total  &lt;&lt; <font color="#666666">" bytes"</font> &lt;&lt; std::endl;
+<a name="line121">121: </a>        <font color="#4169E1">for</font>(std::map&lt;std::string, long long&gt;::const_iterator i_iter = s_iter-&gt;second.first.items.begin(); i_iter != s_iter-&gt;second.first.items.end(); ++i_iter) {
+<a name="line122">122: </a><strong><font color="#FF0000">          std:</font></strong>:cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;rank&lt;&lt;<font color="#666666">"]    "</font> &lt;&lt; i_iter-&gt;first &lt;&lt; <font color="#666666">": "</font> &lt;&lt; i_iter-&gt;second &lt;&lt; <font color="#666666">" bytes"</font> &lt;&lt; std::endl;
+<a name="line123">123: </a>        }
+<a name="line124">124: </a><strong><font color="#FF0000">        std:</font></strong>:cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;rank&lt;&lt;<font color="#666666">"]  "</font> &lt;&lt; s_iter-&gt;first &lt;&lt; <font color="#666666">": "</font> &lt;&lt; s_iter-&gt;second.second.num &lt;&lt; <font color="#666666">" dcalls  "</font> &lt;&lt; s_iter-&gt;second.second.total &lt;&lt; <font color="#666666">" bytes"</font> &lt;&lt; std::endl;
+<a name="line125">125: </a>        <font color="#4169E1">for</font>(std::map&lt;std::string, long long&gt;::const_iterator i_iter = s_iter-&gt;second.second.items.begin(); i_iter != s_iter-&gt;second.second.items.end(); ++i_iter) {
+<a name="line126">126: </a><strong><font color="#FF0000">          std:</font></strong>:cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;rank&lt;&lt;<font color="#666666">"]    "</font> &lt;&lt; i_iter-&gt;first &lt;&lt; <font color="#666666">": "</font> &lt;&lt; i_iter-&gt;second &lt;&lt; <font color="#666666">" bytes"</font> &lt;&lt; std::endl;
+<a name="line127">127: </a>        }
+<a name="line128">128: </a>      }
+<a name="line129">129: </a>    };
+<a name="line130">130: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line131">131: </a>    template&lt;typename T&gt;
+<a name="line132">132: </a>    static const char *getClassName() {
+<a name="line133">133: </a>      const std::type_info&amp; id      = typeid(T);
+<a name="line134">134: </a>      char                 *id_name = const_cast&lt;char *&gt;(id.name());
+
+<a name="line136">136: </a><font color="#A020F0">#ifdef ALE_HAVE_CXX_ABI</font>
+<a name="line137">137: </a>      // If the C++ ABI API is available, we can use it to demangle the class name provided by type_info.
+<a name="line138">138: </a>      // Here we assume the industry standard C++ ABI as described in http://www.codesourcery.com/cxx-abi/abi.html.
+<a name="line139">139: </a>      int   status;
+<a name="line140">140: </a>      char *id_name_demangled = abi::__cxa_demangle(id.name(), NULL, NULL, &amp;status);
+
+<a name="line142">142: </a>      <font color="#4169E1">if</font> (!status) {
+<a name="line143">143: </a>        id_name = id_name_demangled;
+<a name="line144">144: </a>      }
+<a name="line145">145: </a><font color="#A020F0">#endif</font>
+<a name="line146">146: </a>      <font color="#4169E1">return</font> id_name;
+<a name="line147">147: </a>    }
+<a name="line148">148: </a>    static void restoreClassName(const char * <font color="#B22222">/* className */</font>) {};
+<a name="line149">149: </a>  };
+
+<a name="line151">151: </a>  template&lt;class T&gt;
+<a name="line152">152: </a>  class malloc_allocator
+<a name="line153">153: </a>  {
+<a name="line154">154: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line155">155: </a>    <font color="#4169E1">typedef</font> T                 value_type;
+<a name="line156">156: </a>    <font color="#4169E1">typedef</font> value_type*       pointer;
+<a name="line157">157: </a>    <font color="#4169E1">typedef</font> const value_type* const_pointer;
+<a name="line158">158: </a>    <font color="#4169E1">typedef</font> value_type&amp;       reference;
+<a name="line159">159: </a>    <font color="#4169E1">typedef</font> const value_type&amp; const_reference;
+<a name="line160">160: </a>    <font color="#4169E1">typedef</font> std::size_t       size_type;
+<a name="line161">161: </a>    <font color="#4169E1">typedef</font> std::ptrdiff_t    difference_type;
+<a name="line162">162: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line163">163: </a>    template &lt;class U&gt;
+<a name="line164">164: </a>    <font color="#4169E1">struct rebind</font> {<font color="#4169E1">typedef</font> malloc_allocator&lt;U&gt; other;};
+<a name="line165">165: </a><strong><font color="#FF0000">  protected:</font></strong>
+<a name="line166">166: </a>    int         numAllocs;
+<a name="line167">167: </a>    const char *className;
+<a name="line168">168: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line169">169: </a>    int sz;
+<a name="line170">170: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line171">171: </a><font color="#A020F0">#ifdef ALE_MEM_LOGGING</font>
+<a name="line172">172: </a>    malloc_allocator() : numAllocs(0) {className = ALE::MemoryLogger::getClassName&lt;T&gt;();sz = <font color="#4169E1">sizeof</font>(value_type);}
+<a name="line173">173: </a>    malloc_allocator(const malloc_allocator&amp;) : numAllocs(0) {className = ALE::MemoryLogger::getClassName&lt;T&gt;();sz = <font color="#4169E1">sizeof</font>(value_type);}
+<a name="line174">174: </a>    template &lt;class U&gt;
+<a name="line175">175: </a>    malloc_allocator(const malloc_allocator&lt;U&gt;&amp;) : numAllocs(0) {className = ALE::MemoryLogger::getClassName&lt;T&gt;();sz = <font color="#4169E1">sizeof</font>(value_type);}
+<a name="line176">176: </a>    ~malloc_allocator() {ALE::MemoryLogger::restoreClassName(className);}
+<a name="line177">177: </a><font color="#A020F0">#else</font>
+<a name="line178">178: </a>    malloc_allocator() : numAllocs(0) {sz = <font color="#4169E1">sizeof</font>(value_type);}
+<a name="line179">179: </a>    malloc_allocator(const malloc_allocator&amp;) : numAllocs(0) {sz = <font color="#4169E1">sizeof</font>(value_type);}
+<a name="line180">180: </a>    template &lt;class U&gt;
+<a name="line181">181: </a>    malloc_allocator(const malloc_allocator&lt;U&gt;&amp;) : numAllocs(0) {sz = <font color="#4169E1">sizeof</font>(value_type);}
+<a name="line182">182: </a>    ~malloc_allocator() {}
+<a name="line183">183: </a><font color="#A020F0">#endif</font>
+<a name="line184">184: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line185">185: </a>    pointer address(reference x) const {<font color="#4169E1">return</font> &amp;x;}
+<a name="line186">186: </a>    // For some reason the goddamn MS compiler does not like this function
+<a name="line187">187: </a>    //const_pointer address(const_reference x) const {<font color="#4169E1">return</font> &amp;x;}
+
+<a name="line189">189: </a>    pointer allocate(size_type n, const_pointer = 0) {
+<a name="line190">190: </a>      assert(n &gt;= 0);
+<a name="line191">191: </a><font color="#A020F0">#ifdef ALE_MEM_LOGGING</font>
+<a name="line192">192: </a><strong><font color="#FF0000">      ALE:</font></strong>:MemoryLogger::singleton().logAllocation(className, n * <font color="#4169E1">sizeof</font>(T));
+<a name="line193">193: </a><font color="#A020F0">#endif</font>
+<a name="line194">194: </a>      numAllocs++;
+<a name="line195">195: </a>      void *p = std::malloc(n * <font color="#4169E1">sizeof</font>(T));
+<a name="line196">196: </a>      <font color="#4169E1">if</font> (!p) throw std::bad_alloc();
+<a name="line197">197: </a>      <font color="#4169E1">return</font> static_cast&lt;pointer&gt;(p);
+<a name="line198">198: </a>    }
+
+<a name="line200">200: </a><font color="#A020F0">#ifdef ALE_MEM_LOGGING</font>
+<a name="line201">201: </a>    void deallocate(pointer p, size_type n) {
+<a name="line202">202: </a><strong><font color="#FF0000">      ALE:</font></strong>:MemoryLogger::singleton().logDeallocation(className, n * <font color="#4169E1">sizeof</font>(T));
+<a name="line203">203: </a><strong><font color="#FF0000">      std:</font></strong>:free(p);
+<a name="line204">204: </a>    }
+<a name="line205">205: </a><font color="#A020F0">#else</font>
+<a name="line206">206: </a>    void deallocate(pointer p, size_type) {
+<a name="line207">207: </a><strong><font color="#FF0000">      std:</font></strong>:free(p);
+<a name="line208">208: </a>    }
+<a name="line209">209: </a><font color="#A020F0">#endif</font>
+
+<a name="line211">211: </a>    size_type max_size() const {<font color="#4169E1">return</font> static_cast&lt;size_type&gt;(-1) / <font color="#4169E1">sizeof</font>(T);}
+
+<a name="line213">213: </a>    void construct(pointer p, const value_type&amp; x) {new(p) value_type(x);}
+
+<a name="line215">215: </a>    void destroy(pointer p) {p-&gt;~value_type();}
+<a name="line216">216: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line217">217: </a>    pointer create(const value_type&amp; x = value_type()) {
+<a name="line218">218: </a>      pointer p = (pointer) allocate(1);
+<a name="line219">219: </a>      construct(p, x);
+<a name="line220">220: </a>      <font color="#4169E1">return</font> p;
+<a name="line221">221: </a>    };
+
+<a name="line223">223: </a>    void del(pointer p) {
+<a name="line224">224: </a>      destroy(p);
+<a name="line225">225: </a>      deallocate(p, 1);
+<a name="line226">226: </a>    };
+
+<a name="line228">228: </a>    // This is just to be compatible with Dmitry's weird crap <font color="#4169E1">for</font> now
+<a name="line229">229: </a>    void del(pointer p, size_type size) {
+<a name="line230">230: </a>      <font color="#4169E1">if</font> (size != <font color="#4169E1">sizeof</font>(value_type)) throw std::exception();
+<a name="line231">231: </a>      destroy(p);
+<a name="line232">232: </a>      deallocate(p, 1);
+<a name="line233">233: </a>    };
+<a name="line234">234: </a><strong><font color="#FF0000">  private:</font></strong>
+<a name="line235">235: </a>    void operator=(const malloc_allocator&amp;);
+<a name="line236">236: </a>  };
+
+<a name="line238">238: </a>  template&lt;&gt; class malloc_allocator&lt;void&gt;
+<a name="line239">239: </a>  {
+<a name="line240">240: </a>    <font color="#4169E1">typedef</font> void        value_type;
+<a name="line241">241: </a>    <font color="#4169E1">typedef</font> void*       pointer;
+<a name="line242">242: </a>    <font color="#4169E1">typedef</font> const void* const_pointer;
+
+<a name="line244">244: </a>    template &lt;class U&gt;
+<a name="line245">245: </a>    <font color="#4169E1">struct rebind</font> {<font color="#4169E1">typedef</font> malloc_allocator&lt;U&gt; other;};
+<a name="line246">246: </a>  };
+
+<a name="line248">248: </a>  template &lt;class T&gt;
+<a name="line249">249: </a>  inline bool operator==(const malloc_allocator&lt;T&gt;&amp;, const malloc_allocator&lt;T&gt;&amp;) {
+<a name="line250">250: </a>    <font color="#4169E1">return</font> true;
+<a name="line251">251: </a>  };
+
+<a name="line253">253: </a>  template &lt;class T&gt;
+<a name="line254">254: </a>  inline bool operator!=(const malloc_allocator&lt;T&gt;&amp;, const malloc_allocator&lt;T&gt;&amp;) {
+<a name="line255">255: </a>    <font color="#4169E1">return</font> false;
+<a name="line256">256: </a>  };
+
+<a name="line258">258: </a>  template &lt;class T&gt;
+<a name="line259">259: </a>  static const char *getClassName() {
+<a name="line260">260: </a>    const std::type_info&amp; id = typeid(T);
+<a name="line261">261: </a>    const char *id_name;
+
+<a name="line263">263: </a><font color="#A020F0">#ifdef ALE_HAVE_CXX_ABI</font>
+<a name="line264">264: </a>      // If the C++ ABI API is available, we can use it to demangle the class name provided by type_info.
+<a name="line265">265: </a>      // Here we assume the industry standard C++ ABI as described in http://www.codesourcery.com/cxx-abi/abi.html.
+<a name="line266">266: </a>      int   status;
+<a name="line267">267: </a>      char *id_name_demangled = abi::__cxa_demangle(id.name(), NULL, NULL, &amp;status);
+
+<a name="line269">269: </a>      <font color="#4169E1">if</font> (status != 0) {
+<a name="line270">270: </a>        id_name = id.name();
+<a name="line271">271: </a>      } <font color="#4169E1">else</font> {
+<a name="line272">272: </a>        id_name = id_name_demangled;
+<a name="line273">273: </a>      }
+<a name="line274">274: </a><font color="#A020F0">#else</font>
+<a name="line275">275: </a>      id_name = id.name();
+<a name="line276">276: </a><font color="#A020F0">#endif</font>
+<a name="line277">277: </a>      <font color="#4169E1">return</font> id_name;
+<a name="line278">278: </a>  };
+<a name="line279">279: </a>  template &lt;class T&gt;
+<a name="line280">280: </a>  static const char *getClassName(const T * <font color="#B22222">/* obj */</font>) {
+<a name="line281">281: </a>    <font color="#4169E1">return</font> getClassName&lt;T&gt;();
+<a name="line282">282: </a>  };
+<a name="line283">283: </a><font color="#A020F0">#ifdef ALE_HAVE_CXX_ABI</font>
+<a name="line284">284: </a>  template&lt;class T&gt;
+<a name="line285">285: </a>  static void restoreClassName(const char *id_name) {
+<a name="line286">286: </a>    // Free the name malloc'ed by __cxa_demangle
+<a name="line287">287: </a>    free((char *) id_name);
+<a name="line288">288: </a>  };
+<a name="line289">289: </a><font color="#A020F0">#else</font>
+<a name="line290">290: </a>  template&lt;class T&gt;
+<a name="line291">291: </a>  static void restoreClassName(const char *) {};
+<a name="line292">292: </a><font color="#A020F0">#endif</font>
+<a name="line293">293: </a>  template&lt;class T&gt;
+<a name="line294">294: </a>  static void restoreClassName(const T * <font color="#B22222">/* obj */</font>, const char *id_name) {restoreClassName&lt;T&gt;(id_name);};
+
+<a name="line296">296: </a>  // This UNIVERSAL allocator class is static and provides allocation/deallocation services to all allocators defined below.
+<a name="line297">297: </a>  class universal_allocator {
+<a name="line298">298: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line299">299: </a>    <font color="#4169E1">typedef</font> std::size_t size_type;
+<a name="line300">300: </a>    static char*     allocate(const size_type&amp; sz);
+<a name="line301">301: </a>    static void      deallocate(char *p, const size_type&amp; sz);
+<a name="line302">302: </a>    static size_type max_size();
+<a name="line303">303: </a>  };
+
+<a name="line305">305: </a>  // This allocator implements create and del methods, that act roughly as new and delete in that they invoke a constructor/destructor
+<a name="line306">306: </a>  // in addition to memory allocation/deallocation.
+<a name="line307">307: </a>  // An additional (and potentially dangerous) feature allows an object of any type to be deleted so long as its size has been provided.
+<a name="line308">308: </a>  template &lt;class T&gt;
+<a name="line309">309: </a>  class polymorphic_allocator {
+<a name="line310">310: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line311">311: </a>    <font color="#4169E1">typedef</font> typename std::allocator&lt;T&gt; Alloc;
+<a name="line312">312: </a>    // A specific allocator -- alloc -- of type Alloc is used to define the correct types and implement methods
+<a name="line313">313: </a>    // that <font color="#4169E1">do</font> not allocate/deallocate memory themselves -- the universal _alloc is used <font color="#4169E1">for</font> that (and only that).
+<a name="line314">314: </a>    // The relative size sz is used to calculate the amount of memory to request from _alloc to satisfy a request to alloc.
+<a name="line315">315: </a>    <font color="#4169E1">typedef</font> typename Alloc::size_type       size_type;
+<a name="line316">316: </a>    <font color="#4169E1">typedef</font> typename Alloc::difference_type difference_type;
+<a name="line317">317: </a>    <font color="#4169E1">typedef</font> typename Alloc::pointer         pointer;
+<a name="line318">318: </a>    <font color="#4169E1">typedef</font> typename Alloc::const_pointer   const_pointer;
+<a name="line319">319: </a>    <font color="#4169E1">typedef</font> typename Alloc::reference       reference;
+<a name="line320">320: </a>    <font color="#4169E1">typedef</font> typename Alloc::const_reference const_reference;
+<a name="line321">321: </a>    <font color="#4169E1">typedef</font> typename Alloc::value_type      value_type;
+
+<a name="line323">323: </a>    static Alloc alloc;                            // The underlying specific allocator
+<a name="line324">324: </a>    static typename Alloc::size_type sz;           // The size of T universal units of char
+
+<a name="line326">326: </a>    polymorphic_allocator()                                    {};
+<a name="line327">327: </a>    polymorphic_allocator(const polymorphic_allocator&amp; a)      {};
+<a name="line328">328: </a>    template &lt;class TT&gt;
+<a name="line329">329: </a>    polymorphic_allocator(const polymorphic_allocator&lt;TT&gt;&amp; aa){}
+<a name="line330">330: </a>    ~polymorphic_allocator() {};
+
+<a name="line332">332: </a>    // Reproducing the standard allocator interface
+<a name="line333">333: </a>    pointer       address(reference _x) const          { <font color="#4169E1">return</font> alloc.address(_x);                                    };
+<a name="line334">334: </a>    const_pointer address(const_reference _x) const    { <font color="#4169E1">return</font> alloc.address(_x);                                    };
+<a name="line335">335: </a>    T*            allocate(size_type _n)               { <font color="#4169E1">return</font> (T*)universal_allocator::allocate(_n*sz);            };
+<a name="line336">336: </a>    void          deallocate(pointer _p, size_type _n) { universal_allocator::deallocate((char*)_p, _n*sz);           };
+<a name="line337">337: </a>    void          construct(pointer _p, const T&amp; _val) { alloc.construct(_p, _val);                                   };
+<a name="line338">338: </a>    void          destroy(pointer _p)                  { alloc.destroy(_p);                                           };
+<a name="line339">339: </a>    size_type     max_size() const                     { <font color="#4169E1">return</font> (size_type)floor(universal_allocator::max_size()/sz); };
+<a name="line340">340: </a>    // conversion <font color="#4169E1">typedef</font>
+<a name="line341">341: </a>    template &lt;class TT&gt;
+<a name="line342">342: </a>    <font color="#4169E1">struct rebind</font> { <font color="#4169E1">typedef</font> polymorphic_allocator&lt;TT&gt; other;};
+
+<a name="line344">344: </a>    T*  create(const T&amp; _val = T());
+<a name="line345">345: </a>    void del(T* _p);
+<a name="line346">346: </a>    template&lt;class TT&gt; void del(TT* _p, size_type _sz);
+<a name="line347">347: </a>  };
+
+<a name="line349">349: </a>  template &lt;class T&gt;
+<a name="line350">350: </a>  typename polymorphic_allocator&lt;T&gt;::Alloc polymorphic_allocator&lt;T&gt;::alloc;
+
+<a name="line352">352: </a>  //IMPORTANT: allocator 'sz' calculation takes place here
+<a name="line353">353: </a>  template &lt;class T&gt;
+<a name="line354">354: </a>  typename polymorphic_allocator&lt;T&gt;::size_type polymorphic_allocator&lt;T&gt;::sz =
+<a name="line355">355: </a>    (typename polymorphic_allocator&lt;T&gt;::size_type)(ceil(<font color="#4169E1">sizeof</font>(T)/<font color="#4169E1">sizeof</font>(char)));
+
+<a name="line357">357: </a>  template &lt;class T&gt;
+<a name="line358">358: </a>  T* polymorphic_allocator&lt;T&gt;::create(const T&amp; _val) {
+<a name="line359">359: </a>    // First, allocate space <font color="#4169E1">for</font> a single object
+<a name="line360">360: </a>    T* _p = (T*)universal_allocator::allocate(sz);
+<a name="line361">361: </a>    // Construct an object in the provided space using the provided initial value
+<a name="line362">362: </a>    this-&gt;alloc.construct(_p,  _val);
+<a name="line363">363: </a>    <font color="#4169E1">return</font> _p;
+<a name="line364">364: </a>  }
+
+<a name="line366">366: </a>  template &lt;class T&gt;
+<a name="line367">367: </a>  void polymorphic_allocator&lt;T&gt;::del(T* _p) {
+<a name="line368">368: </a>    _p-&gt;~T();
+<a name="line369">369: </a><strong><font color="#FF0000">    universal_allocator:</font></strong>:deallocate((char*)_p, polymorphic_allocator&lt;T&gt;::sz);
+<a name="line370">370: </a>  }
+
+<a name="line372">372: </a>  template &lt;class T&gt; template &lt;class TT&gt;
+<a name="line373">373: </a>  void polymorphic_allocator&lt;T&gt;::del(TT* _p, size_type _sz) {
+<a name="line374">374: </a>    _p-&gt;~TT();
+<a name="line375">375: </a><strong><font color="#FF0000">    universal_allocator:</font></strong>:deallocate((char*)_p, _sz);
+<a name="line376">376: </a>  }
+
+
+<a name="line379">379: </a>  // An allocator all of whose events (allocation, deallocation, new, delete) are logged using ALE_log facilities.
+<a name="line380">380: </a>  // O is true <font color="#4169E1">if</font> this is an Obj allocator (that's the intended use, anyhow).
+<a name="line381">381: </a>  template &lt;class T, bool O = false&gt;
+<a name="line382">382: </a>  class logged_allocator : public polymorphic_allocator&lt;T&gt; {
+<a name="line383">383: </a><strong><font color="#FF0000">  private:</font></strong>
+<a name="line384">384: </a>    static bool        _log_initialized;
+<a name="line385">385: </a>    static LogCookie   _cookie;
+<a name="line386">386: </a>    static int         _allocate_event;
+<a name="line387">387: </a>    static int         _deallocate_event;
+<a name="line388">388: </a>    static int         _construct_event;
+<a name="line389">389: </a>    static int         _destroy_event;
+<a name="line390">390: </a>    static int         _create_event;
+<a name="line391">391: </a>    static int         _del_event;
+<a name="line392">392: </a>    //
+<a name="line393">393: </a>    static void     __log_initialize();
+<a name="line394">394: </a>    static LogEvent __log_event_register(const char *class_name, const char *event_name);
+<a name="line395">395: </a><font color="#A020F0">#if defined ALE_USE_LOGGING &amp;&amp; defined ALE_LOGGING_LOG_MEM</font>
+<a name="line396">396: </a>    // FIX: should PETSc memory logging machinery be wrapped by ALE_log like the rest of the logging stuff?
+<a name="line397">397: </a>    <A href="../../docs/manualpages/Sys/PetscObject.html#PetscObject">PetscObject</A> _petscObj; // this object is used to log memory in PETSc
+<a name="line398">398: </a><font color="#A020F0">#endif</font>
+<a name="line399">399: </a>    void __alloc_initialize();
+<a name="line400">400: </a>    void __alloc_finalize();
+<a name="line401">401: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line402">402: </a>    // Present the correct allocator interface
+<a name="line403">403: </a>    <font color="#4169E1">typedef</font> typename polymorphic_allocator&lt;T&gt;::size_type       size_type;
+<a name="line404">404: </a>    <font color="#4169E1">typedef</font> typename polymorphic_allocator&lt;T&gt;::difference_type difference_type;
+<a name="line405">405: </a>    <font color="#4169E1">typedef</font> typename polymorphic_allocator&lt;T&gt;::pointer         pointer;
+<a name="line406">406: </a>    <font color="#4169E1">typedef</font> typename polymorphic_allocator&lt;T&gt;::const_pointer   const_pointer;
+<a name="line407">407: </a>    <font color="#4169E1">typedef</font> typename polymorphic_allocator&lt;T&gt;::reference       reference;
+<a name="line408">408: </a>    <font color="#4169E1">typedef</font> typename polymorphic_allocator&lt;T&gt;::const_reference const_reference;
+<a name="line409">409: </a>    <font color="#4169E1">typedef</font> typename polymorphic_allocator&lt;T&gt;::value_type      value_type;
+<a name="line410">410: </a>    //
+<a name="line411">411: </a>    logged_allocator()                                   : polymorphic_allocator&lt;T&gt;()  {__log_initialize(); __alloc_initialize();};
+<a name="line412">412: </a>    logged_allocator(const logged_allocator&amp; a)          : polymorphic_allocator&lt;T&gt;(a) {__log_initialize(); __alloc_initialize();};
+<a name="line413">413: </a>    template &lt;class TT&gt;
+<a name="line414">414: </a>    logged_allocator(const logged_allocator&lt;TT&gt;&amp; aa)    : polymorphic_allocator&lt;T&gt;(aa){__log_initialize(); __alloc_initialize();}
+<a name="line415">415: </a>    ~logged_allocator() {__alloc_finalize();};
+<a name="line416">416: </a>    // conversion <font color="#4169E1">typedef</font>
+<a name="line417">417: </a>    template &lt;class TT&gt;
+<a name="line418">418: </a>    <font color="#4169E1">struct rebind</font> { <font color="#4169E1">typedef</font> logged_allocator&lt;TT&gt; other;};
+
+<a name="line420">420: </a>    T*   allocate(size_type _n);
+<a name="line421">421: </a>    void deallocate(T*  _p, size_type _n);
+<a name="line422">422: </a>    void construct(T* _p, const T&amp; _val);
+<a name="line423">423: </a>    void destroy(T* _p);
+
+<a name="line425">425: </a>    T*  create(const T&amp; _val = T());
+<a name="line426">426: </a>    void del(T*  _p);
+<a name="line427">427: </a>    template &lt;class TT&gt; void del(TT* _p, size_type _sz);
+<a name="line428">428: </a>  };
+
+<a name="line430">430: </a>  template &lt;class T, bool O&gt;
+<a name="line431">431: </a>  bool logged_allocator&lt;T, O&gt;::_log_initialized(false);
+<a name="line432">432: </a>  template &lt;class T, bool O&gt;
+<a name="line433">433: </a>  LogCookie logged_allocator&lt;T,O&gt;::_cookie(0);
+<a name="line434">434: </a>  template &lt;class T, bool O&gt;
+<a name="line435">435: </a>  int logged_allocator&lt;T, O&gt;::_allocate_event(0);
+<a name="line436">436: </a>  template &lt;class T, bool O&gt;
+<a name="line437">437: </a>  int logged_allocator&lt;T, O&gt;::_deallocate_event(0);
+<a name="line438">438: </a>  template &lt;class T, bool O&gt;
+<a name="line439">439: </a>  int logged_allocator&lt;T, O&gt;::_construct_event(0);
+<a name="line440">440: </a>  template &lt;class T, bool O&gt;
+<a name="line441">441: </a>  int logged_allocator&lt;T, O&gt;::_destroy_event(0);
+<a name="line442">442: </a>  template &lt;class T, bool O&gt;
+<a name="line443">443: </a>  int logged_allocator&lt;T, O&gt;::_create_event(0);
+<a name="line444">444: </a>  template &lt;class T, bool O&gt;
+<a name="line445">445: </a>  int logged_allocator&lt;T, O&gt;::_del_event(0);
+
+<a name="line447">447: </a>  template &lt;class T, bool O&gt;
+<a name="line448">448: </a>  void logged_allocator&lt;T, O&gt;::__log_initialize() {
+<a name="line449">449: </a>    <font color="#4169E1">if</font>(!logged_allocator::_log_initialized) {
+<a name="line450">450: </a>      // First of all we make sure PETSc is initialized
+<a name="line451">451: </a>      <A href="../../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A>      flag;
+<a name="line452">452: </a>      <A href="../../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../../docs/manualpages/Sys/PetscInitialized.html#PetscInitialized">PetscInitialized</A>(&amp;flag);CHKERROR(ierr, <font color="#666666">"Error in <A href="../../docs/manualpages/Sys/PetscInitialized.html#PetscInitialized">PetscInitialized</A>"</font>);
+<a name="line453">453: </a>      <font color="#4169E1">if</font>(!flag) {
+<a name="line454">454: </a>        // I guess it would be nice to initialize PETSc here, but we'd need argv/argc here
+<a name="line455">455: </a>        throw ALE::Exception(<font color="#666666">"PETSc not initialized"</font>);
+<a name="line456">456: </a>      }
+<a name="line457">457: </a>      // Get a new cookie based on the class name
+<a name="line458">458: </a>      const char *id_name = ALE::getClassName&lt;T&gt;();
+<a name="line459">459: </a><font color="#A020F0">#if defined ALE_USE_LOGGING &amp;&amp; defined ALE_LOGGING_LOG_MEM</font>
+<a name="line460">460: </a>      // Use id_name to register a cookie and events.
+<a name="line461">461: </a><strong><font color="#FF0000">      logged_allocator:</font></strong>:_cookie = LogCookieRegister(id_name);
+<a name="line462">462: </a>      // Register the basic allocator methods' invocations as events; use the mangled class name.
+<a name="line463">463: </a><strong><font color="#FF0000">      logged_allocator:</font></strong>:_allocate_event   = logged_allocator::__log_event_register(id_name, <font color="#666666">"allocate"</font>);
+<a name="line464">464: </a><strong><font color="#FF0000">      logged_allocator:</font></strong>:_deallocate_event = logged_allocator::__log_event_register(id_name, <font color="#666666">"deallocate"</font>);
+<a name="line465">465: </a><strong><font color="#FF0000">      logged_allocator:</font></strong>:_construct_event  = logged_allocator::__log_event_register(id_name, <font color="#666666">"construct"</font>);
+<a name="line466">466: </a><strong><font color="#FF0000">      logged_allocator:</font></strong>:_destroy_event    = logged_allocator::__log_event_register(id_name, <font color="#666666">"destroy"</font>);
+<a name="line467">467: </a><strong><font color="#FF0000">      logged_allocator:</font></strong>:_create_event     = logged_allocator::__log_event_register(id_name, <font color="#666666">"create"</font>);
+<a name="line468">468: </a><strong><font color="#FF0000">      logged_allocator:</font></strong>:_del_event        = logged_allocator::__log_event_register(id_name, <font color="#666666">"del"</font>);
+<a name="line469">469: </a><font color="#A020F0">#endif</font>
+<a name="line470">470: </a><strong><font color="#FF0000">      ALE:</font></strong>:restoreClassName&lt;T&gt;(id_name);
+<a name="line471">471: </a><strong><font color="#FF0000">      logged_allocator:</font></strong>:_log_initialized = true;
+<a name="line472">472: </a>    }// <font color="#4169E1">if</font>(!!logged_allocator::_log_initialized)
+<a name="line473">473: </a>  }// logged_allocator&lt;T,O&gt;::__log_initialize()
+
+<a name="line475">475: </a>  template &lt;class T, bool O&gt;
+<a name="line476">476: </a>  void logged_allocator&lt;T, O&gt;::__alloc_initialize() {
+<a name="line477">477: </a><font color="#A020F0">#if defined ALE_USE_LOGGING &amp;&amp; defined ALE_LOGGING_LOG_MEM</font>
+<a name="line478">478: </a>    const char *id_name = ALE::getClassName&lt;T&gt;();
+<a name="line479">479: </a><strong><font color="#FF0000">    ALE:</font></strong>:restoreClassName&lt;T&gt;(id_name);
+<a name="line480">480: </a><font color="#A020F0">#endif</font>
+<a name="line481">481: </a>  }// logged_allocator&lt;T,O&gt;::__alloc_initialize
+
+<a name="line483">483: </a>  template &lt;class T, bool O&gt;
+<a name="line484">484: </a>  void logged_allocator&lt;T, O&gt;::__alloc_finalize() {
+<a name="line485">485: </a><font color="#A020F0">#if defined ALE_USE_LOGGING &amp;&amp; defined ALE_LOGGING_LOG_MEM</font>
+<a name="line486">486: </a><font color="#A020F0">#endif</font>
+<a name="line487">487: </a>  }// logged_allocator&lt;T,O&gt;::__alloc_finalize
+
+<a name="line489">489: </a>  template &lt;class T, bool O&gt;
+<a name="line490">490: </a>  LogEvent logged_allocator&lt;T, O&gt;::__log_event_register(const char *class_name, const char *event_name){
+<a name="line491">491: </a>    // This routine assumes a cookie has been obtained.
+<a name="line492">492: </a>    ostringstream txt;
+<a name="line493">493: </a>    <font color="#4169E1">if</font>(O) {
+<a name="line494">494: </a>      txt &lt;&lt; <font color="#666666">"Obj:"</font>;
+<a name="line495">495: </a>    }
+<a name="line496">496: </a><font color="#A020F0">#ifdef ALE_LOGGING_VERBOSE</font>
+<a name="line497">497: </a>    txt &lt;&lt; class_name;
+<a name="line498">498: </a><font color="#A020F0">#else</font>
+<a name="line499">499: </a>    txt &lt;&lt; <font color="#666666">"&lt;allocator&gt;"</font>;
+<a name="line500">500: </a><font color="#A020F0">#endif</font>
+<a name="line501">501: </a>    txt &lt;&lt; <font color="#666666">":"</font> &lt;&lt; event_name;
+<a name="line502">502: </a>    <font color="#4169E1">return</font> LogEventRegister(logged_allocator::_cookie, txt.str().c_str());
+<a name="line503">503: </a>  }
+
+<a name="line505">505: </a>  template &lt;class T, bool O&gt;
+<a name="line506">506: </a>  T*  logged_allocator&lt;T, O&gt;::allocate(size_type _n) {
+<a name="line507">507: </a><font color="#A020F0">#if defined ALE_USE_LOGGING &amp;&amp; defined ALE_LOGGING_LOG_MEM</font>
+<a name="line508">508: </a>    LogEventBegin(logged_allocator::_allocate_event);
+<a name="line509">509: </a><font color="#A020F0">#endif</font>
+<a name="line510">510: </a>    T* _p = polymorphic_allocator&lt;T&gt;::allocate(_n);
+<a name="line511">511: </a><font color="#A020F0">#if defined ALE_USE_LOGGING &amp;&amp; defined ALE_LOGGING_LOG_MEM</font>
+<a name="line512">512: </a>//     <A href="../../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> PetscLogObjectMemory(this-&gt;_petscObj, _n*polymorphic_allocator&lt;T&gt;::sz);
+<a name="line513">513: </a>//     CHKERROR(ierr, <font color="#666666">"Error in PetscLogObjectMemory"</font>);
+<a name="line514">514: </a>    LogEventEnd(logged_allocator::_allocate_event);
+<a name="line515">515: </a><font color="#A020F0">#endif</font>
+<a name="line516">516: </a>    <font color="#4169E1">return</font> _p;
+<a name="line517">517: </a>  }
+
+<a name="line519">519: </a>  template &lt;class T, bool O&gt;
+<a name="line520">520: </a>  void logged_allocator&lt;T, O&gt;::deallocate(T* _p, size_type _n) {
+<a name="line521">521: </a><font color="#A020F0">#if defined ALE_USE_LOGGING &amp;&amp; defined ALE_LOGGING_LOG_MEM</font>
+<a name="line522">522: </a>    LogEventBegin(logged_allocator::_deallocate_event);
+<a name="line523">523: </a><font color="#A020F0">#endif</font>
+<a name="line524">524: </a>    polymorphic_allocator&lt;T&gt;::deallocate(_p, _n);
+<a name="line525">525: </a><font color="#A020F0">#if defined ALE_USE_LOGGING &amp;&amp; defined ALE_LOGGING_LOG_MEM</font>
+<a name="line526">526: </a>    LogEventEnd(logged_allocator::_deallocate_event);
+<a name="line527">527: </a><font color="#A020F0">#endif</font>
+<a name="line528">528: </a>  }
+
+<a name="line530">530: </a>  template &lt;class T, bool O&gt;
+<a name="line531">531: </a>  void logged_allocator&lt;T, O&gt;::construct(T* _p, const T&amp; _val) {
+<a name="line532">532: </a><font color="#A020F0">#if defined ALE_USE_LOGGING &amp;&amp; defined ALE_LOGGING_LOG_MEM</font>
+<a name="line533">533: </a>    LogEventBegin(logged_allocator::_construct_event);
+<a name="line534">534: </a><font color="#A020F0">#endif</font>
+<a name="line535">535: </a>    polymorphic_allocator&lt;T&gt;::construct(_p, _val);
+<a name="line536">536: </a><font color="#A020F0">#if defined ALE_USE_LOGGING &amp;&amp; defined ALE_LOGGING_LOG_MEM</font>
+<a name="line537">537: </a>    LogEventEnd(logged_allocator::_construct_event);
+<a name="line538">538: </a><font color="#A020F0">#endif</font>
+<a name="line539">539: </a>  }
+
+<a name="line541">541: </a>  template &lt;class T, bool O&gt;
+<a name="line542">542: </a>  void logged_allocator&lt;T, O&gt;::destroy(T* _p) {
+<a name="line543">543: </a><font color="#A020F0">#if defined ALE_USE_LOGGING &amp;&amp; defined ALE_LOGGING_LOG_MEM</font>
+<a name="line544">544: </a>    LogEventBegin(logged_allocator::_destroy_event);
+<a name="line545">545: </a><font color="#A020F0">#endif</font>
+<a name="line546">546: </a>    polymorphic_allocator&lt;T&gt;::destroy(_p);
+<a name="line547">547: </a><font color="#A020F0">#if defined ALE_USE_LOGGING &amp;&amp; defined ALE_LOGGING_LOG_MEM</font>
+<a name="line548">548: </a>    LogEventEnd(logged_allocator::_destroy_event);
+<a name="line549">549: </a><font color="#A020F0">#endif</font>
+<a name="line550">550: </a>  }
+
+<a name="line552">552: </a>  template &lt;class T, bool O&gt;
+<a name="line553">553: </a>  T* logged_allocator&lt;T, O&gt;::create(const T&amp; _val) {
+<a name="line554">554: </a><font color="#A020F0">#if defined ALE_USE_LOGGING &amp;&amp; defined ALE_LOGGING_LOG_MEM</font>
+<a name="line555">555: </a>    LogEventBegin(logged_allocator::_create_event);
+<a name="line556">556: </a><font color="#A020F0">#endif</font>
+<a name="line557">557: </a>    T* _p = polymorphic_allocator&lt;T&gt;::create(_val);
+<a name="line558">558: </a><font color="#A020F0">#if defined ALE_USE_LOGGING &amp;&amp; defined ALE_LOGGING_LOG_MEM</font>
+<a name="line559">559: </a>//     <A href="../../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> PetscLogObjectMemory(this-&gt;_petscObj, polymorphic_allocator&lt;T&gt;::sz);
+<a name="line560">560: </a>//     CHKERROR(ierr, <font color="#666666">"Error in PetscLogObjectMemory"</font>);
+<a name="line561">561: </a>    LogEventEnd(logged_allocator::_create_event);
+<a name="line562">562: </a><font color="#A020F0">#endif</font>
+<a name="line563">563: </a>    <font color="#4169E1">return</font> _p;
+<a name="line564">564: </a>  }
+
+<a name="line566">566: </a>  template &lt;class T, bool O&gt;
+<a name="line567">567: </a>  void logged_allocator&lt;T, O&gt;::del(T* _p) {
+<a name="line568">568: </a><font color="#A020F0">#if defined ALE_USE_LOGGING &amp;&amp; defined ALE_LOGGING_LOG_MEM</font>
+<a name="line569">569: </a>    LogEventBegin(logged_allocator::_del_event);
+<a name="line570">570: </a><font color="#A020F0">#endif</font>
+<a name="line571">571: </a>    polymorphic_allocator&lt;T&gt;::del(_p);
+<a name="line572">572: </a><font color="#A020F0">#if defined ALE_USE_LOGGING &amp;&amp; defined ALE_LOGGING_LOG_MEM</font>
+<a name="line573">573: </a>    LogEventEnd(logged_allocator::_del_event);
+<a name="line574">574: </a><font color="#A020F0">#endif</font>
+<a name="line575">575: </a>  }
+
+<a name="line577">577: </a>  template &lt;class T, bool O&gt; template &lt;class TT&gt;
+<a name="line578">578: </a>  void logged_allocator&lt;T, O&gt;::del(TT* _p, size_type _sz) {
+<a name="line579">579: </a><font color="#A020F0">#if defined ALE_USE_LOGGING &amp;&amp; defined ALE_LOGGING_LOG_MEM</font>
+<a name="line580">580: </a>    LogEventBegin(logged_allocator::_del_event);
+<a name="line581">581: </a><font color="#A020F0">#endif</font>
+<a name="line582">582: </a>    polymorphic_allocator&lt;T&gt;::del(_p, _sz);
+<a name="line583">583: </a><font color="#A020F0">#if defined ALE_USE_LOGGING &amp;&amp; defined ALE_LOGGING_LOG_MEM</font>
+<a name="line584">584: </a>    LogEventEnd(logged_allocator::_del_event);
+<a name="line585">585: </a><font color="#A020F0">#endif</font>
+<a name="line586">586: </a>  }
+
+<a name="line588">588: </a><font color="#A020F0">#ifdef ALE_USE_LOGGING</font>
+<a name="line589">589: </a><strong><font color="#228B22">#define ALE_ALLOCATOR ::ALE::logged_allocator</font></strong>
+<a name="line590">590: </a><font color="#A020F0">#else</font>
+<a name="line591">591: </a><font color="#A020F0">#if 1</font>
+<a name="line592">592: </a><strong><font color="#228B22">#define ALE_ALLOCATOR ::ALE::malloc_allocator</font></strong>
+<a name="line593">593: </a><font color="#A020F0">#else</font>
+<a name="line594">594: </a><strong><font color="#228B22">#define ALE_ALLOCATOR ::ALE::polymorphic_allocator</font></strong>
+<a name="line595">595: </a><font color="#A020F0">#endif</font>
+<a name="line596">596: </a><font color="#A020F0">#endif</font>
+
+<a name="line598">598: </a>  //
+<a name="line599">599: </a>  // The following classes define smart pointer behavior.
+<a name="line600">600: </a>  // They rely on allocators <font color="#4169E1">for</font> memory pooling and logging (<font color="#4169E1">if</font> logging is on).
+<a name="line601">601: </a>  //
+
+<a name="line603">603: </a>  // This is an Obj&lt;X&gt;-specific exception that is thrown when incompatible object conversion is attempted.
+<a name="line604">604: </a>  class BadCast : public Exception {
+<a name="line605">605: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line606">606: </a>    explicit BadCast(const string&amp;        msg) : Exception(msg) {};
+<a name="line607">607: </a>    explicit BadCast(const ostringstream&amp; txt) : Exception(txt) {};
+<a name="line608">608: </a>    //  It actually looks like passing txt as an argument to Exception(ostringstream) performs a copy of txt,
+<a name="line609">609: </a>    //  which is disallowed due to the ostringstream constructor being private; must use a string constructor.
+<a name="line610">610: </a>    BadCast(const BadCast&amp; e)        : Exception(e) {};
+<a name="line611">611: </a>  };
+
+<a name="line613">613: </a>  // This is the main smart pointer class.
+<a name="line614">614: </a>  template&lt;class X, typename A = malloc_allocator&lt;X&gt; &gt;
+<a name="line615">615: </a>  class Obj {
+<a name="line616">616: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line617">617: </a>    // Types
+<a name="line618">618: </a><font color="#A020F0">#if 1</font>
+<a name="line619">619: </a>    <font color="#4169E1">typedef</font> A                                               Allocator;
+<a name="line620">620: </a>    <font color="#4169E1">typedef</font> typename Allocator::template rebind&lt;int&gt;::other Allocator_int;
+<a name="line621">621: </a><font color="#A020F0">#else</font>
+<a name="line622">622: </a><font color="#A020F0">#ifdef ALE_USE_LOGGING</font>
+<a name="line623">623: </a>    <font color="#4169E1">typedef</font> logged_allocator&lt;X,true&gt;      Allocator;
+<a name="line624">624: </a>    <font color="#4169E1">typedef</font> logged_allocator&lt;int,true&gt;    Allocator_int;
+<a name="line625">625: </a><font color="#A020F0">#else</font>
+<a name="line626">626: </a>    <font color="#4169E1">typedef</font> polymorphic_allocator&lt;X&gt;      Allocator;
+<a name="line627">627: </a>    <font color="#4169E1">typedef</font> polymorphic_allocator&lt;int&gt;    Allocator_int;
+<a name="line628">628: </a><font color="#A020F0">#endif</font>
+<a name="line629">629: </a><font color="#A020F0">#endif</font>
+<a name="line630">630: </a>    <font color="#4169E1">typedef</font> typename Allocator::size_type size_type;
+<a name="line631">631: </a><strong><font color="#FF0000">  protected:</font></strong>
+<a name="line632">632: </a>    Allocator&amp; allocator() {
+<a name="line633">633: </a>      static Allocator _allocator;
+
+<a name="line635">635: </a>      <font color="#4169E1">return</font> _allocator;
+<a name="line636">636: </a>    };
+<a name="line637">637: </a>    Allocator_int&amp; int_allocator() {
+<a name="line638">638: </a>      static Allocator_int _allocator;
+
+<a name="line640">640: </a>      <font color="#4169E1">return</font> _allocator;
+<a name="line641">641: </a>    };
+<a name="line642">642: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line643">643: </a>    X*        objPtr; // object pointer
+<a name="line644">644: </a>    int*      refCnt; // reference count
+<a name="line645">645: </a>    size_type sz;     // Size of underlying object (universal units) allocated with an allocator; indicates allocator use.
+<a name="line646">646: </a>    // Constructor; this can be made private, <font color="#4169E1">if</font> we move operator Obj&lt;Y&gt; outside this class definition and make it a friend.
+<a name="line647">647: </a>    Obj(X *xx, int *refCnt, size_type sz);
+<a name="line648">648: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line649">649: </a>    // Constructors &amp; a destructor
+<a name="line650">650: </a>    Obj() : objPtr((X *)NULL), refCnt((int*)NULL), sz(0) {};
+<a name="line651">651: </a>    Obj(const X&amp; x);
+<a name="line652">652: </a>    Obj(X *xx);
+<a name="line653">653: </a>    Obj(X *xx, size_type sz);
+<a name="line654">654: </a>    Obj(const Obj&amp; obj);
+<a name="line655">655: </a>    virtual ~Obj();
+
+<a name="line657">657: </a>    // <font color="#666666">"Factory"</font> methods
+<a name="line658">658: </a>    Obj&amp; create(const X&amp; x = X());
+<a name="line659">659: </a>    void destroy();
+
+<a name="line661">661: </a>    // predicates &amp; assertions
+<a name="line662">662: </a>    bool isNull() const {<font color="#4169E1">return</font> (this-&gt;objPtr == NULL);};
+<a name="line663">663: </a>    void assertNull(bool flag) const { <font color="#4169E1">if</font>(this-&gt;isNull() != flag){ throw(Exception(<font color="#666666">"Null assertion failed"</font>));}};
+
+<a name="line665">665: </a>    // comparison operators
+<a name="line666">666: </a>    bool operator==(const Obj&amp; obj) { <font color="#4169E1">return</font> (this-&gt;objPtr == obj.objPtr);};
+<a name="line667">667: </a>    bool operator!=(const Obj&amp; obj) { <font color="#4169E1">return</font> (this-&gt;objPtr != obj.objPtr);};
+
+<a name="line669">669: </a>    // assignment/conversion operators
+<a name="line670">670: </a>    Obj&amp; operator=(const Obj&amp; obj);
+<a name="line671">671: </a>    template &lt;class Y&gt; operator Obj&lt;Y&gt; const();
+<a name="line672">672: </a>    template &lt;class Y&gt; Obj&amp; operator=(const Obj&lt;Y&gt;&amp; obj);
+
+<a name="line674">674: </a>    // dereference operators
+<a name="line675">675: </a>    X*   operator-&gt;() const {<font color="#4169E1">return</font> objPtr;};
+
+<a name="line677">677: </a>    // <font color="#666666">"exposure"</font> methods: expose the underlying object or object pointer
+<a name="line678">678: </a>    operator X*() {<font color="#4169E1">return</font> objPtr;};
+<a name="line679">679: </a>    X&amp; operator*() const {assertNull(false); <font color="#4169E1">return</font> *objPtr;};
+<a name="line680">680: </a>    operator X()  {assertNull(false); <font color="#4169E1">return</font> *objPtr;};
+<a name="line681">681: </a>    template&lt;class Y&gt; Obj&amp; copy(const Obj&lt;Y&gt;&amp; obj); // this operator will copy the underlying objects: USE WITH CAUTION
+
+
+<a name="line684">684: </a>    // depricated methods/operators
+<a name="line685">685: </a>    X* ptr() const     {<font color="#4169E1">return</font> objPtr;};
+<a name="line686">686: </a>    X* pointer() const {<font color="#4169E1">return</font> objPtr;};
+<a name="line687">687: </a>    X  obj() const     {assertNull(false); <font color="#4169E1">return</font> *objPtr;};
+<a name="line688">688: </a>    X  object() const  {assertNull(false); <font color="#4169E1">return</font> *objPtr;};
+
+<a name="line690">690: </a>    void addRef() {<font color="#4169E1">if</font> (refCnt) {(*refCnt)++;}}
+<a name="line691">691: </a>  };// class Obj&lt;X&gt;
+
+<a name="line693">693: </a>  // Constructors
+<a name="line694">694: </a>  // New reference
+<a name="line695">695: </a>  template &lt;class X, typename A&gt;
+<a name="line696">696: </a>  Obj&lt;X,A&gt;::Obj(const X&amp; x) {
+<a name="line697">697: </a>    this-&gt;refCnt = NULL;
+<a name="line698">698: </a>    this-&gt;create(x);
+<a name="line699">699: </a>  }
+
+<a name="line701">701: </a>  // Stolen reference
+<a name="line702">702: </a>  template &lt;class X, typename A&gt;
+<a name="line703">703: </a>  Obj&lt;X,A&gt;::Obj(X *xx){// such an object will be destroyed by calling 'delete' on its pointer
+<a name="line704">704: </a>                     // (e.g., we assume the pointer was obtained with new)
+<a name="line705">705: </a>    <font color="#4169E1">if</font> (xx) {
+<a name="line706">706: </a>      this-&gt;objPtr = xx;
+<a name="line707">707: </a>      this-&gt;refCnt = int_allocator().create(1);
+<a name="line708">708: </a>      //this-&gt;refCnt   = new int(1);
+<a name="line709">709: </a>      this-&gt;sz = 0;
+<a name="line710">710: </a>    } <font color="#4169E1">else</font> {
+<a name="line711">711: </a>      this-&gt;objPtr = NULL;
+<a name="line712">712: </a>      this-&gt;refCnt = NULL;
+<a name="line713">713: </a>      this-&gt;sz = 0;
+<a name="line714">714: </a>    }
+<a name="line715">715: </a>  }
+
+<a name="line717">717: </a>  // Work around <font color="#4169E1">for</font> thing allocated with an allocator
+<a name="line718">718: </a>  template &lt;class X, typename A&gt;
+<a name="line719">719: </a>  Obj&lt;X,A&gt;::Obj(X *xx, size_type sz){// such an object will be destroyed by the allocator
+<a name="line720">720: </a>    <font color="#4169E1">if</font> (xx) {
+<a name="line721">721: </a>      this-&gt;objPtr = xx;
+<a name="line722">722: </a>      this-&gt;refCnt = int_allocator().create(1);
+<a name="line723">723: </a>      this-&gt;sz     = sz;
+<a name="line724">724: </a>    } <font color="#4169E1">else</font> {
+<a name="line725">725: </a>      this-&gt;objPtr = NULL;
+<a name="line726">726: </a>      this-&gt;refCnt = NULL;
+<a name="line727">727: </a>      this-&gt;sz = 0;
+<a name="line728">728: </a>    }
+<a name="line729">729: </a>  }
+
+<a name="line731">731: </a>  template &lt;class X, typename A&gt;
+<a name="line732">732: </a>  Obj&lt;X,A&gt;::Obj(X *_xx, int *_refCnt, size_type _sz) {  // This is intended to be private.
+<a name="line733">733: </a>    <font color="#4169E1">if</font> (!_xx) {
+<a name="line734">734: </a>      throw ALE::Exception(<font color="#666666">"Making an Obj with a NULL objPtr"</font>);
+<a name="line735">735: </a>    }
+<a name="line736">736: </a>    this-&gt;objPtr = _xx;
+<a name="line737">737: </a>    this-&gt;refCnt = _refCnt;  // we assume that all refCnt pointers are obtained using an int_allocator
+<a name="line738">738: </a>    (*this-&gt;refCnt)++;
+<a name="line739">739: </a>    this-&gt;sz = _sz;
+<a name="line740">740: </a>    //<font color="#4169E1">if</font> (!this-&gt;sz) {
+<a name="line741">741: </a>    //  throw ALE::Exception(<font color="#666666">"Making an Obj with zero size"</font>);
+<a name="line742">742: </a>    //}
+<a name="line743">743: </a>  }
+
+<a name="line745">745: </a>  template &lt;class X, typename A&gt;
+<a name="line746">746: </a>  Obj&lt;X,A&gt;::Obj(const Obj&amp; obj) {
+<a name="line747">747: </a>    this-&gt;objPtr = obj.objPtr;
+<a name="line748">748: </a>    this-&gt;refCnt = obj.refCnt;
+<a name="line749">749: </a>    <font color="#4169E1">if</font> (obj.refCnt) {
+<a name="line750">750: </a>      (*this-&gt;refCnt)++;
+<a name="line751">751: </a>    }
+<a name="line752">752: </a>    this-&gt;sz = obj.sz;
+<a name="line753">753: </a>    //<font color="#4169E1">if</font> (!this-&gt;sz) {
+<a name="line754">754: </a>    //  throw ALE::Exception(<font color="#666666">"Making an Obj with zero size"</font>);
+<a name="line755">755: </a>    //}
+<a name="line756">756: </a>  }
+
+<a name="line758">758: </a>  // Destructor
+<a name="line759">759: </a>  template &lt;class X, typename A&gt;
+<a name="line760">760: </a>  Obj&lt;X,A&gt;::~Obj(){
+<a name="line761">761: </a>    this-&gt;destroy();
+<a name="line762">762: </a>  }
+
+<a name="line764">764: </a>  template &lt;class X, typename A&gt;
+<a name="line765">765: </a>  Obj&lt;X,A&gt;&amp; Obj&lt;X,A&gt;::create(const X&amp; x) {
+<a name="line766">766: </a>    // Destroy the old state
+<a name="line767">767: </a>    this-&gt;destroy();
+<a name="line768">768: </a>    // Create the new state
+<a name="line769">769: </a>    this-&gt;objPtr = allocator().create(x);
+<a name="line770">770: </a>    this-&gt;refCnt = int_allocator().create(1);
+<a name="line771">771: </a>    this-&gt;sz     = allocator().sz;
+<a name="line772">772: </a>    <font color="#4169E1">if</font> (!this-&gt;sz) {
+<a name="line773">773: </a>      throw ALE::Exception(<font color="#666666">"Making an Obj with zero size obtained from allocator"</font>);
+<a name="line774">774: </a>    }
+<a name="line775">775: </a>    <font color="#4169E1">return</font> *this;
+<a name="line776">776: </a>  }
+
+<a name="line778">778: </a>  template &lt;class X, typename A&gt;
+<a name="line779">779: </a>  void Obj&lt;X,A&gt;::destroy() {
+<a name="line780">780: </a>    <font color="#4169E1">if</font>(ALE::getVerbosity() &gt; 3) {
+<a name="line781">781: </a><font color="#A020F0">#ifdef ALE_USE_DEBUGGING</font>
+<a name="line782">782: </a>      const char *id_name = ALE::getClassName&lt;X&gt;();
+
+<a name="line784">784: </a>      printf(<font color="#666666">"Obj&lt;X&gt;.destroy: Destroying Obj&lt;%s&gt;"</font>, id_name);
+<a name="line785">785: </a>      <font color="#4169E1">if</font> (!this-&gt;refCnt) {
+<a name="line786">786: </a>        printf(<font color="#666666">" with no refCnt\n"</font>);
+<a name="line787">787: </a>      } <font color="#4169E1">else</font> {
+<a name="line788">788: </a>        printf(<font color="#666666">" with refCnt %d\n"</font>, *this-&gt;refCnt);
+<a name="line789">789: </a>      }
+<a name="line790">790: </a><strong><font color="#FF0000">      ALE:</font></strong>:restoreClassName&lt;X&gt;(id_name);
+<a name="line791">791: </a><font color="#A020F0">#endif</font>
+<a name="line792">792: </a>    }
+<a name="line793">793: </a>    <font color="#4169E1">if</font> (this-&gt;refCnt != NULL) {
+<a name="line794">794: </a>      (*this-&gt;refCnt)--;
+<a name="line795">795: </a>      <font color="#4169E1">if</font> (*this-&gt;refCnt == 0) {
+<a name="line796">796: </a>        // If  allocator has been used to create an objPtr, as indicated by 'sz', we use the allocator to delete objPtr, using 'sz'.
+<a name="line797">797: </a>        <font color="#4169E1">if</font>(this-&gt;sz != 0) {
+<a name="line798">798: </a><font color="#A020F0">#ifdef ALE_USE_DEBUGGING</font>
+<a name="line799">799: </a>          <font color="#4169E1">if</font>(ALE::getVerbosity() &gt; 3) {
+<a name="line800">800: </a>            printf(<font color="#666666">"  Calling deallocator on %p with size %d\n"</font>, this-&gt;objPtr, (int) this-&gt;sz);
+<a name="line801">801: </a>          }
+<a name="line802">802: </a><font color="#A020F0">#endif</font>
+<a name="line803">803: </a>          allocator().del(this-&gt;objPtr, this-&gt;sz);
+<a name="line804">804: </a>          this-&gt;sz = 0;
+<a name="line805">805: </a>        }
+<a name="line806">806: </a>        <font color="#4169E1">else</font> { // otherwise we use 'delete'
+<a name="line807">807: </a><font color="#A020F0">#ifdef ALE_USE_DEBUGGING</font>
+<a name="line808">808: </a>          <font color="#4169E1">if</font>(ALE::getVerbosity() &gt; 3) {
+<a name="line809">809: </a>            printf(<font color="#666666">"  Calling delete on %p\n"</font>, this-&gt;objPtr);
+<a name="line810">810: </a>          }
+<a name="line811">811: </a><font color="#A020F0">#endif</font>
+<a name="line812">812: </a>          <font color="#4169E1">if</font> (!this-&gt;objPtr) {
+<a name="line813">813: </a>            throw ALE::Exception(<font color="#666666">"Trying to free NULL pointer"</font>);
+<a name="line814">814: </a>          }
+<a name="line815">815: </a>          delete this-&gt;objPtr;
+<a name="line816">816: </a>        }
+<a name="line817">817: </a>        // refCnt is always created/delete using the int_allocator.
+<a name="line818">818: </a>        int_allocator().del(this-&gt;refCnt);
+<a name="line819">819: </a>        this-&gt;objPtr = NULL;
+<a name="line820">820: </a>        this-&gt;refCnt = NULL;
+<a name="line821">821: </a>      }
+<a name="line822">822: </a>    }
+<a name="line823">823: </a>  }
+
+<a name="line825">825: </a>  // assignment operator
+<a name="line826">826: </a>  template &lt;class X, typename A&gt;
+<a name="line827">827: </a>  Obj&lt;X,A&gt;&amp; Obj&lt;X,A&gt;::operator=(const Obj&lt;X,A&gt;&amp; obj) {
+<a name="line828">828: </a>    <font color="#4169E1">if</font>(this-&gt;objPtr == obj.objPtr) {<font color="#4169E1">return</font> *this;}
+<a name="line829">829: </a>    // Destroy 'this' Obj -- it will properly release the underlying object <font color="#4169E1">if</font> the reference count is exhausted.
+<a name="line830">830: </a>    <font color="#4169E1">if</font>(this-&gt;objPtr) {
+<a name="line831">831: </a>      this-&gt;destroy();
+<a name="line832">832: </a>    }
+<a name="line833">833: </a>    // Now copy the data from obj.
+<a name="line834">834: </a>    this-&gt;objPtr = obj.objPtr;
+<a name="line835">835: </a>    this-&gt;refCnt = obj.refCnt;
+<a name="line836">836: </a>    <font color="#4169E1">if</font>(this-&gt;refCnt!= NULL) {
+<a name="line837">837: </a>      (*this-&gt;refCnt)++;
+<a name="line838">838: </a>    }
+<a name="line839">839: </a>    this-&gt;sz = obj.sz;
+<a name="line840">840: </a>    <font color="#4169E1">return</font> *this;
+<a name="line841">841: </a>  }
+
+<a name="line843">843: </a>  // conversion operator, preserves 'this'
+<a name="line844">844: </a>  template&lt;class X, typename A&gt; template&lt;class Y&gt;
+<a name="line845">845: </a>  Obj&lt;X,A&gt;::operator Obj&lt;Y&gt; const() {
+<a name="line846">846: </a>    // We attempt to cast X* objPtr to Y* using dynamic_
+<a name="line847">847: </a><font color="#A020F0">#ifdef ALE_USE_DEBUGGING</font>
+<a name="line848">848: </a>    <font color="#4169E1">if</font>(ALE::getVerbosity() &gt; 1) {
+<a name="line849">849: </a>      printf(<font color="#666666">"Obj&lt;X&gt;::operator Obj&lt;Y&gt;: attempting a dynamic_cast on objPtr %p\n"</font>, this-&gt;objPtr);
+<a name="line850">850: </a>    }
+<a name="line851">851: </a><font color="#A020F0">#endif</font>
+<a name="line852">852: </a>    Y* yObjPtr = dynamic_cast&lt;Y*&gt;(this-&gt;objPtr);
+<a name="line853">853: </a>    // If the cast failed, throw an exception
+<a name="line854">854: </a>    <font color="#4169E1">if</font>(yObjPtr == NULL) {
+<a name="line855">855: </a>      const char *Xname = ALE::getClassName&lt;X&gt;();
+<a name="line856">856: </a>      const char *Yname = ALE::getClassName&lt;Y&gt;();
+<a name="line857">857: </a><strong><font color="#FF0000">      std:</font></strong>:string msg(<font color="#666666">"Bad cast Obj&lt;"</font>);
+<a name="line858">858: </a>      msg += Xname;
+<a name="line859">859: </a>      msg += <font color="#666666">"&gt; --&gt; Obj&lt;"</font>;
+<a name="line860">860: </a>      msg += Yname;
+<a name="line861">861: </a>      msg += <font color="#666666">"&gt;"</font>;
+<a name="line862">862: </a><strong><font color="#FF0000">      ALE:</font></strong>:restoreClassName&lt;X&gt;(Xname);
+<a name="line863">863: </a><strong><font color="#FF0000">      ALE:</font></strong>:restoreClassName&lt;X&gt;(Yname);
+<a name="line864">864: </a>      throw BadCast(msg.c_str());
+<a name="line865">865: </a>    }
+<a name="line866">866: </a>    // Okay, we can proceed
+<a name="line867">867: </a>    <font color="#4169E1">return</font> Obj&lt;Y&gt;(yObjPtr, this-&gt;refCnt, this-&gt;sz);
+<a name="line868">868: </a>  }
+
+<a name="line870">870: </a>  // assignment-conversion operator
+<a name="line871">871: </a>  template&lt;class X, typename A&gt; template&lt;class Y&gt;
+<a name="line872">872: </a>  Obj&lt;X,A&gt;&amp; Obj&lt;X,A&gt;::operator=(const Obj&lt;Y&gt;&amp; obj) {
+<a name="line873">873: </a>    // We attempt to cast Y* obj.objPtr to X* using dynamic_cast
+<a name="line874">874: </a>    X* xObjPtr = dynamic_cast&lt;X*&gt;(obj.objPtr);
+<a name="line875">875: </a>    // If the cast failed, throw an exception
+<a name="line876">876: </a>    <font color="#4169E1">if</font>(xObjPtr == NULL) {
+<a name="line877">877: </a>      const char *Xname = ALE::getClassName&lt;X&gt;();
+<a name="line878">878: </a>      const char *Yname = ALE::getClassName&lt;Y&gt;();
+<a name="line879">879: </a><strong><font color="#FF0000">      std:</font></strong>:string msg(<font color="#666666">"Bad assignment cast Obj&lt;"</font>);
+<a name="line880">880: </a>      msg += Yname;
+<a name="line881">881: </a>      msg += <font color="#666666">"&gt; --&gt; Obj&lt;"</font>;
+<a name="line882">882: </a>      msg += Xname;
+<a name="line883">883: </a>      msg += <font color="#666666">"&gt;"</font>;
+<a name="line884">884: </a><strong><font color="#FF0000">      ALE:</font></strong>:restoreClassName&lt;X&gt;(Xname);
+<a name="line885">885: </a><strong><font color="#FF0000">      ALE:</font></strong>:restoreClassName&lt;X&gt;(Yname);
+<a name="line886">886: </a>      throw BadCast(msg.c_str());
+<a name="line887">887: </a>    }
+<a name="line888">888: </a>    // Okay, we can proceed with the assignment
+<a name="line889">889: </a>    <font color="#4169E1">if</font>(this-&gt;objPtr == obj.objPtr) {<font color="#4169E1">return</font> *this;}
+<a name="line890">890: </a>    // Destroy 'this' Obj -- it will properly release the underlying object <font color="#4169E1">if</font> the reference count is exhausted.
+<a name="line891">891: </a>    this-&gt;destroy();
+<a name="line892">892: </a>    // Now copy the data from obj.
+<a name="line893">893: </a>    this-&gt;objPtr = xObjPtr;
+<a name="line894">894: </a>    this-&gt;refCnt = obj.refCnt;
+<a name="line895">895: </a>    (*this-&gt;refCnt)++;
+<a name="line896">896: </a>    this-&gt;sz = obj.sz;
+<a name="line897">897: </a>    <font color="#4169E1">return</font> *this;
+<a name="line898">898: </a>  }
+
+<a name="line900">900: </a>  // copy operator (USE WITH CAUTION)
+<a name="line901">901: </a>  template&lt;class X, typename A&gt; template&lt;class Y&gt;
+<a name="line902">902: </a>  Obj&lt;X,A&gt;&amp; Obj&lt;X,A&gt;::copy(const Obj&lt;Y&gt;&amp; obj) {
+<a name="line903">903: </a>    <font color="#4169E1">if</font>(this-&gt;isNull() || obj.isNull()) {
+<a name="line904">904: </a>      throw(Exception(<font color="#666666">"Copying to or from a null Obj"</font>));
+<a name="line905">905: </a>    }
+<a name="line906">906: </a>    *(this-&gt;objPtr) = *(obj.objPtr);
+<a name="line907">907: </a>    <font color="#4169E1">return</font> *this;
+<a name="line908">908: </a>  }
+
+
+<a name="line911">911: </a>} // namespace ALE
+
+<a name="line913">913: </a><font color="#A020F0">#endif</font>
+</pre>
+</body>
+
+</html>

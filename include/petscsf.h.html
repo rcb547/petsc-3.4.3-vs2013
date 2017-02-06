@@ -1,0 +1,150 @@
+<center><a href="petscsf.h">Actual source code: petscsf.h</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="http://www.mcs.anl.gov/petsc/petsc-current/include/petscsf.h.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2013-10-15T16:57:03+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>petsc-3.4.3 2013-10-15</b></div>
+<pre width="80"><a name="line1">  1: </a><font color="#B22222">/*</font>
+<a name="line2">  2: </a><font color="#B22222">   A star forest (SF) describes a communication pattern</font>
+<a name="line3">  3: </a><font color="#B22222">*/</font>
+<a name="line6">  6: </a><font color="#A020F0">#include &lt;petscsys.h&gt;</font>
+<a name="line7">  7: </a><font color="#A020F0">#include &lt;petscsftypes.h&gt;</font>
+
+<a name="line9">  9: </a>PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscClassId.html#PetscClassId">PetscClassId</A> PETSCSF_CLASSID;
+
+<a name="line11"> 11: </a><font color="#B22222">/*J</font>
+<a name="line12"> 12: </a><font color="#B22222">    <A href="../docs/manualpages/PetscSF/PetscSFType.html#PetscSFType">PetscSFType</A> - String with the name of a <A href="../docs/manualpages/PetscSF/PetscSF.html#PetscSF">PetscSF</A> method or the creation function</font>
+<a name="line13"> 13: </a><font color="#B22222">       with an optional dynamic library name, for example</font>
+<a name="line14"> 14: </a><font color="#B22222">       http://www.mcs.anl.gov/petsc/lib.so:mysfcreate()</font>
+
+<a name="line16"> 16: </a><font color="#B22222">   Level: beginner</font>
+
+<a name="line18"> 18: </a><font color="#B22222">   Notes: The two approaches provided are</font>
+<a name="line19"> 19: </a><font color="#B22222">$     PETSCSFBASIC which uses MPI 1 message passing to perform the communication and</font>
+<a name="line20"> 20: </a><font color="#B22222">$     PETSCSFWINDOW which uses MPI 2 one-sided operations to perform the communication, this may be more efficient,</font>
+<a name="line21"> 21: </a><font color="#B22222">$                   but may not be available for all MPI distributions. In particular OpenMPI has bugs in its one-sided</font>
+<a name="line22"> 22: </a><font color="#B22222">$                   operations that prevent its use.</font>
+
+<a name="line24"> 24: </a><font color="#B22222">.seealso: <A href="../docs/manualpages/PetscSF/PetscSFSetType.html#PetscSFSetType">PetscSFSetType</A>(), <A href="../docs/manualpages/PetscSF/PetscSF.html#PetscSF">PetscSF</A></font>
+<a name="line25"> 25: </a><font color="#B22222">J*/</font>
+<a name="line26"> 26: </a><font color="#4169E1">typedef const char *<A href="../docs/manualpages/PetscSF/PetscSFType.html#PetscSFType">PetscSFType</A>;</font>
+<a name="line27"> 27: </a><strong><font color="#228B22">#define PETSCSFBASIC  </font><font color="#666666">"basic"</font><font color="#228B22"></font></strong>
+<a name="line28"> 28: </a><strong><font color="#228B22">#define PETSCSFWINDOW </font><font color="#666666">"window"</font><font color="#228B22"></font></strong>
+
+<a name="line30"> 30: </a><font color="#B22222">/*S</font>
+<a name="line31"> 31: </a><font color="#B22222">   <A href="../docs/manualpages/PetscSF/PetscSFNode.html#PetscSFNode">PetscSFNode</A> - specifier of owner and index</font>
+
+<a name="line33"> 33: </a><font color="#B22222">   Level: beginner</font>
+
+<a name="line35"> 35: </a><font color="#B22222">  Concepts: indexing, stride, distribution</font>
+
+<a name="line37"> 37: </a><font color="#B22222">.seealso: <A href="../docs/manualpages/PetscSF/PetscSFSetGraph.html#PetscSFSetGraph">PetscSFSetGraph</A>()</font>
+<a name="line38"> 38: </a><font color="#B22222">S*/</font>
+<a name="line39"> 39: </a><font color="#4169E1">typedef</font> <font color="#4169E1">struct</font> {
+<a name="line40"> 40: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A> rank;                <font color="#B22222">/* Rank of owner */</font>
+<a name="line41"> 41: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A> index;               <font color="#B22222">/* Index of node on rank */</font>
+<a name="line42"> 42: </a>} <A href="../docs/manualpages/PetscSF/PetscSFNode.html#PetscSFNode">PetscSFNode</A>;
+
+<a name="line44"> 44: </a><font color="#B22222">/*E</font>
+<a name="line45"> 45: </a><font color="#B22222">    <A href="../docs/manualpages/PetscSF/PetscSFWindowSyncType.html#PetscSFWindowSyncType">PetscSFWindowSyncType</A> - Type of synchronization for PETSCSFWINDOW</font>
+
+<a name="line47"> 47: </a><font color="#B22222">$  PETSCSF_WINDOW_SYNC_FENCE - simplest model, synchronizing across communicator</font>
+<a name="line48"> 48: </a><font color="#B22222">$  PETSCSF_WINDOW_SYNC_LOCK - passive model, less synchronous, requires less setup than PETSCSF_WINDOW_SYNC_ACTIVE, but may require more handshakes</font>
+<a name="line49"> 49: </a><font color="#B22222">$  PETSCSF_WINDOW_SYNC_ACTIVE - active model, provides most information to MPI implementation, needs to construct 2-way process groups (more setup than PETSCSF_WINDOW_SYNC_LOCK)</font>
+
+<a name="line51"> 51: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line53"> 53: </a><font color="#B22222">.seealso: <A href="../docs/manualpages/PetscSF/PetscSFWindowSetSyncType.html#PetscSFWindowSetSyncType">PetscSFWindowSetSyncType</A>(), <A href="../docs/manualpages/PetscSF/PetscSFWindowGetSyncType.html#PetscSFWindowGetSyncType">PetscSFWindowGetSyncType</A>()</font>
+<a name="line54"> 54: </a><font color="#B22222">E*/</font>
+<a name="line55"> 55: </a><font color="#4169E1">typedef</font> <font color="#4169E1">enum</font> {PETSCSF_WINDOW_SYNC_FENCE,PETSCSF_WINDOW_SYNC_LOCK,PETSCSF_WINDOW_SYNC_ACTIVE} <A href="../docs/manualpages/PetscSF/PetscSFWindowSyncType.html#PetscSFWindowSyncType">PetscSFWindowSyncType</A>;
+<a name="line56"> 56: </a>PETSC_EXTERN const char *const PetscSFWindowSyncTypes[];
+
+<a name="line58"> 58: </a><font color="#B22222">/*E</font>
+<a name="line59"> 59: </a><font color="#B22222">    <A href="../docs/manualpages/PetscSF/PetscSFDuplicateOption.html#PetscSFDuplicateOption">PetscSFDuplicateOption</A> - Aspects to preserve when duplicating a <A href="../docs/manualpages/PetscSF/PetscSF.html#PetscSF">PetscSF</A></font>
+
+<a name="line61"> 61: </a><font color="#B22222">$  PETSCSF_DUPLICATE_CONFONLY - configuration only, user must call <A href="../docs/manualpages/PetscSF/PetscSFSetGraph.html#PetscSFSetGraph">PetscSFSetGraph</A>()</font>
+<a name="line62"> 62: </a><font color="#B22222">$  PETSCSF_DUPLICATE_RANKS - communication ranks preserved, but different graph (allows simpler setup after calling <A href="../docs/manualpages/PetscSF/PetscSFSetGraph.html#PetscSFSetGraph">PetscSFSetGraph</A>())</font>
+<a name="line63"> 63: </a><font color="#B22222">$  PETSCSF_DUPLICATE_GRAPH - entire graph duplicated</font>
+
+<a name="line65"> 65: </a><font color="#B22222">   Level: beginner</font>
+
+<a name="line67"> 67: </a><font color="#B22222">.seealso: <A href="../docs/manualpages/PetscSF/PetscSFDuplicate.html#PetscSFDuplicate">PetscSFDuplicate</A>()</font>
+<a name="line68"> 68: </a><font color="#B22222">E*/</font>
+<a name="line69"> 69: </a><font color="#4169E1">typedef</font> <font color="#4169E1">enum</font> {PETSCSF_DUPLICATE_CONFONLY,PETSCSF_DUPLICATE_RANKS,PETSCSF_DUPLICATE_GRAPH} <A href="../docs/manualpages/PetscSF/PetscSFDuplicateOption.html#PetscSFDuplicateOption">PetscSFDuplicateOption</A>;
+<a name="line70"> 70: </a>PETSC_EXTERN const char *const PetscSFDuplicateOptions[];
+
+<a name="line72"> 72: </a>PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscFunctionList.html#PetscFunctionList">PetscFunctionList</A> PetscSFList;
+<a name="line73"> 73: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/PetscSF/PetscSFRegisterAll.html#PetscSFRegisterAll">PetscSFRegisterAll</A>(void)</font></strong>;
+<a name="line74"> 74: </a><strong><font color="#4169E1"><a name="PetscSFRegister"></a>PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/PetscSF/PetscSFRegister.html#PetscSFRegister">PetscSFRegister</A>(const char[],<A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*)(<A href="../docs/manualpages/PetscSF/PetscSF.html#PetscSF">PetscSF</A>)</font></strong>);
+
+<a name="line76"> 76: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/PetscSF/PetscSFInitializePackage.html#PetscSFInitializePackage">PetscSFInitializePackage</A>(void)</font></strong>;
+<a name="line77"> 77: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/PetscSF/PetscSFFinalizePackage.html#PetscSFFinalizePackage">PetscSFFinalizePackage</A>(void)</font></strong>;
+<a name="line78"> 78: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/PetscSF/PetscSFCreate.html#PetscSFCreate">PetscSFCreate</A>(<A href="../docs/manualpages/Sys/MPI_Comm.html#MPI_Comm">MPI_Comm</A> comm,<A href="../docs/manualpages/PetscSF/PetscSF.html#PetscSF">PetscSF</A>*)</font></strong>;
+<a name="line79"> 79: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/PetscSF/PetscSFDestroy.html#PetscSFDestroy">PetscSFDestroy</A>(<A href="../docs/manualpages/PetscSF/PetscSF.html#PetscSF">PetscSF</A>*)</font></strong>;
+<a name="line80"> 80: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/PetscSF/PetscSFSetType.html#PetscSFSetType">PetscSFSetType</A>(<A href="../docs/manualpages/PetscSF/PetscSF.html#PetscSF">PetscSF</A>,<A href="../docs/manualpages/PetscSF/PetscSFType.html#PetscSFType">PetscSFType</A>)</font></strong>;
+<a name="line81"> 81: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/PetscSF/PetscSFView.html#PetscSFView">PetscSFView</A>(<A href="../docs/manualpages/PetscSF/PetscSF.html#PetscSF">PetscSF</A>,<A href="../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A>)</font></strong>;
+<a name="line82"> 82: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/PetscSF/PetscSFSetUp.html#PetscSFSetUp">PetscSFSetUp</A>(<A href="../docs/manualpages/PetscSF/PetscSF.html#PetscSF">PetscSF</A>)</font></strong>;
+<a name="line83"> 83: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/PetscSF/PetscSFSetFromOptions.html#PetscSFSetFromOptions">PetscSFSetFromOptions</A>(<A href="../docs/manualpages/PetscSF/PetscSF.html#PetscSF">PetscSF</A>)</font></strong>;
+<a name="line84"> 84: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/PetscSF/PetscSFDuplicate.html#PetscSFDuplicate">PetscSFDuplicate</A>(<A href="../docs/manualpages/PetscSF/PetscSF.html#PetscSF">PetscSF</A>,<A href="../docs/manualpages/PetscSF/PetscSFDuplicateOption.html#PetscSFDuplicateOption">PetscSFDuplicateOption</A>,<A href="../docs/manualpages/PetscSF/PetscSF.html#PetscSF">PetscSF</A>*)</font></strong>;
+<a name="line85"> 85: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/PetscSF/PetscSFWindowSetSyncType.html#PetscSFWindowSetSyncType">PetscSFWindowSetSyncType</A>(<A href="../docs/manualpages/PetscSF/PetscSF.html#PetscSF">PetscSF</A>,<A href="../docs/manualpages/PetscSF/PetscSFWindowSyncType.html#PetscSFWindowSyncType">PetscSFWindowSyncType</A>)</font></strong>;
+<a name="line86"> 86: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/PetscSF/PetscSFWindowGetSyncType.html#PetscSFWindowGetSyncType">PetscSFWindowGetSyncType</A>(<A href="../docs/manualpages/PetscSF/PetscSF.html#PetscSF">PetscSF</A>,<A href="../docs/manualpages/PetscSF/PetscSFWindowSyncType.html#PetscSFWindowSyncType">PetscSFWindowSyncType</A>*)</font></strong>;
+<a name="line87"> 87: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/PetscSF/PetscSFSetRankOrder.html#PetscSFSetRankOrder">PetscSFSetRankOrder</A>(<A href="../docs/manualpages/PetscSF/PetscSF.html#PetscSF">PetscSF</A>,<A href="../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A>)</font></strong>;
+<a name="line88"> 88: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/PetscSF/PetscSFSetGraph.html#PetscSFSetGraph">PetscSFSetGraph</A>(<A href="../docs/manualpages/PetscSF/PetscSF.html#PetscSF">PetscSF</A>,<A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>,<A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>,const <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>*,<A href="../docs/manualpages/Sys/PetscCopyMode.html#PetscCopyMode">PetscCopyMode</A>,const <A href="../docs/manualpages/PetscSF/PetscSFNode.html#PetscSFNode">PetscSFNode</A>*,<A href="../docs/manualpages/Sys/PetscCopyMode.html#PetscCopyMode">PetscCopyMode</A>)</font></strong>;
+<a name="line89"> 89: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/PetscSF/PetscSFGetGraph.html#PetscSFGetGraph">PetscSFGetGraph</A>(<A href="../docs/manualpages/PetscSF/PetscSF.html#PetscSF">PetscSF</A>,<A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A> *nroots,<A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A> *nleaves,const <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A> **ilocal,const <A href="../docs/manualpages/PetscSF/PetscSFNode.html#PetscSFNode">PetscSFNode</A> **iremote)</font></strong>;
+<a name="line90"> 90: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/PetscSF/PetscSFGetLeafRange.html#PetscSFGetLeafRange">PetscSFGetLeafRange</A>(<A href="../docs/manualpages/PetscSF/PetscSF.html#PetscSF">PetscSF</A>,<A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>*,<A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>*)</font></strong>;
+<a name="line91"> 91: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/PetscSF/PetscSFCreateEmbeddedSF.html#PetscSFCreateEmbeddedSF">PetscSFCreateEmbeddedSF</A>(<A href="../docs/manualpages/PetscSF/PetscSF.html#PetscSF">PetscSF</A>,<A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A> nroots,const <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A> *selected,<A href="../docs/manualpages/PetscSF/PetscSF.html#PetscSF">PetscSF</A> *newsf)</font></strong>;
+<a name="line92"> 92: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/PetscSF/PetscSFReset.html#PetscSFReset">PetscSFReset</A>(<A href="../docs/manualpages/PetscSF/PetscSF.html#PetscSF">PetscSF</A>)</font></strong>;
+<a name="line93"> 93: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/PetscSF/PetscSFGetRanks.html#PetscSFGetRanks">PetscSFGetRanks</A>(<A href="../docs/manualpages/PetscSF/PetscSF.html#PetscSF">PetscSF</A>,<A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>*,const <A href="../docs/manualpages/Sys/PetscMPIInt.html#PetscMPIInt">PetscMPIInt</A>**,const <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>**,const <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>**,const <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>**)</font></strong>;
+<a name="line94"> 94: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/PetscSF/PetscSFGetGroups.html#PetscSFGetGroups">PetscSFGetGroups</A>(<A href="../docs/manualpages/PetscSF/PetscSF.html#PetscSF">PetscSF</A>,MPI_Group*,MPI_Group*)</font></strong>;
+<a name="line95"> 95: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/PetscSF/PetscSFGetMultiSF.html#PetscSFGetMultiSF">PetscSFGetMultiSF</A>(<A href="../docs/manualpages/PetscSF/PetscSF.html#PetscSF">PetscSF</A>,<A href="../docs/manualpages/PetscSF/PetscSF.html#PetscSF">PetscSF</A>*)</font></strong>;
+<a name="line96"> 96: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/PetscSF/PetscSFCreateInverseSF.html#PetscSFCreateInverseSF">PetscSFCreateInverseSF</A>(<A href="../docs/manualpages/PetscSF/PetscSF.html#PetscSF">PetscSF</A>,<A href="../docs/manualpages/PetscSF/PetscSF.html#PetscSF">PetscSF</A>*)</font></strong>;
+
+<a name="line98"> 98: </a><font color="#B22222">/* broadcasts rootdata to leafdata */</font>
+<a name="line99"> 99: </a><strong><font color="#4169E1"><a name="PetscSFBcastBegin"></a>PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/PetscSF/PetscSFBcastBegin.html#PetscSFBcastBegin">PetscSFBcastBegin</A>(<A href="../docs/manualpages/PetscSF/PetscSF.html#PetscSF">PetscSF</A>,MPI_Datatype,const void *rootdata,void *leafdata)</font></strong>
+<a name="line100">100: </a>  PetscAttrMPIPointerWithType(3,2) PetscAttrMPIPointerWithType(4,2);
+<a name="line101">101: </a><strong><font color="#4169E1"><a name="PetscSFBcastEnd"></a>PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/PetscSF/PetscSFBcastEnd.html#PetscSFBcastEnd">PetscSFBcastEnd</A>(<A href="../docs/manualpages/PetscSF/PetscSF.html#PetscSF">PetscSF</A>,MPI_Datatype,const void *rootdata,void *leafdata)</font></strong>
+<a name="line102">102: </a>  PetscAttrMPIPointerWithType(3,2) PetscAttrMPIPointerWithType(4,2);
+<a name="line103">103: </a><font color="#B22222">/* Reduce leafdata into rootdata using provided operation */</font>
+<a name="line104">104: </a><strong><font color="#4169E1"><a name="PetscSFReduceBegin"></a>PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/PetscSF/PetscSFReduceBegin.html#PetscSFReduceBegin">PetscSFReduceBegin</A>(<A href="../docs/manualpages/PetscSF/PetscSF.html#PetscSF">PetscSF</A>,MPI_Datatype,const void *leafdata,void *rootdata,MPI_Op)</font></strong>
+<a name="line105">105: </a>  PetscAttrMPIPointerWithType(3,2) PetscAttrMPIPointerWithType(4,2);
+<a name="line106">106: </a><strong><font color="#4169E1"><a name="PetscSFReduceEnd"></a>PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/PetscSF/PetscSFReduceEnd.html#PetscSFReduceEnd">PetscSFReduceEnd</A>(<A href="../docs/manualpages/PetscSF/PetscSF.html#PetscSF">PetscSF</A>,MPI_Datatype,const void *leafdata,void *rootdata,MPI_Op)</font></strong>
+<a name="line107">107: </a>  PetscAttrMPIPointerWithType(3,2) PetscAttrMPIPointerWithType(4,2);
+<a name="line108">108: </a><font color="#B22222">/* Atomically modifies (using provided operation) rootdata using leafdata from each leaf, value at root at time of modification is returned in leafupdate. */</font>
+<a name="line109">109: </a><strong><font color="#4169E1"><a name="PetscSFFetchAndOpBegin"></a>PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/PetscSF/PetscSFFetchAndOpBegin.html#PetscSFFetchAndOpBegin">PetscSFFetchAndOpBegin</A>(<A href="../docs/manualpages/PetscSF/PetscSF.html#PetscSF">PetscSF</A>,MPI_Datatype,void *rootdata,const void *leafdata,void *leafupdate,MPI_Op)</font></strong>
+<a name="line110">110: </a>  PetscAttrMPIPointerWithType(3,2) PetscAttrMPIPointerWithType(4,2) PetscAttrMPIPointerWithType(5,2);
+<a name="line111">111: </a><strong><font color="#4169E1"><a name="PetscSFFetchAndOpEnd"></a>PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/PetscSF/PetscSFFetchAndOpEnd.html#PetscSFFetchAndOpEnd">PetscSFFetchAndOpEnd</A>(<A href="../docs/manualpages/PetscSF/PetscSF.html#PetscSF">PetscSF</A>,MPI_Datatype,void *rootdata,const void *leafdata,void *leafupdate,MPI_Op)</font></strong>
+<a name="line112">112: </a>  PetscAttrMPIPointerWithType(3,2) PetscAttrMPIPointerWithType(4,2) PetscAttrMPIPointerWithType(5,2);
+<a name="line113">113: </a><font color="#B22222">/* Compute the degree of every root vertex (number of leaves in its star) */</font>
+<a name="line114">114: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/PetscSF/PetscSFComputeDegreeBegin.html#PetscSFComputeDegreeBegin">PetscSFComputeDegreeBegin</A>(<A href="../docs/manualpages/PetscSF/PetscSF.html#PetscSF">PetscSF</A>,const <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A> **degree)</font></strong>;
+<a name="line115">115: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/PetscSF/PetscSFComputeDegreeEnd.html#PetscSFComputeDegreeEnd">PetscSFComputeDegreeEnd</A>(<A href="../docs/manualpages/PetscSF/PetscSF.html#PetscSF">PetscSF</A>,const <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A> **degree)</font></strong>;
+<a name="line116">116: </a><font color="#B22222">/* Concatenate data from all leaves into roots */</font>
+<a name="line117">117: </a><strong><font color="#4169E1"><a name="PetscSFGatherBegin"></a>PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/PetscSF/PetscSFGatherBegin.html#PetscSFGatherBegin">PetscSFGatherBegin</A>(<A href="../docs/manualpages/PetscSF/PetscSF.html#PetscSF">PetscSF</A>,MPI_Datatype,const void *leafdata,void *multirootdata)</font></strong>
+<a name="line118">118: </a>  PetscAttrMPIPointerWithType(3,2) PetscAttrMPIPointerWithType(4,2);
+<a name="line119">119: </a><strong><font color="#4169E1"><a name="PetscSFGatherEnd"></a>PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/PetscSF/PetscSFGatherEnd.html#PetscSFGatherEnd">PetscSFGatherEnd</A>(<A href="../docs/manualpages/PetscSF/PetscSF.html#PetscSF">PetscSF</A>,MPI_Datatype,const void *leafdata,void *multirootdata)</font></strong>
+<a name="line120">120: </a>  PetscAttrMPIPointerWithType(3,2) PetscAttrMPIPointerWithType(4,2);
+<a name="line121">121: </a><font color="#B22222">/* Distribute distinct values to each leaf from roots */</font>
+<a name="line122">122: </a><strong><font color="#4169E1"><a name="PetscSFScatterBegin"></a>PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/PetscSF/PetscSFScatterBegin.html#PetscSFScatterBegin">PetscSFScatterBegin</A>(<A href="../docs/manualpages/PetscSF/PetscSF.html#PetscSF">PetscSF</A>,MPI_Datatype,const void *multirootdata,void *leafdata)</font></strong>
+<a name="line123">123: </a>  PetscAttrMPIPointerWithType(3,2) PetscAttrMPIPointerWithType(4,2);
+<a name="line124">124: </a><strong><font color="#4169E1"><a name="PetscSFScatterEnd"></a>PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/PetscSF/PetscSFScatterEnd.html#PetscSFScatterEnd">PetscSFScatterEnd</A>(<A href="../docs/manualpages/PetscSF/PetscSF.html#PetscSF">PetscSF</A>,MPI_Datatype,const void *multirootdata,void *leafdata)</font></strong>
+<a name="line125">125: </a>  PetscAttrMPIPointerWithType(3,2) PetscAttrMPIPointerWithType(4,2);
+
+<a name="line127">127: </a><font color="#A020F0">#if defined(MPI_REPLACE)</font>
+<a name="line128">128: </a><font color="#A020F0">#  define MPIU_REPLACE MPI_REPLACE</font>
+<a name="line129">129: </a><font color="#A020F0">#else</font>
+<a name="line130">130: </a><font color="#B22222">/* When using an old MPI such that MPI_REPLACE is not defined, we do not pass MPI_REPLACE to MPI at all.  Instead, we</font>
+<a name="line131">131: </a><font color="#B22222"> * use it as a flag for our own reducer in the PETSCSFBASIC implementation.  This could be any unique value unlikely to</font>
+<a name="line132">132: </a><font color="#B22222"> * collide with another MPI_Op so we'll just use the value that has been used by every version of MPICH since</font>
+<a name="line133">133: </a><font color="#B22222"> * MPICH2-1.0.6. */</font>
+<a name="line134">134: </a><font color="#A020F0">#  define MPIU_REPLACE (MPI_Op)(0x5800000d)</font>
+<a name="line135">135: </a><font color="#A020F0">#endif</font>
+
+<a name="line137">137: </a><font color="#A020F0">#endif</font>
+</pre>
+</body>
+
+</html>

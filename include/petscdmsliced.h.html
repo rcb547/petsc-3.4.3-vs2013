@@ -1,0 +1,25 @@
+<center><a href="petscdmsliced.h">Actual source code: petscdmsliced.h</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="http://www.mcs.anl.gov/petsc/petsc-current/include/petscdmsliced.h.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2013-10-15T17:01:32+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>petsc-3.4.3 2013-10-15</b></div>
+<pre width="80"><a name="line1">  1: </a><font color="#B22222">/* Very minimal unstructured DM */</font>
+
+<a name="line5">  5: </a><font color="#A020F0">#include &lt;petscdm.h&gt;</font>
+
+<a name="line7">  7: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/DM/DMSlicedCreate.html#DMSlicedCreate">DMSlicedCreate</A>(<A href="../docs/manualpages/Sys/MPI_Comm.html#MPI_Comm">MPI_Comm</A>,<A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>,<A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>,<A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>,const <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>[],const <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>[],const <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>[],DM*)</font></strong>;
+<a name="line8">  8: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/DM/DMSlicedSetPreallocation.html#DMSlicedSetPreallocation">DMSlicedSetPreallocation</A>(DM,<A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>,const <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>[],<A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>,const <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>[])</font></strong>;
+<a name="line9">  9: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/DM/DMSlicedSetBlockFills.html#DMSlicedSetBlockFills">DMSlicedSetBlockFills</A>(DM,const <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>*,const <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>*)</font></strong>;
+<a name="line10"> 10: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/DM/DMSlicedSetGhosts.html#DMSlicedSetGhosts">DMSlicedSetGhosts</A>(DM,<A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>,<A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>,<A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>,const <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>[])</font></strong>;
+
+<a name="line12"> 12: </a><font color="#A020F0">#endif</font>
+</pre>
+</body>
+
+</html>

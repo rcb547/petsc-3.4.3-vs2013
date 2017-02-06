@@ -1,0 +1,10 @@
+        subroutine PetscSFSetUp(sf ,ierr)
+       PetscSF sf ! PetscSF
+       integer ierr
+       end subroutine
+        subroutine PetscSFDuplicate(sf, opt, newsf ,ierr)
+       PetscSF sf ! PetscSF
+       PetscSFDuplicateOption opt ! PetscSFDuplicateOption
+       PetscSF newsf ! PetscSF
+       integer ierr
+       end subroutine

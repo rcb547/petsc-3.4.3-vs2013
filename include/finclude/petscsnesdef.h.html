@@ -1,0 +1,98 @@
+<center><a href="petscsnesdef.h">Actual source code: petscsnesdef.h</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="http://www.mcs.anl.gov/petsc/petsc-current/include/finclude/petscsnesdef.h.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2013-10-15T17:08:23+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>petsc-3.4.3 2013-10-15</b></div>
+<pre width="80"><a name="line1">  1: </a>!
+<a name="line2">  2: </a>!  Include file <font color="#4169E1">for</font> Fortran use of the <A href="../../docs/manualpages/SNES/SNES.html#SNES">SNES</A> package in PETSc
+<a name="line3">  3: </a>!
+<a name="line4">  4: </a><font color="#A020F0">#if !defined (__PETSCSNESDEF_H)</font>
+
+<a name="line7"> 7: </a> #include <A href="../../include/finclude/petsckspdef.h.html">finclude/petsckspdef.h</A>
+
+<a name="line9">  9: </a><font color="#A020F0">#if !defined(PETSC_USE_FORTRAN_DATATYPES)</font>
+<a name="line10"> 10: </a><strong><font color="#228B22">#define <A href="../../docs/manualpages/SNES/SNES.html#SNES">SNES</A> <A href="../../docs/manualpages/Sys/PetscFortranAddr.html#PetscFortranAddr">PetscFortranAddr</A></font></strong>
+<a name="line11"> 11: </a><font color="#A020F0">#endif</font>
+<a name="line12"> 12: </a><strong><font color="#228B22">#define <A href="../../docs/manualpages/SNES/SNESType.html#SNESType">SNESType</A> character*(80)</font></strong>
+<a name="line13"> 13: </a><strong><font color="#228B22">#define <A href="../../docs/manualpages/SNES/SNESMSType.html#SNESMSType">SNESMSType</A> character*(80)</font></strong>
+<a name="line14"> 14: </a><strong><font color="#228B22">#define <A href="../../docs/manualpages/SNES/SNESConvergedReason.html#SNESConvergedReason">SNESConvergedReason</A> <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A></font></strong>
+<a name="line15"> 15: </a><strong><font color="#228B22">#define <A href="../../docs/manualpages/SNES/SNESLineSearchType.html#SNESLineSearchType">SNESLineSearchType</A>  character*(80)</font></strong>
+<a name="line16"> 16: </a><strong><font color="#228B22">#define <A href="../../docs/manualpages/Mat/MatMFFD.html#MatMFFD">MatMFFD</A> <A href="../../docs/manualpages/Sys/PetscFortranAddr.html#PetscFortranAddr">PetscFortranAddr</A></font></strong>
+<a name="line17"> 17: </a><strong><font color="#228B22">#define <A href="../../docs/manualpages/Mat/MatMFFDType.html#MatMFFDType">MatMFFDType</A> <A href="../../docs/manualpages/Sys/PetscFortranAddr.html#PetscFortranAddr">PetscFortranAddr</A></font></strong>
+<a name="line18"> 18: </a><strong><font color="#228B22">#define <A href="../../docs/manualpages/SNES/SNESLineSearch.html#SNESLineSearch">SNESLineSearch</A> <A href="../../docs/manualpages/Sys/PetscFortranAddr.html#PetscFortranAddr">PetscFortranAddr</A></font></strong>
+<a name="line19"> 19: </a><strong><font color="#228B22">#define SNESLineSearchOrder <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A></font></strong>
+<a name="line20"> 20: </a><strong><font color="#228B22">#define <A href="../../docs/manualpages/SNES/SNESNormType.html#SNESNormType">SNESNormType</A> <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A></font></strong>
+<a name="line21"> 21: </a><strong><font color="#228B22">#define SNESQNRestartType <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A></font></strong>
+<a name="line22"> 22: </a><strong><font color="#228B22">#define SNESQNCompositionType <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A></font></strong>
+<a name="line23"> 23: </a><strong><font color="#228B22">#define SNESQNScaleType <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A></font></strong>
+<a name="line24"> 24: </a><strong><font color="#228B22">#define SNESNCGType <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A></font></strong>
+<a name="line25"> 25: </a><strong><font color="#228B22">#define SNESNGMRESRestartType <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A></font></strong>
+<a name="line26"> 26: </a><strong><font color="#228B22">#define SNESNGMRESSelectType <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A></font></strong>
+
+<a name="line28"> 28: </a>!
+<a name="line29"> 29: </a>!  <A href="../../docs/manualpages/SNES/SNESType.html#SNESType">SNESType</A>
+<a name="line30"> 30: </a>!
+<a name="line31"> 31: </a><strong><font color="#228B22">#define <A href="../../docs/manualpages/SNES/SNESNEWTONLS.html#SNESNEWTONLS">SNESNEWTONLS</A>     'newtonls'</font></strong>
+<a name="line32"> 32: </a><strong><font color="#228B22">#define <A href="../../docs/manualpages/SNES/SNESNEWTONTR.html#SNESNEWTONTR">SNESNEWTONTR</A>     'newtontr'</font></strong>
+<a name="line33"> 33: </a><strong><font color="#228B22">#define SNESPYTHON       'python'</font></strong>
+<a name="line34"> 34: </a><strong><font color="#228B22">#define <A href="../../docs/manualpages/SNES/SNESTEST.html#SNESTEST">SNESTEST</A>         'test'</font></strong>
+<a name="line35"> 35: </a><strong><font color="#228B22">#define <A href="../../docs/manualpages/SNES/SNESNRICHARDSON.html#SNESNRICHARDSON">SNESNRICHARDSON</A>  'nrichardson'</font></strong>
+<a name="line36"> 36: </a><strong><font color="#228B22">#define <A href="../../docs/manualpages/SNES/SNESKSPONLY.html#SNESKSPONLY">SNESKSPONLY</A>      'ksponly'</font></strong>
+<a name="line37"> 37: </a><strong><font color="#228B22">#define <A href="../../docs/manualpages/SNES/SNESVINEWTONRSLS.html#SNESVINEWTONRSLS">SNESVINEWTONRSLS</A> 'vinewtonrsls'</font></strong>
+<a name="line38"> 38: </a><strong><font color="#228B22">#define <A href="../../docs/manualpages/SNES/SNESVINEWTONSSLS.html#SNESVINEWTONSSLS">SNESVINEWTONSSLS</A> 'vinewtonssls'</font></strong>
+<a name="line39"> 39: </a><strong><font color="#228B22">#define <A href="../../docs/manualpages/SNES/SNESNGMRES.html#SNESNGMRES">SNESNGMRES</A>       'ngmres'</font></strong>
+<a name="line40"> 40: </a><strong><font color="#228B22">#define <A href="../../docs/manualpages/SNES/SNESQN.html#SNESQN">SNESQN</A>           'qn'</font></strong>
+<a name="line41"> 41: </a><strong><font color="#228B22">#define <A href="../../docs/manualpages/SNES/SNESSHELL.html#SNESSHELL">SNESSHELL</A>        'shell'</font></strong>
+<a name="line42"> 42: </a><strong><font color="#228B22">#define <A href="../../docs/manualpages/SNES/SNESNCG.html#SNESNCG">SNESNCG</A>          'ncg'</font></strong>
+<a name="line43"> 43: </a><strong><font color="#228B22">#define <A href="../../docs/manualpages/SNES/SNESFAS.html#SNESFAS">SNESFAS</A>          'fas'</font></strong>
+<a name="line44"> 44: </a><strong><font color="#228B22">#define <A href="../../docs/manualpages/SNES/SNESMS.html#SNESMS">SNESMS</A>           'ms'</font></strong>
+
+<a name="line46"> 46: </a>!
+<a name="line47"> 47: </a>! <A href="../../docs/manualpages/SNES/SNESLineSearchType.html#SNESLineSearchType">SNESLineSearchType</A>
+<a name="line48"> 48: </a>!
+
+<a name="line50"> 50: </a><strong><font color="#228B22">#define <A href="../../docs/manualpages/SNES/SNESLINESEARCHBASIC.html#SNESLINESEARCHBASIC">SNESLINESEARCHBASIC</A> 'basic'</font></strong>
+<a name="line51"> 51: </a><strong><font color="#228B22">#define <A href="../../docs/manualpages/SNES/SNESLINESEARCHBT.html#SNESLINESEARCHBT">SNESLINESEARCHBT</A>    'bt'</font></strong>
+<a name="line52"> 52: </a><strong><font color="#228B22">#define <A href="../../docs/manualpages/SNES/SNESLINESEARCHL2.html#SNESLINESEARCHL2">SNESLINESEARCHL2</A>    'l2'</font></strong>
+<a name="line53"> 53: </a><strong><font color="#228B22">#define <A href="../../docs/manualpages/SNES/SNESLINESEARCHCP.html#SNESLINESEARCHCP">SNESLINESEARCHCP</A>    'cp'</font></strong>
+<a name="line54"> 54: </a><strong><font color="#228B22">#define <A href="../../docs/manualpages/SNES/SNESLINESEARCHSHELL.html#SNESLINESEARCHSHELL">SNESLINESEARCHSHELL</A> 'shell'</font></strong>
+
+<a name="line56"> 56: </a>!
+<a name="line57"> 57: </a>! SNESLineSearchOrder
+<a name="line58"> 58: </a>!
+
+<a name="line60"> 60: </a><strong><font color="#228B22">#define SNES_LINESEARCH_ORDER_LINEAR    1</font></strong>
+<a name="line61"> 61: </a><strong><font color="#228B22">#define SNES_LINESEARCH_ORDER_QUADRATIC 2</font></strong>
+<a name="line62"> 62: </a><strong><font color="#228B22">#define SNES_LINESEARCH_ORDER_CUBIC     3</font></strong>
+
+
+<a name="line65"> 65: </a>!
+<a name="line66"> 66: </a>!  <A href="../../docs/manualpages/SNES/SNESMSType.html#SNESMSType">SNESMSType</A>
+<a name="line67"> 67: </a>!
+<a name="line68"> 68: </a><strong><font color="#228B22">#define SNESMSEULER     'euler'</font></strong>
+<a name="line69"> 69: </a><strong><font color="#228B22">#define SNESMSM62       'm62'</font></strong>
+<a name="line70"> 70: </a><strong><font color="#228B22">#define SNESMSJAMESON83 'jameson83'</font></strong>
+<a name="line71"> 71: </a><strong><font color="#228B22">#define SNESMSVLTP21    'vltp21'</font></strong>
+<a name="line72"> 72: </a><strong><font color="#228B22">#define SNESMSVLTP31    'vltp31'</font></strong>
+<a name="line73"> 73: </a><strong><font color="#228B22">#define SNESMSVLTP41    'vltp41'</font></strong>
+<a name="line74"> 74: </a><strong><font color="#228B22">#define SNESMSVLTP51    'vltp51'</font></strong>
+<a name="line75"> 75: </a><strong><font color="#228B22">#define SNESMSVLTP61    'vltp61'</font></strong>
+
+<a name="line77"> 77: </a>!
+<a name="line78"> 78: </a>! MatSNESMF
+<a name="line79"> 79: </a>!
+<a name="line80"> 80: </a><strong><font color="#228B22">#define MATMFFD_DEFAULT 'ds'</font></strong>
+<a name="line81"> 81: </a><strong><font color="#228B22">#define <A href="../../docs/manualpages/Mat/MATMFFD_WP.html#MATMFFD_WP">MATMFFD_WP</A> 'wp'</font></strong>
+
+
+<a name="line84"> 84: </a><font color="#A020F0">#endif</font>
+</pre>
+</body>
+
+</html>

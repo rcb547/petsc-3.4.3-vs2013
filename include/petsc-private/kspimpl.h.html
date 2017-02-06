@@ -1,0 +1,267 @@
+<center><a href="petsc-kspimpl.h">Actual source code: petsc-kspimpl.h</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="http://www.mcs.anl.gov/petsc/petsc-current/include/petsc-private/kspimpl.h.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2013-10-15T17:03:50+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>petsc-3.4.3 2013-10-15</b></div>
+<pre width="80">
+<a name="line2">  2: </a><font color="#A020F0">#ifndef _KSPIMPL_H</font>
+<a name="line3">  3: </a><strong><font color="#228B22">#define _KSPIMPL_H</font></strong>
+
+<a name="line5">  5: </a><font color="#A020F0">#include &lt;petscksp.h&gt;</font>
+<a name="line6">  6: </a><font color="#A020F0">#include &lt;petsc-private/petscimpl.h&gt;</font>
+
+<a name="line8">  8: </a><font color="#4169E1">typedef struct _KSPOps *KSPOps;</font>
+
+<a name="line10"> 10: </a><font color="#4169E1"><a name="_KSPOps"></a>struct _KSPOps </font>{
+<a name="line11"> 11: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*buildsolution)(<A href="../docs/manualpages/KSP/KSP.html#KSP">KSP</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>*);       <font color="#B22222">/* Returns a pointer to the solution, or</font>
+<a name="line12"> 12: </a><font color="#B22222">                                                          calculates the solution in a</font>
+<a name="line13"> 13: </a><font color="#B22222">                                                          user-provided area. */</font>
+<a name="line14"> 14: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*buildresidual)(<A href="../docs/manualpages/KSP/KSP.html#KSP">KSP</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>*);   <font color="#B22222">/* Returns a pointer to the residual, or</font>
+<a name="line15"> 15: </a><font color="#B22222">                                                          calculates the residual in a</font>
+<a name="line16"> 16: </a><font color="#B22222">                                                          user-provided area.  */</font>
+<a name="line17"> 17: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*solve)(<A href="../docs/manualpages/KSP/KSP.html#KSP">KSP</A>);                        <font color="#B22222">/* actual solver */</font>
+<a name="line18"> 18: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*setup)(<A href="../docs/manualpages/KSP/KSP.html#KSP">KSP</A>);
+<a name="line19"> 19: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*setfromoptions)(<A href="../docs/manualpages/KSP/KSP.html#KSP">KSP</A>);
+<a name="line20"> 20: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*publishoptions)(<A href="../docs/manualpages/KSP/KSP.html#KSP">KSP</A>);
+<a name="line21"> 21: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*computeextremesingularvalues)(<A href="../docs/manualpages/KSP/KSP.html#KSP">KSP</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>*,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>*);
+<a name="line22"> 22: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*computeeigenvalues)(<A href="../docs/manualpages/KSP/KSP.html#KSP">KSP</A>,<A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>*,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>*,<A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A> *);
+<a name="line23"> 23: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*destroy)(<A href="../docs/manualpages/KSP/KSP.html#KSP">KSP</A>);
+<a name="line24"> 24: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*view)(<A href="../docs/manualpages/KSP/KSP.html#KSP">KSP</A>,<A href="../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A>);
+<a name="line25"> 25: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*reset)(<A href="../docs/manualpages/KSP/KSP.html#KSP">KSP</A>);
+<a name="line26"> 26: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*load)(<A href="../docs/manualpages/KSP/KSP.html#KSP">KSP</A>,<A href="../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A>);
+<a name="line27"> 27: </a>};
+
+<a name="line29"> 29: </a><font color="#4169E1">typedef</font> <font color="#4169E1">struct</font> {<A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A> model,curl,maxl;<A href="../docs/manualpages/Mat/Mat.html#Mat">Mat</A> mat; <A href="../docs/manualpages/KSP/KSP.html#KSP">KSP</A> ksp;}* KSPGuessFischer;
+
+<a name="line31"> 31: </a><font color="#B22222">/*</font>
+<a name="line32"> 32: </a><font color="#B22222">     Maximum number of monitors you can run with a single <A href="../docs/manualpages/KSP/KSP.html#KSP">KSP</A></font>
+<a name="line33"> 33: </a><font color="#B22222">*/</font>
+<a name="line34"> 34: </a><strong><font color="#228B22">#define MAXKSPMONITORS 5</font></strong>
+<a name="line35"> 35: </a><font color="#4169E1">typedef</font> <font color="#4169E1">enum</font> {KSP_SETUP_NEW, KSP_SETUP_NEWMATRIX, KSP_SETUP_NEWRHS} KSPSetUpStage;
+
+<a name="line37"> 37: </a><font color="#B22222">/*</font>
+<a name="line38"> 38: </a><font color="#B22222">   Defines the <A href="../docs/manualpages/KSP/KSP.html#KSP">KSP</A> data structure.</font>
+<a name="line39"> 39: </a><font color="#B22222">*/</font>
+<a name="line40"> 40: </a><font color="#4169E1"><a name="_p_KSP"></a>struct _p_KSP </font>{
+<a name="line41"> 41: </a>  PETSCHEADER(<font color="#4169E1">struct _KSPOps</font>);
+<a name="line42"> 42: </a>  DM              dm;
+<a name="line43"> 43: </a>  <A href="../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A>       dmAuto;       <font color="#B22222">/* DM was created automatically by <A href="../docs/manualpages/KSP/KSP.html#KSP">KSP</A> */</font>
+<a name="line44"> 44: </a>  <A href="../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A>       dmActive;     <font color="#B22222">/* <A href="../docs/manualpages/KSP/KSP.html#KSP">KSP</A> should use DM for computing operators */</font>
+<a name="line45"> 45: </a>  <font color="#B22222">/*------------------------- User parameters--------------------------*/</font>
+<a name="line46"> 46: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>        max_it;                     <font color="#B22222">/* maximum number of iterations */</font>
+<a name="line47"> 47: </a>  KSPFischerGuess guess;
+<a name="line48"> 48: </a>  <A href="../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A>       guess_zero,                  <font color="#B22222">/* flag for whether initial guess is 0 */</font>
+<a name="line49"> 49: </a>                  calc_sings,                  <font color="#B22222">/* calculate extreme Singular Values */</font>
+<a name="line50"> 50: </a>                  guess_knoll;                <font color="#B22222">/* use initial guess of <A href="../docs/manualpages/PC/PCApply.html#PCApply">PCApply</A>(ksp-&gt;B,b */</font>
+<a name="line51"> 51: </a>  <A href="../docs/manualpages/PC/PCSide.html#PCSide">PCSide</A>          pc_side;                  <font color="#B22222">/* flag for left, right, or symmetric preconditioning */</font>
+<a name="line52"> 52: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>        normsupporttable[KSP_NORM_MAX][PC_SIDE_MAX]; <font color="#B22222">/* Table of supported norms and pc_side, see <A href="../docs/manualpages/KSP/KSPSetSupportedNorm.html#KSPSetSupportedNorm">KSPSetSupportedNorm</A>() */</font>
+<a name="line53"> 53: </a>  <A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>       rtol,                     <font color="#B22222">/* relative tolerance */</font>
+<a name="line54"> 54: </a>                  abstol,                     <font color="#B22222">/* absolute tolerance */</font>
+<a name="line55"> 55: </a>                  ttol,                     <font color="#B22222">/* (not set by user)  */</font>
+<a name="line56"> 56: </a>                  divtol;                   <font color="#B22222">/* divergence tolerance */</font>
+<a name="line57"> 57: </a>  <A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>       rnorm0;                   <font color="#B22222">/* initial residual norm (used for divergence testing) */</font>
+<a name="line58"> 58: </a>  <A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>       rnorm;                    <font color="#B22222">/* current residual norm */</font>
+<a name="line59"> 59: </a>  <A href="../docs/manualpages/KSP/KSPConvergedReason.html#KSPConvergedReason">KSPConvergedReason</A> reason;
+<a name="line60"> 60: </a>  <A href="../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A>          printreason;     <font color="#B22222">/* prints converged reason after solve */</font>
+<a name="line61"> 61: </a>  <A href="../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A>          errorifnotconverged;    <font color="#B22222">/* create an error if the <A href="../docs/manualpages/KSP/KSPSolve.html#KSPSolve">KSPSolve</A>() does not converge */</font>
+
+<a name="line63"> 63: </a>  <A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A> vec_sol,vec_rhs;            <font color="#B22222">/* pointer to where user has stashed</font>
+<a name="line64"> 64: </a><font color="#B22222">                                      the solution and rhs, these are</font>
+<a name="line65"> 65: </a><font color="#B22222">                                      never touched by the code, only</font>
+<a name="line66"> 66: </a><font color="#B22222">                                      passed back to the user */</font>
+<a name="line67"> 67: </a>  <A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>     *res_hist;            <font color="#B22222">/* If !0 stores residual at iterations*/</font>
+<a name="line68"> 68: </a>  <A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>     *res_hist_alloc;      <font color="#B22222">/* If !0 means user did not provide buffer, needs deallocation */</font>
+<a name="line69"> 69: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>      res_hist_len;         <font color="#B22222">/* current size of residual history array */</font>
+<a name="line70"> 70: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>      res_hist_max;         <font color="#B22222">/* actual amount of data in residual_history */</font>
+<a name="line71"> 71: </a>  <A href="../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A>     res_hist_reset;       <font color="#B22222">/* reset history to size zero for each new solve */</font>
+
+<a name="line73"> 73: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>      chknorm;             <font color="#B22222">/* only compute/check norm if iterations is great than this */</font>
+<a name="line74"> 74: </a>  <A href="../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A>     lagnorm;             <font color="#B22222">/* Lag the residual norm calculation so that it is computed as part of the</font>
+<a name="line75"> 75: </a><font color="#B22222">                                        <A href="http://www.mcs.anl.gov/mpi/www/www3/MPI_Allreduce.html#MPI_Allreduce">MPI_Allreduce</A>() for computing the inner products for the next iteration. */</font>
+<a name="line76"> 76: </a>  <font color="#B22222">/* --------User (or default) routines (most return -1 on error) --------*/</font>
+<a name="line77"> 77: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*monitor[MAXKSPMONITORS])(<A href="../docs/manualpages/KSP/KSP.html#KSP">KSP</A>,<A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>,void*); <font color="#B22222">/* returns control to user after */</font>
+<a name="line78"> 78: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*monitordestroy[MAXKSPMONITORS])(void**);         <font color="#B22222">/* */</font>
+<a name="line79"> 79: </a>  void *monitorcontext[MAXKSPMONITORS];                  <font color="#B22222">/* residual calculation, allows user */</font>
+<a name="line80"> 80: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>  numbermonitors;                                   <font color="#B22222">/* to, for instance, print residual norm, etc. */</font>
+
+<a name="line82"> 82: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*converged)(<A href="../docs/manualpages/KSP/KSP.html#KSP">KSP</A>,<A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>,<A href="../docs/manualpages/KSP/KSPConvergedReason.html#KSPConvergedReason">KSPConvergedReason</A>*,void*);
+<a name="line83"> 83: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*convergeddestroy)(void*);
+<a name="line84"> 84: </a>  void       *cnvP;
+
+<a name="line86"> 86: </a>  void       *user;             <font color="#B22222">/* optional user-defined context */</font>
+
+<a name="line88"> 88: </a>  <A href="../docs/manualpages/PC/PC.html#PC">PC</A>         pc;
+
+<a name="line90"> 90: </a>  void       *data;                      <font color="#B22222">/* holder for misc stuff associated</font>
+<a name="line91"> 91: </a><font color="#B22222">                                   with a particular iterative solver */</font>
+
+<a name="line93"> 93: </a>  <font color="#B22222">/* ----------------Default work-area management -------------------- */</font>
+<a name="line94"> 94: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>       nwork;
+<a name="line95"> 95: </a>  <A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>            *work;
+
+<a name="line97"> 97: </a>  KSPSetUpStage  setupstage;
+
+<a name="line99"> 99: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>       its;       <font color="#B22222">/* number of iterations so far computed */</font>
+
+<a name="line101">101: </a>  <A href="../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A>      transpose_solve;    <font color="#B22222">/* solve transpose system instead */</font>
+
+<a name="line103">103: </a>  <A href="../docs/manualpages/KSP/KSPNormType.html#KSPNormType">KSPNormType</A>    normtype;          <font color="#B22222">/* type of norm used for convergence tests */</font>
+
+<a name="line105">105: </a>  <font color="#B22222">/*   Allow diagonally scaling the matrix before computing the preconditioner or using</font>
+<a name="line106">106: </a><font color="#B22222">       the Krylov method. Note this is NOT just Jacobi preconditioning */</font>
+
+<a name="line108">108: </a>  <A href="../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A>    dscale;       <font color="#B22222">/* diagonal scale system; used with <A href="../docs/manualpages/KSP/KSPSetDiagonalScale.html#KSPSetDiagonalScale">KSPSetDiagonalScale</A>() */</font>
+<a name="line109">109: </a>  <A href="../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A>    dscalefix;    <font color="#B22222">/* unscale system after solve */</font>
+<a name="line110">110: </a>  <A href="../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A>    dscalefix2;   <font color="#B22222">/* system has been unscaled */</font>
+<a name="line111">111: </a>  <A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>          diagonal;     <font color="#B22222">/* 1/sqrt(diag of matrix) */</font>
+<a name="line112">112: </a>  <A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>          truediagonal;
+
+<a name="line114">114: </a>  <A href="../docs/manualpages/Mat/MatNullSpace.html#MatNullSpace">MatNullSpace</A> nullsp;      <font color="#B22222">/* Null space of the operator, removed from Krylov space */</font>
+
+<a name="line116">116: </a>  <A href="../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A>  eigviewer;   <font color="#B22222">/* Viewer where computed eigenvalues are displayed */</font>
+
+<a name="line118">118: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*presolve)(<A href="../docs/manualpages/KSP/KSP.html#KSP">KSP</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>,void*);
+<a name="line119">119: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*postsolve)(<A href="../docs/manualpages/KSP/KSP.html#KSP">KSP</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>,void*);
+<a name="line120">120: </a>  void           *prectx,*postctx;
+<a name="line121">121: </a>};
+
+<a name="line123">123: </a><font color="#4169E1">typedef</font> <font color="#4169E1">struct</font> { <font color="#B22222">/* dummy data structure used in <A href="../docs/manualpages/KSP/KSPMonitorDynamicTolerance.html#KSPMonitorDynamicTolerance">KSPMonitorDynamicTolerance</A>() */</font>
+<a name="line124">124: </a>  <A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A> coef;
+<a name="line125">125: </a>  <A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A> bnrm;
+<a name="line126">126: </a>} KSPDynTolCtx;
+
+<a name="line128">128: </a><font color="#4169E1">typedef</font> <font color="#4169E1">struct</font> {
+<a name="line129">129: </a>  <A href="../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A>  initialrtol;    <font color="#B22222">/* default relative residual decrease is computing from initial residual, not rhs */</font>
+<a name="line130">130: </a>  <A href="../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A>  mininitialrtol; <font color="#B22222">/* default relative residual decrease is computing from min of initial residual and rhs */</font>
+<a name="line131">131: </a>  <A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>        work;
+<a name="line132">132: </a>} KSPDefaultConvergedCtx;
+
+<a name="line136">136: </a><strong><font color="#4169E1"><a name="KSPLogResidualHistory"></a>PETSC_STATIC_INLINE <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> KSPLogResidualHistory(<A href="../docs/manualpages/KSP/KSP.html#KSP">KSP</A> ksp,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A> norm)</font></strong>
+<a name="line137">137: </a>{
+
+<a name="line141">141: </a>  <A href="../docs/manualpages/Sys/PetscObjectAMSTakeAccess.html#PetscObjectAMSTakeAccess">PetscObjectAMSTakeAccess</A>((<A href="../docs/manualpages/Sys/PetscObject.html#PetscObject">PetscObject</A>)ksp);
+<a name="line142">142: </a>  <font color="#4169E1">if</font> (ksp-&gt;res_hist &amp;&amp; ksp-&gt;res_hist_max &gt; ksp-&gt;res_hist_len) {
+<a name="line143">143: </a>    ksp-&gt;res_hist[ksp-&gt;res_hist_len++] = norm;
+<a name="line144">144: </a>  }
+<a name="line145">145: </a>  <A href="../docs/manualpages/Sys/PetscObjectAMSGrantAccess.html#PetscObjectAMSGrantAccess">PetscObjectAMSGrantAccess</A>((<A href="../docs/manualpages/Sys/PetscObject.html#PetscObject">PetscObject</A>)ksp);
+<a name="line146">146: </a>  <font color="#4169E1">return</font>(0);
+<a name="line147">147: </a>}
+
+<a name="line149">149: </a><strong><font color="#4169E1">PETSC_INTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> KSPSetUpNorms_Private(<A href="../docs/manualpages/KSP/KSP.html#KSP">KSP</A>,<A href="../docs/manualpages/KSP/KSPNormType.html#KSPNormType">KSPNormType</A>*,<A href="../docs/manualpages/PC/PCSide.html#PCSide">PCSide</A>*)</font></strong>;
+
+<a name="line151">151: </a><strong><font color="#4169E1">PETSC_INTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> KSPPlotEigenContours_Private(<A href="../docs/manualpages/KSP/KSP.html#KSP">KSP</A>,<A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>,const <A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>*,const <A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>*)</font></strong>;
+
+<a name="line153">153: </a><font color="#4169E1">typedef struct _p_DMKSP *DMKSP;</font>
+<a name="line154">154: </a><font color="#4169E1">typedef struct _DMKSPOps *DMKSPOps;</font>
+<a name="line155">155: </a><font color="#4169E1"><a name="_DMKSPOps"></a>struct _DMKSPOps </font>{
+<a name="line156">156: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*computeoperators)(<A href="../docs/manualpages/KSP/KSP.html#KSP">KSP</A>,<A href="../docs/manualpages/Mat/Mat.html#Mat">Mat</A>,<A href="../docs/manualpages/Mat/Mat.html#Mat">Mat</A>,<A href="../docs/manualpages/Mat/MatStructure.html#MatStructure">MatStructure</A>*,void*);
+<a name="line157">157: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*computerhs)(<A href="../docs/manualpages/KSP/KSP.html#KSP">KSP</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>,void*);
+<a name="line158">158: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*computeinitialguess)(<A href="../docs/manualpages/KSP/KSP.html#KSP">KSP</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>,void*);
+<a name="line159">159: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*destroy)(DMKSP*);
+<a name="line160">160: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*duplicate)(DMKSP,DMKSP);
+<a name="line161">161: </a>};
+
+<a name="line163">163: </a><font color="#4169E1"><a name="_p_DMKSP"></a>struct _p_DMKSP </font>{
+<a name="line164">164: </a>  PETSCHEADER(<font color="#4169E1">struct _DMKSPOps</font>);
+<a name="line165">165: </a>  void *operatorsctx;
+<a name="line166">166: </a>  void *rhsctx;
+<a name="line167">167: </a>  void *initialguessctx;
+<a name="line168">168: </a>  void *data;
+
+<a name="line170">170: </a>  <font color="#B22222">/* This is NOT reference counted. The DM on which this context was first created is cached here to implement one-way</font>
+<a name="line171">171: </a><font color="#B22222">   * copy-on-write. When <A href="../docs/manualpages/KSP/DMGetDMKSPWrite.html#DMGetDMKSPWrite">DMGetDMKSPWrite</A>() sees a request using a different DM, it makes a copy. Thus, if a user</font>
+<a name="line172">172: </a><font color="#B22222">   * only interacts directly with one level, e.g., using <A href="../docs/manualpages/KSP/KSPSetComputeOperators.html#KSPSetComputeOperators">KSPSetComputeOperators</A>(), then coarse levels are constructed by</font>
+<a name="line173">173: </a><font color="#B22222">   * <A href="../docs/manualpages/PC/PCMG.html#PCMG">PCMG</A>, then the user changes the routine with another call to <A href="../docs/manualpages/KSP/KSPSetComputeOperators.html#KSPSetComputeOperators">KSPSetComputeOperators</A>(), it automatically propagates</font>
+<a name="line174">174: </a><font color="#B22222">   * to all the levels. If instead, they get out a specific level and set the routines on that level, subsequent changes</font>
+<a name="line175">175: </a><font color="#B22222">   * to the original level will no longer propagate to that level.</font>
+<a name="line176">176: </a><font color="#B22222">   */</font>
+<a name="line177">177: </a>  DM originaldm;
+
+<a name="line179">179: </a>  void (*fortran_func_pointers[3])(void); <font color="#B22222">/* Store our own function pointers so they are associated with the DMKSP instead of the DM */</font>
+<a name="line180">180: </a>};
+<a name="line181">181: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/KSP/DMGetDMKSP.html#DMGetDMKSP">DMGetDMKSP</A>(DM,DMKSP*)</font></strong>;
+<a name="line182">182: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/KSP/DMGetDMKSPWrite.html#DMGetDMKSPWrite">DMGetDMKSPWrite</A>(DM,DMKSP*)</font></strong>;
+<a name="line183">183: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/KSP/DMCopyDMKSP.html#DMCopyDMKSP">DMCopyDMKSP</A>(DM,DM)</font></strong>;
+
+<a name="line185">185: </a><font color="#B22222">/*</font>
+<a name="line186">186: </a><font color="#B22222">       These allow the various Krylov methods to apply to either the linear system or its transpose.</font>
+<a name="line187">187: </a><font color="#B22222">*/</font>
+<a name="line190">190: </a><strong><font color="#4169E1"><a name="KSP_RemoveNullSpace"></a>PETSC_STATIC_INLINE <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> KSP_RemoveNullSpace(<A href="../docs/manualpages/KSP/KSP.html#KSP">KSP</A> ksp,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A> y)</font></strong>
+<a name="line191">191: </a>{
+<a name="line194">194: </a>  <font color="#4169E1">if</font> (ksp-&gt;nullsp &amp;&amp; ksp-&gt;pc_side == PC_LEFT) {<A href="../docs/manualpages/Mat/MatNullSpaceRemove.html#MatNullSpaceRemove">MatNullSpaceRemove</A>(ksp-&gt;nullsp,y,NULL);}
+<a name="line195">195: </a>  <font color="#4169E1">return</font>(0);
+<a name="line196">196: </a>}
+
+<a name="line200">200: </a><strong><font color="#4169E1"><a name="KSP_MatMult"></a>PETSC_STATIC_INLINE <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> KSP_MatMult(<A href="../docs/manualpages/KSP/KSP.html#KSP">KSP</A> ksp,<A href="../docs/manualpages/Mat/Mat.html#Mat">Mat</A> A,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A> x,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A> y)</font></strong>
+<a name="line201">201: </a>{
+<a name="line204">204: </a>  <font color="#4169E1">if</font> (!ksp-&gt;transpose_solve) {<A href="../docs/manualpages/Mat/MatMult.html#MatMult">MatMult</A>(A,x,y);}
+<a name="line205">205: </a>  <font color="#4169E1">else</font>                       {<A href="../docs/manualpages/Mat/MatMultTranspose.html#MatMultTranspose">MatMultTranspose</A>(A,x,y);}
+<a name="line206">206: </a>  <font color="#4169E1">return</font>(0);
+<a name="line207">207: </a>}
+
+<a name="line211">211: </a><strong><font color="#4169E1"><a name="KSP_MatMultTranspose"></a>PETSC_STATIC_INLINE <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> KSP_MatMultTranspose(<A href="../docs/manualpages/KSP/KSP.html#KSP">KSP</A> ksp,<A href="../docs/manualpages/Mat/Mat.html#Mat">Mat</A> A,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A> x,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A> y)</font></strong>
+<a name="line212">212: </a>{
+<a name="line215">215: </a>  <font color="#4169E1">if</font> (!ksp-&gt;transpose_solve) {<A href="../docs/manualpages/Mat/MatMultTranspose.html#MatMultTranspose">MatMultTranspose</A>(A,x,y);}
+<a name="line216">216: </a>  <font color="#4169E1">else</font>                       {<A href="../docs/manualpages/Mat/MatMult.html#MatMult">MatMult</A>(A,x,y);}
+<a name="line217">217: </a>  <font color="#4169E1">return</font>(0);
+<a name="line218">218: </a>}
+
+<a name="line222">222: </a><strong><font color="#4169E1"><a name="KSP_PCApply"></a>PETSC_STATIC_INLINE <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> KSP_PCApply(<A href="../docs/manualpages/KSP/KSP.html#KSP">KSP</A> ksp,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A> x,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A> y)</font></strong>
+<a name="line223">223: </a>{
+<a name="line226">226: </a>  <font color="#4169E1">if</font> (!ksp-&gt;transpose_solve) {
+<a name="line227">227: </a>    <A href="../docs/manualpages/PC/PCApply.html#PCApply">PCApply</A>(ksp-&gt;pc,x,y);
+<a name="line228">228: </a>    KSP_RemoveNullSpace(ksp,y);
+<a name="line229">229: </a>  } <font color="#4169E1">else</font> {
+<a name="line230">230: </a>    <A href="../docs/manualpages/PC/PCApplyTranspose.html#PCApplyTranspose">PCApplyTranspose</A>(ksp-&gt;pc,x,y);
+<a name="line231">231: </a>  }
+<a name="line232">232: </a>  <font color="#4169E1">return</font>(0);
+<a name="line233">233: </a>}
+
+<a name="line237">237: </a><strong><font color="#4169E1"><a name="KSP_PCApplyTranspose"></a>PETSC_STATIC_INLINE <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> KSP_PCApplyTranspose(<A href="../docs/manualpages/KSP/KSP.html#KSP">KSP</A> ksp,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A> x,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A> y)</font></strong>
+<a name="line238">238: </a>{
+<a name="line241">241: </a>  <font color="#4169E1">if</font> (!ksp-&gt;transpose_solve) {
+<a name="line242">242: </a>    <A href="../docs/manualpages/PC/PCApplyTranspose.html#PCApplyTranspose">PCApplyTranspose</A>(ksp-&gt;pc,x,y);
+<a name="line243">243: </a>  } <font color="#4169E1">else</font> {
+<a name="line244">244: </a>    <A href="../docs/manualpages/PC/PCApply.html#PCApply">PCApply</A>(ksp-&gt;pc,x,y);
+<a name="line245">245: </a>    KSP_RemoveNullSpace(ksp,y);
+<a name="line246">246: </a>  }
+<a name="line247">247: </a>  <font color="#4169E1">return</font>(0);
+<a name="line248">248: </a>}
+
+<a name="line252">252: </a><strong><font color="#4169E1"><a name="KSP_PCApplyBAorAB"></a>PETSC_STATIC_INLINE <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> KSP_PCApplyBAorAB(<A href="../docs/manualpages/KSP/KSP.html#KSP">KSP</A> ksp,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A> x,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A> y,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A> w)</font></strong>
+<a name="line253">253: </a>{
+<a name="line256">256: </a>  <font color="#4169E1">if</font> (!ksp-&gt;transpose_solve) {
+<a name="line257">257: </a>    <A href="../docs/manualpages/PC/PCApplyBAorAB.html#PCApplyBAorAB">PCApplyBAorAB</A>(ksp-&gt;pc,ksp-&gt;pc_side,x,y,w);
+<a name="line258">258: </a>    KSP_RemoveNullSpace(ksp,y);
+<a name="line259">259: </a>  } <font color="#4169E1">else</font> {
+<a name="line260">260: </a>    <A href="../docs/manualpages/PC/PCApplyBAorABTranspose.html#PCApplyBAorABTranspose">PCApplyBAorABTranspose</A>(ksp-&gt;pc,ksp-&gt;pc_side,x,y,w);
+<a name="line261">261: </a>  }
+<a name="line262">262: </a>  <font color="#4169E1">return</font>(0);
+<a name="line263">263: </a>}
+
+<a name="line267">267: </a><strong><font color="#4169E1"><a name="KSP_PCApplyBAorABTranspose"></a>PETSC_STATIC_INLINE <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> KSP_PCApplyBAorABTranspose(<A href="../docs/manualpages/KSP/KSP.html#KSP">KSP</A> ksp,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A> x,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A> y,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A> w)</font></strong>
+<a name="line268">268: </a>{
+<a name="line271">271: </a>  <font color="#4169E1">if</font> (!ksp-&gt;transpose_solve) {
+<a name="line272">272: </a>    <A href="../docs/manualpages/PC/PCApplyBAorABTranspose.html#PCApplyBAorABTranspose">PCApplyBAorABTranspose</A>(ksp-&gt;pc,ksp-&gt;pc_side,x,y,w);
+<a name="line273">273: </a>    KSP_RemoveNullSpace(ksp,y);
+<a name="line274">274: </a>  } <font color="#4169E1">else</font> {
+<a name="line275">275: </a>    <A href="../docs/manualpages/PC/PCApplyBAorAB.html#PCApplyBAorAB">PCApplyBAorAB</A>(ksp-&gt;pc,ksp-&gt;pc_side,x,y,w);
+<a name="line276">276: </a>  }
+<a name="line277">277: </a>  <font color="#4169E1">return</font>(0);
+<a name="line278">278: </a>}
+
+<a name="line280">280: </a>PETSC_EXTERN <A href="../docs/manualpages/Profiling/PetscLogEvent.html#PetscLogEvent">PetscLogEvent</A> KSP_GMRESOrthogonalization, KSP_SetUp, KSP_Solve;
+
+<a name="line282">282: </a><strong><font color="#4169E1">PETSC_INTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> MatGetSchurComplement_Basic(<A href="../docs/manualpages/Mat/Mat.html#Mat">Mat</A>,<A href="../docs/manualpages/IS/IS.html#IS">IS</A>,<A href="../docs/manualpages/IS/IS.html#IS">IS</A>,<A href="../docs/manualpages/IS/IS.html#IS">IS</A>,<A href="../docs/manualpages/IS/IS.html#IS">IS</A>,<A href="../docs/manualpages/Mat/MatReuse.html#MatReuse">MatReuse</A>,<A href="../docs/manualpages/Mat/Mat.html#Mat">Mat</A>*,<A href="../docs/manualpages/Mat/MatReuse.html#MatReuse">MatReuse</A>,<A href="../docs/manualpages/Mat/Mat.html#Mat">Mat</A>*)</font></strong>;
+
+<a name="line284">284: </a><font color="#A020F0">#endif</font>
+</pre>
+</body>
+
+</html>

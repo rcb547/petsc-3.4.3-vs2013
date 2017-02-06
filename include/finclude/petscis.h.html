@@ -1,0 +1,38 @@
+<center><a href="petscis.h">Actual source code: petscis.h</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="http://www.mcs.anl.gov/petsc/petsc-current/include/finclude/petscis.h.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2013-10-15T17:08:22+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>petsc-3.4.3 2013-10-15</b></div>
+<pre width="80"><a name="line1">  1: </a>!
+<a name="line2">  2: </a>!
+<a name="line3">  3: </a>!  Include file <font color="#4169E1">for</font> Fortran use of the <A href="../../docs/manualpages/IS/IS.html#IS">IS</A> (index set) package in PETSc
+<a name="line4">  4: </a>!
+<a name="line5"> 5: </a> #include <A href="../../include/finclude/petscisdef.h.html">finclude/petscisdef.h</A>
+
+
+<a name="line8">  8: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> IS_COLORING_GLOBAL
+<a name="line9">  9: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> IS_COLORING_GHOSTED
+<a name="line10"> 10: </a>      parameter (IS_COLORING_GLOBAL = 0,IS_COLORING_GHOSTED = 1)
+
+<a name="line12"> 12: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> IS_GENERAL
+<a name="line13"> 13: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> IS_STRIDE
+<a name="line14"> 14: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> IS_BLOCK
+<a name="line15"> 15: </a>      parameter (IS_GENERAL = 0,IS_STRIDE = 1,IS_BLOCK = 2)
+
+<a name="line17"> 17: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> IS_GTOLM_MASK
+<a name="line18"> 18: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> IS_GTOLM_DROP
+<a name="line19"> 19: </a>      parameter (IS_GTOLM_MASK =0,IS_GTOLM_DROP = 1)
+
+<a name="line21"> 21: </a>!
+<a name="line22"> 22: </a>!  End of Fortran include file <font color="#4169E1">for</font> the <A href="../../docs/manualpages/IS/IS.html#IS">IS</A> package in PETSc
+
+</pre>
+</body>
+
+</html>

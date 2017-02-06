@@ -1,0 +1,1163 @@
+==========================================
+ 
+See documentation/faq.html and documentation/bugreporting.html
+for help with installation problems. Please send EVERYTHING
+printed out below when reporting problems
+ 
+To subscribe to the PETSc announcement list, send mail to 
+majordomo@mcs.anl.gov with the message: 
+subscribe petsc-announce
+ 
+To subscribe to the PETSc users mailing list, send mail to 
+majordomo@mcs.anl.gov with the message: 
+subscribe petsc-users
+ 
+==========================================
+On Tue, Jan 21, 2014 8:38:58 PM on Ross-PC
+Machine characteristics: CYGWIN_NT-6.1 Ross-PC 1.7.26(0.271/5/3) 2013-11-29 11:48 x86_64 Cygwin
+-----------------------------------------
+Using PETSc directory: /cygdrive/z/code/third_party/petsc-3.4.3
+Using PETSc arch: win64_vs2013
+-----------------------------------------
+PETSC_VERSION_RELEASE    1
+PETSC_VERSION_MAJOR      3
+PETSC_VERSION_MINOR      4
+PETSC_VERSION_SUBMINOR   3
+PETSC_VERSION_PATCH      0
+PETSC_VERSION_DATE       "Oct, 15, 2013"
+PETSC_VERSION_GIT        "e9715d0b55579104fb4321f3f4f3f0e2ce2d7d6d"
+PETSC_VERSION_DATE_GIT   "2013-10-15 11:50:31 -0500"
+PETSC_VERSION_(MAJOR,MINOR,SUBMINOR) \
+PETSC_VERSION_LT(MAJOR,MINOR,SUBMINOR)          \
+PETSC_VERSION_LE(MAJOR,MINOR,SUBMINOR) \
+PETSC_VERSION_GT(MAJOR,MINOR,SUBMINOR) \
+PETSC_VERSION_GE(MAJOR,MINOR,SUBMINOR) \
+-----------------------------------------
+Using configure Options: PETSC_ARCH=win64_vs2013 --with-cc="win32fe cl" --with-cxx="win32fe cl" --with-clanguage=C++ --with-fc=0 --download-f2cblaslapack=1 --with-mpi-include=/cygdrive/c/Microsoft_HPC_Pack_2012/Inc --with-mpi-lib=/cygdrive/c/Microsoft_HPC_Pack_2012/Lib/amd64/msmpi.lib --with-mpiexec=/cygdrive/c/Microsoft_HPC_Pack_2012/Bin/mpiexec.exe --with-64-bit-indices=1 --with-single-library=1 --with-endian=little --with-debugging=0 --with-x=0 --with-windows-graphics=0 --useThreads=0
+Using configuration flags:
+#define INCLUDED_PETSCCONF_H
+#define IS_COLORING_MAX 65535
+#define S_ISREG(a) (((a)&_S_IFMT) == _S_IFREG)
+#define W_OK 02
+#define X_OK 01
+#define R_OK 04
+#define _USE_MATH_DEFINES 1
+#define S_ISDIR(a) (((a)&_S_IFMT) == _S_IFDIR)
+#define STDC_HEADERS 1
+#define MPIU_COLORING_VALUE MPI_UNSIGNED_SHORT
+#define PETSC_UINTPTR_T uintptr_t
+#define PETSC_DEPRECATED(why)  
+#define PETSC_HAVE_WINDOWS_H 1
+#define PETSC_REPLACE_DIR_SEPARATOR '/'
+#define PETSC_HAVE_SETLASTERROR 1
+#define PETSC_HAVE_MPI 1
+#define PETSC_PREFETCH_HINT_T2 _MM_HINT_T2
+#define PETSC_PREFETCH_HINT_T0 _MM_HINT_T0
+#define PETSC_PREFETCH_HINT_T1 _MM_HINT_T1
+#define PETSC_USE_SINGLE_LIBRARY 1
+#define PETSC_Prefetch(a,b,c) _mm_prefetch((const char*)(a),(c))
+#define PETSC_HAVE_GETPROCADDRESS 1
+#define PETSC_HAVE_F2CBLASLAPACK 1
+#define PETSC_HAVE_GETCOMPUTERNAME 1
+#define PETSC_SLSUFFIX ""
+#define PETSC_FUNCTION_NAME_CXX __FUNCTION__
+#define PETSC_HAVE_ATOLL 1
+#define PETSC_HAVE_DOUBLE_ALIGN_MALLOC 1
+#define PETSC_UNUSED  
+#define PETSC_CANNOT_START_DEBUGGER 1
+#define PETSC_HAVE_FREELIBRARY 1
+#define PETSC_FUNCTION_NAME_C __FUNCTION__
+#define PETSC_HAVE_LARGE_INTEGER_U 1
+#define PETSC_HAVE_O_BINARY 1
+#define PETSC_USE_MICROSOFT_TIME 1
+#define PETSC_DIR_SEPARATOR '\\'
+#define PETSC_HAVE_LOADLIBRARY 1
+#define PETSC_PATH_SEPARATOR ';'
+#define PETSC_HAVE_GETLASTERROR 1
+#define PETSC__BSD_SOURCE 1
+#define PETSC_HAVE_XMMINTRIN_H 1
+#define PETSC_PREFETCH_HINT_NTA _MM_HINT_NTA
+#define PETSC_HAVE_GET_USER_NAME 1
+#define PETSC_HAVE_BLASLAPACK 1
+#define PETSC_LIB_DIR "/cygdrive/z/code/third_party/petsc-3.4.3/win64_vs2013/lib"
+#define PETSC_HAVE_MALLOC_H 1
+#define PETSC_HAVE_IO_H 1
+#define PETSC_HAVE_TIME_H 1
+#define PETSC_HAVE_MATH_H 1
+#define PETSC_HAVE_STRING_H 1
+#define PETSC_HAVE_FCNTL_H 1
+#define PETSC_HAVE_DIRECT_H 1
+#define PETSC_HAVE_WINDOWSX_H 1
+#define PETSC_HAVE_SYS_TYPES_H 1
+#define PETSC_HAVE_FLOAT_H 1
+#define PETSC_HAVE_DOS_H 1
+#define PETSC_HAVE_MEMORY_H 1
+#define PETSC_HAVE_STDLIB_H 1
+#define PETSC_HAVE_SEARCH_H 1
+#define PETSC_HAVE_SETJMP_H 1
+#define PETSC_HAVE_STDINT_H 1
+#define PETSC_HAVE_WS2TCPIP_H 1
+#define PETSC_HAVE_LIMITS_H 1
+#define PETSC_CXX_RESTRICT __restrict
+#define PETSC_C_STATIC_INLINE static __inline
+#define PETSC_C_RESTRICT __restrict
+#define PETSC_HAVE_CXX_NAMESPACE 1
+#define PETSC_CXX_STATIC_INLINE static inline
+#define PETSC_HAVE_LIBWS2_32 1
+#define PETSC_HAVE_LIBF2CBLAS 1
+#define PETSC_HAVE_LIBMSMPI 1
+#define PETSC_HAVE_FENV_H 1
+#define PETSC_HAVE_LIBF2CLAPACK 1
+#define PETSC_HAVE_LIBADVAPI32 1
+#define PETSC_HAVE_LIBGDI32 1
+#define PETSC_HAVE_ERF 1
+#define PETSC_HAVE_LIBKERNEL32 1
+#define PETSC_HAVE_TGAMMA 1
+#define PETSC_HAVE_LIBUSER32 1
+#define PETSC_ARCH "win64_vs2013"
+#define PETSC_DIR "/cygdrive/z/code/third_party/petsc-3.4.3"
+#define HAVE_GZIP 1
+#define PETSC_CLANGUAGE_CXX 1
+#define PETSC_USE_ERRORCHECKING 1
+#define PETSC_SIZEOF_MPI_COMM 4
+#define PETSC_BITS_PER_BYTE 8
+#define PETSC_SIZEOF_MPI_FINT 4
+#define PETSC_SIZEOF_VOID_P 8
+#define PETSC_RETSIGTYPE void
+#define PETSC_HAVE___INT64 1
+#define PETSC_HAVE_CXX_COMPLEX 1
+#define PETSC_SIZEOF_LONG 4
+#define PETSC_SIZEOF_INT 4
+#define PETSC_SIZEOF_SIZE_T 8
+#define PETSC_uid_t int
+#define PETSC_SIZEOF_CHAR 1
+#define PETSC_SIZEOF_DOUBLE 8
+#define PETSC_SIZEOF_FLOAT 4
+#define PETSC_gid_t int
+#define PETSC_SIZEOF_LONG_LONG 8
+#define PETSC_SIZEOF_SHORT 2
+#define PETSC_HAVE_ACCESS 1
+#define PETSC_HAVE_SIGNAL 1
+#define PETSC_HAVE__LSEEK 1
+#define PETSC_HAVE_VFPRINTF 1
+#define PETSC_HAVE__GETCWD 1
+#define PETSC_HAVE_MEMMOVE 1
+#define PETSC_HAVE_RAND 1
+#define PETSC_HAVE__SLEEP 1
+#define PETSC_HAVE_TIME 1
+#define PETSC_HAVE_GETCWD 1
+#define PETSC_HAVE_LSEEK 1
+#define PETSC_HAVE__VSNPRINTF 1
+#define PETSC_HAVE_VPRINTF 1
+#define PETSC_HAVE__ACCESS 1
+#define PETSC_HAVE_STRICMP 1
+#define PETSC_HAVE__SNPRINTF 1
+#define PETSC_SIGNAL_CAST  
+#define PETSC_HAVE_VA_COPY 1
+#define PETSC_HAVE_CLOCK 1
+#define PETSC_BLASLAPACK_UNDERSCORE 1
+#define PETSC_HAVE_MPI_COMM_C2F 1
+#define PETSC_HAVE_MPI_EXSCAN 1
+#define PETSC_HAVE_MPI_LONG_DOUBLE 1
+#define PETSC_HAVE_MPI_COMM_F2C 1
+#define PETSC_HAVE_MPI_FINT 1
+#define PETSC_HAVE_MPI_COMM_SPAWN 1
+#define PETSC_HAVE_MPI_TYPE_GET_ENVELOPE 1
+#define PETSC_HAVE_MPI_FINALIZED 1
+#define PETSC_HAVE_MPI_TYPE_GET_EXTENT 1
+#define PETSC_HAVE_MPI_COMBINER_DUP 1
+#define PETSC_HAVE_MPI_WIN_CREATE 1
+#define PETSC_HAVE_MPI_REPLACE 1
+#define PETSC_HAVE_MPI_TYPE_DUP 1
+#define PETSC_HAVE_MPIIO 1
+#define PETSC_HAVE_MPI_INIT_THREAD 1
+#define PETSC_HAVE_MPI_ALLTOALLW 1
+#define PETSC_HAVE_MPI_IN_PLACE 1
+#define PETSC_LEVEL1_DCACHE_LINESIZE 32
+#define PETSC_LEVEL1_DCACHE_SIZE 32768
+#define PETSC_LEVEL1_DCACHE_ASSOC 2
+#define PETSC_USE_PROC_FOR_SIZE 1
+#define PETSC_USE_INFO 1
+#define PETSC_Alignx(a,b)   
+#define PETSC_USE_BACKWARD_LOOP 1
+#define PETSC_USE_64BIT_INDICES 1
+#define PETSC_USE_LOG 1
+#define PETSC_IS_COLOR_VALUE_TYPE short
+#define PETSC_USE_CTABLE 1
+#define PETSC_USE_SCALAR_REAL 1
+#define PETSC_HAVE_ISINF 1
+#define PETSC_HAVE_ISNAN 1
+#define PETSC_USE_REAL_DOUBLE 1
+#define PETSC_MEMALIGN 16
+#define PETSC_MISSING_SIGUSR2 1
+#define PETSC_MISSING_SIGURG 1
+#define PETSC_MISSING_SIGPIPE 1
+#define PETSC_MISSING_SIGHUP 1
+#define PETSC_MISSING_SIGSTOP 1
+#define PETSC_MISSING_SIGSYS 1
+#define PETSC_MISSING_SIGCONT 1
+#define PETSC_HAVE_WSAGETLASTERROR 1
+#define PETSC_HAVE_CLOSESOCKET 1
+#define PETSC_MISSING_SIGTSTP 1
+#define PETSC_MISSING_SIGCHLD 1
+#define PETSC_HAVE_SOCKET 1
+#define PETSC_MISSING_SIGUSR1 1
+#define PETSC_MISSING_SIGTRAP 1
+#define PETSC_MISSING_SIGQUIT 1
+#define PETSC_MISSING_SIGBUS 1
+#define PETSC_HAVE_WINSOCK2_H 1
+#define PETSC_MISSING_SIGALRM 1
+#define PETSC_NEEDS_UTYPE_TYPEDEFS 1
+#define PETSC_MISSING_SIGKILL 1
+#define PETSC_HAVE_SHARED_LIBRARIES 1
+-----------------------------------------
+Using C/C++ compile: /cygdrive/z/code/third_party/petsc-3.4.3/bin/win32fe/win32fe cl -c -MT -GR -EHsc -O2 -Zm200  -TP    -I/cygdrive/z/code/third_party/petsc-3.4.3/include -I/cygdrive/z/code/third_party/petsc-3.4.3/win64_vs2013/include -I/cygdrive/c/Microsoft_HPC_Pack_2012/Inc    -D__INSDIR__=./  
+-----------------------------------------
+Using C/C++ linker: /cygdrive/z/code/third_party/petsc-3.4.3/bin/win32fe/win32fe cl
+Using C/C++ flags: -MT -GR -EHsc -O2 -Zm200
+-----------------------------------------
+Using libraries: -L/cygdrive/z/code/third_party/petsc-3.4.3/win64_vs2013/lib  -lpetsc -lf2clapack -lf2cblas /cygdrive/c/Microsoft_HPC_Pack_2012/Lib/amd64/msmpi.lib Gdi32.lib User32.lib Advapi32.lib Kernel32.lib Ws2_32.lib 
+------------------------------------------
+Using mpiexec: /cygdrive/c/Microsoft_HPC_Pack_2012/Bin/mpiexec.exe
+==========================================
+/usr/bin/rm -f -rf /cygdrive/z/code/third_party/petsc-3.4.3/win64_vs2013/lib/libpetsc*.*
+/usr/bin/rm -f -f /cygdrive/z/code/third_party/petsc-3.4.3/win64_vs2013/include/petsc*.mod
+BEGINNING TO COMPILE LIBRARIES IN ALL DIRECTORIES
+=========================================
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/sys
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/sys/classes
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/sys/classes/viewer
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/sys/classes/viewer/impls
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/sys/classes/viewer/impls/ascii
+filev.c
+vcreatea.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/sys/classes/viewer/impls/binary
+binv.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/sys/classes/viewer/impls/string
+stringv.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/sys/classes/viewer/impls/draw
+drawv.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/sys/classes/viewer/impls/vu
+petscvu.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/sys/classes/viewer/impls/vtk
+vtkv.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/sys/classes/viewer/examples
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/sys/classes/viewer/examples/tutorials
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/sys/classes/viewer/examples/tests
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/sys/classes/viewer/interface
+view.c
+flush.c
+viewregall.c
+viewreg.c
+viewa.c
+dlregispetsc.c
+viewers.c
+dupl.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/sys/classes/draw
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/sys/classes/draw/interface
+draw.c
+dline.c
+dlinew.c
+dlinegw.c
+dtext.c
+dtextv.c
+dtexts.c
+dtextgs.c
+dpoint.c
+dpoints.c
+dviewp.c
+dcoor.c
+dpause.c
+dgpause.c
+dgcoor.c
+dbuff.c
+dsetpause.c
+dflush.c
+dsflush.c
+dclear.c
+dsclear.c
+drect.c
+dtri.c
+dmouse.c
+drawreg.c
+drawregall.c
+dellipse.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/sys/classes/draw/impls
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/sys/classes/draw/impls/tikz
+tikz.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/sys/classes/draw/examples
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/sys/classes/draw/examples/tests
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/sys/classes/draw/examples/tutorials
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/sys/classes/draw/utils
+axis.c
+lg.c
+dscatter.c
+hists.c
+zoom.c
+hue.c
+lgc.c
+axisc.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/sys/classes/random
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/sys/classes/random/interface
+random.c
+randreg.c
+dlregisrand.c
+randomc.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/sys/classes/random/examples
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/sys/classes/random/examples/tutorials
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/sys/classes/random/impls
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/sys/classes/random/impls/rand
+rand.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/sys/classes/bag
+bag.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/sys/error
+adebug.c
+err.c
+errtrace.c
+errabort.c
+errstop.c
+fp.c
+signal.c
+pstack.c
+checkptr.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/sys/error/examples
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/sys/error/examples/tests
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/sys/dll
+dlimpl.c
+dl.c
+reg.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/sys/fileio
+ffpath.c
+ftest.c
+ghome.c
+mpiuopen.c
+rpath.c
+fpath.c
+fwd.c
+grpath.c
+mprint.c
+sysio.c
+fretrieve.c
+smatlab.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/sys/memory
+mal.c
+mem.c
+mtr.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/sys/objects
+version.c
+gcomm.c
+gtype.c
+olist.c
+pname.c
+tagm.c
+destroy.c
+gcookie.c
+inherit.c
+options.c
+pgname.c
+prefix.c
+init.c
+pinit.c
+ptype.c
+state.c
+aoptions.c
+mpinit.c
+subcomm.c
+fcallback.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/sys/time
+cputime.c
+fdate.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/sys/time/nt_time
+nt_time.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/sys/utils
+arch.c
+fhost.c
+fuser.c
+memc.c
+mpiu.c
+psleep.c
+sortd.c
+sorti.c
+str.c
+sortip.c
+pbarrier.c
+pdisplay.c
+ctable.c
+psplit.c
+select.c
+mpimesg.c
+sseenabled.c
+mpitr.c
+mpilong.c
+mathinf.c
+mpits.c
+segbuffer.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/sys/logging
+plog.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/sys/logging/utils
+classlog.c
+stagelog.c
+eventlog.c
+stack.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/sys/examples
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/sys/examples/tests
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/sys/examples/tutorials
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/sys/info
+verboseinfo.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/sys/python
+pythonsys.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/sys/totalview
+tv_data_display.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/sys/threadcomm
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/sys/threadcomm/interface
+dlregisthreadcomm.c
+threadcomm.c
+threadcommregi.c
+threadcommred.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/sys/threadcomm/impls
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/sys/threadcomm/impls/nothread
+nothread.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/sys/threadcomm/examples
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/sys/threadcomm/examples/tutorials
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/vec
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/vec/vec
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/vec/vec/utils
+vinv.c
+vscat.c
+vpscat.c
+cmesh.c
+vecio.c
+comb.c
+vecstash.c
+vecmpitoseq.c
+vecs.c
+vsection.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/vec/vec/interface
+vector.c
+veccreate.c
+vecreg.c
+vecregall.c
+dlregisvec.c
+rvector.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/vec/vec/impls
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/vec/vec/impls/seq
+bvec2.c
+bvec1.c
+dvec2.c
+vseqcr.c
+bvec3.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/vec/vec/impls/mpi
+pbvec.c
+pdvec.c
+pvec2.c
+vmpicr.c
+commonmpvec.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/vec/vec/impls/shared
+shvec.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/vec/vec/impls/nest
+vecnest.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/vec/vec/examples
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/vec/vec/examples/tests
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/vec/vec/examples/tutorials
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/vec/is
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/vec/is/is
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/vec/is/is/interface
+index.c
+isregall.c
+isreg.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/vec/is/is/impls
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/vec/is/is/impls/general
+general.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/vec/is/is/impls/stride
+stride.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/vec/is/is/impls/block
+block.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/vec/is/is/examples
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/vec/is/is/examples/tests
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/vec/is/is/examples/tutorials
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/vec/is/is/utils
+iscomp.c
+iscoloring.c
+isdiff.c
+isblock.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/vec/is/sf
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/vec/is/sf/interface
+dlregissf.c
+sfregi.c
+sf.c
+sftype.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/vec/is/sf/impls
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/vec/is/sf/impls/window
+sfwindow.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/vec/is/sf/impls/basic
+sfbasic.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/vec/is/sf/examples
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/vec/is/sf/examples/tutorials
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/vec/is/ao
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/vec/is/ao/interface
+ao.c
+dlregisdm.c
+aoreg.c
+aoregall.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/vec/is/ao/impls
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/vec/is/ao/impls/basic
+aobasic.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/vec/is/ao/impls/mapping
+aomapping.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/vec/is/ao/impls/memscalable
+aomemscalable.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/vec/is/ao/examples
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/vec/is/ao/examples/tests
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/vec/is/ao/examples/tests/ex3d
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/vec/is/utils
+isltog.c
+pmap.c
+vsectionis.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/vec/pf
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/vec/pf/interface
+pf.c
+pfall.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/vec/pf/impls
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/vec/pf/impls/constant
+const.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/vec/pf/impls/string
+cstring.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/vec/pf/examples
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/vec/pf/examples/tutorials
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/mat
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/mat/interface
+matrix.c
+mhas.c
+matreg.c
+matregis.c
+matnull.c
+dlregismat.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/mat/impls
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/mat/impls/dense
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/mat/impls/dense/seq
+dense.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/mat/impls/dense/mpi
+mpidense.c
+mmdense.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/mat/impls/aij
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/mat/impls/aij/seq
+aij.c
+aijfact.c
+ij.c
+fdaij.c
+matmatmult.c
+symtranspose.c
+matptap.c
+matrart.c
+inode.c
+inode2.c
+matmatmatmult.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/mat/impls/aij/seq/csrperm
+csrperm.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/mat/impls/aij/seq/crl
+crl.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/mat/impls/aij/seq/bas
+basfactor.c
+spbas.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/mat/impls/aij/mpi
+mpiaij.c
+mmaij.c
+mpiaijpc.c
+mpiov.c
+fdmpiaij.c
+mpiptap.c
+mpimatmatmult.c
+mpb_aij.c
+mpimatmatmatmult.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/mat/impls/aij/mpi/csrperm
+mpicsrperm.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/mat/impls/aij/mpi/crl
+mcrl.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/mat/impls/shell
+shell.c
+shellcnv.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/mat/impls/baij
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/mat/impls/baij/seq
+baij.c
+baij2.c
+baijfact.c
+baijfact2.c
+dgefa.c
+dgedi.c
+dgefa3.c
+dgefa4.c
+dgefa5.c
+dgefa2.c
+dgefa6.c
+dgefa7.c
+aijbaij.c
+baijfact3.c
+baijfact4.c
+baijfact5.c
+baijfact7.c
+baijfact9.c
+baijfact11.c
+baijfact13.c
+baijsolvtrannat.c
+baijsolvtran.c
+baijsolv.c
+baijsolvnat.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/mat/impls/baij/seq/bstream
+bstream.c
+bstrmfact.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/mat/impls/baij/mpi
+mpibaij.c
+mmbaij.c
+baijov.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/mat/impls/baij/mpi/bstream
+mpibstream.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/mat/impls/adj
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/mat/impls/adj/mpi
+mpiadj.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/mat/impls/maij
+maij.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/mat/impls/is
+matis.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/mat/impls/sbaij
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/mat/impls/sbaij/seq
+sbaij.c
+sbaij2.c
+sbaijfact.c
+sbaijfact2.c
+sro.c
+sbaijfact3.c
+sbaijfact4.c
+sbaijfact5.c
+sbaijfact6.c
+sbaijfact7.c
+sbaijfact8.c
+sbaijfact9.c
+sbaijfact10.c
+sbaijfact11.c
+sbaijfact12.c
+aijsbaij.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/mat/impls/sbaij/seq/sbstream
+sbstream.c
+sbstrmfact.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/mat/impls/sbaij/mpi
+mpisbaij.c
+mmsbaij.c
+sbaijov.c
+mpiaijsbaij.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/mat/impls/sbaij/mpi/sbstream
+mpisbstream.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/mat/impls/normal
+normm.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/mat/impls/lrc
+lrc.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/mat/impls/scatter
+mscatter.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/mat/impls/blockmat
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/mat/impls/blockmat/seq
+blockmat.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/mat/impls/composite
+mcomposite.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/mat/impls/mffd
+mffd.c
+mffddef.c
+mfregis.c
+wp.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/mat/impls/transpose
+transm.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/mat/impls/python
+pythonmat.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/mat/impls/submat
+submat.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/mat/impls/localref
+mlocalref.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/mat/impls/nest
+matnest.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/mat/impls/fft
+fft.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/mat/examples
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/mat/examples/tests
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/mat/examples/tutorials
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/mat/utils
+convert.c
+matstash.c
+axpy.c
+zerodiag.c
+getcolv.c
+gcreate.c
+freespace.c
+compressedrow.c
+multequal.c
+matstashspace.c
+pheap.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/mat/matfd
+fdmatrix.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/mat/partition
+partition.c
+spartition.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/mat/partition/impls
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/mat/coarsen
+coarsen.c
+scoarsen.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/mat/coarsen/impls
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/mat/coarsen/impls/mis
+mis.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/mat/coarsen/impls/hem
+hem.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/mat/order
+sp1wd.c
+spnd.c
+spqmd.c
+sprcm.c
+sorder.c
+sregis.c
+degree.c
+fnroot.c
+genqmd.c
+qmdqt.c
+rcm.c
+fn1wd.c
+gen1wd.c
+genrcm.c
+qmdrch.c
+rootls.c
+fndsep.c
+gennd.c
+qmdmrg.c
+qmdupd.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/mat/color
+degr.c
+setr.c
+dsm.c
+ido.c
+numsrt.c
+seq.c
+slo.c
+color.c
+scolor.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/dm
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/dm/impls
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/dm/impls/da
+da2.c
+da1.c
+da3.c
+daghost.c
+dacorn.c
+dagtol.c
+daltol.c
+daindex.c
+dascatter.c
+dacreate.c
+dadestroy.c
+dalocal.c
+dadist.c
+daview.c
+dasub.c
+gr1.c
+gr2.c
+dagtona.c
+dainterp.c
+dapf.c
+dagetarray.c
+dagetelem.c
+da.c
+dareg.c
+fdda.c
+grvtk.c
+dageometry.c
+dadd.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/dm/impls/adda
+adda.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/dm/impls/adda/examples
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/dm/impls/adda/examples/tests
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/dm/impls/sliced
+sliced.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/dm/impls/composite
+pack.c
+packm.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/dm/impls/redundant
+dmredundant.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/dm/impls/plex
+plexcreate.c
+plex.c
+plexinterpolate.c
+plexpreallocate.c
+plexgeometry.c
+plexlabel.c
+plexsubmesh.c
+plexexodusii.c
+plexcgns.c
+plexvtk.c
+plexpoint.c
+plexvtu.c
+plexfem.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/dm/impls/plex/examples
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/dm/impls/plex/examples/tests
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/dm/impls/shell
+dmshell.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/dm/impls/patch
+patchcreate.c
+patch.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/dm/impls/patch/examples
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/dm/impls/patch/examples/tests
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/dm/interface
+dm.c
+dmregall.c
+dmget.c
+dmi.c
+dlregisdmdm.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/dm/examples
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/dm/examples/tests
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/dm/examples/tutorials
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/dm/dt
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/dm/dt/interface
+dt.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/dm/dt/examples
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/dm/dt/examples/tests
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/pc
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/pc/interface
+precon.c
+pcset.c
+pcregis.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/pc/impls
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/pc/impls/jacobi
+jacobi.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/pc/impls/none
+none.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/pc/impls/sor
+sor.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/pc/impls/shell
+shellpc.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/pc/impls/bjacobi
+bjacobi.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/pc/impls/mg
+mg.c
+fmg.c
+smg.c
+mgfunc.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/pc/impls/eisens
+eisen.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/pc/impls/asm
+asm.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/pc/impls/ksp
+pcksp.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/pc/impls/composite
+composite.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/pc/impls/redundant
+redundant.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/pc/impls/is
+pcis.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/pc/impls/is/nn
+nn.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/pc/impls/pbjacobi
+pbjacobi.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/pc/impls/mat
+pcmat.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/pc/impls/tfs
+bitmask.c
+comm.c
+gs.c
+ivec.c
+xxt.c
+xyt.c
+tfs.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/pc/impls/fieldsplit
+fieldsplit.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/pc/impls/factor
+factor.c
+factimpl.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/pc/impls/factor/lu
+lu.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/pc/impls/factor/ilu
+ilu.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/pc/impls/factor/icc
+icc.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/pc/impls/factor/cholesky
+cholesky.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/pc/impls/galerkin
+galerkin.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/pc/impls/openmp
+hpc.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/pc/impls/asa
+asa.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/pc/impls/cp
+cp.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/pc/impls/wb
+wb.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/pc/impls/python
+pythonpc.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/pc/impls/lsc
+lsc.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/pc/impls/redistribute
+redistribute.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/pc/impls/gasm
+gasm.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/pc/impls/svd
+svd.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/pc/impls/gamg
+gamg.c
+agg.c
+geo.c
+tools.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/pc/examples
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/pc/examples/tests
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/pc/examples/tutorials
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/ksp
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/ksp/interface
+itcl.c
+itfunc.c
+iguess.c
+itcreate.c
+iterativ.c
+itres.c
+itregis.c
+xmon.c
+eige.c
+dlregisksp.c
+dmksp.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/ksp/impls
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/ksp/impls/cr
+cr.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/ksp/impls/cr/pipecr
+pipecr.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/ksp/impls/bcgs
+bcgs.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/ksp/impls/bcgs/fbcgs
+fbcgs.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/ksp/impls/bcgs/fbcgsr
+fbcgsr.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/ksp/impls/bcgsl
+bcgsl.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/ksp/impls/cg
+cg.c
+cgeig.c
+cgtype.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/ksp/impls/cg/cgne
+cgne.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/ksp/impls/cg/gltr
+gltr.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/ksp/impls/cg/nash
+nash.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/ksp/impls/cg/stcg
+stcg.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/ksp/impls/cg/pipecg
+pipecg.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/ksp/impls/cg/groppcg
+groppcg.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/ksp/impls/cgs
+cgs.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/ksp/impls/gmres
+gmres.c
+borthog.c
+borthog2.c
+gmres2.c
+gmreig.c
+gmpre.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/ksp/impls/gmres/lgmres
+lgmres.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/ksp/impls/gmres/fgmres
+fgmres.c
+modpcf.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/ksp/impls/gmres/dgmres
+dgmres.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/ksp/impls/gmres/pgmres
+pgmres.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/ksp/impls/cheby
+cheby.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/ksp/impls/rich
+rich.c
+richscale.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/ksp/impls/lsqr
+lsqr.c
+lsqr_monitor.c
+lsqr_converged.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/ksp/impls/preonly
+preonly.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/ksp/impls/tcqmr
+tcqmr.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/ksp/impls/tfqmr
+tfqmr.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/ksp/impls/qcg
+qcg.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/ksp/impls/bicg
+bicg.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/ksp/impls/minres
+minres.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/ksp/impls/symmlq
+symmlq.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/ksp/impls/lcd
+lcd.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/ksp/impls/ibcgs
+ibcgs.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/ksp/impls/python
+pythonksp.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/ksp/impls/gcr
+gcr.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/ksp/impls/specest
+specest.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/ksp/examples
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/ksp/examples/tests
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/ksp/examples/tutorials
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ksp/ksp/utils
+schurm.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/snes
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/snes/interface
+snes.c
+snesj.c
+snesregi.c
+snesut.c
+snesj2.c
+dlregissnes.c
+snesob.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/snes/interface/noise
+snesmfj2.c
+snesnoise.c
+snesdnest.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/snes/mf
+snesmfj.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/snes/impls
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/snes/impls/ksponly
+ksponly.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/snes/impls/ls
+ls.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/snes/impls/tr
+tr.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/snes/impls/test
+snestest.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/snes/impls/richardson
+snesrichardson.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/snes/impls/python
+pythonsnes.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/snes/impls/vi
+vi.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/snes/impls/vi/ss
+viss.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/snes/impls/vi/rs
+virs.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/snes/impls/ngmres
+snesngmres.c
+ngmresfunc.c
+anderson.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/snes/impls/qn
+qn.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/snes/impls/shell
+snesshell.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/snes/impls/ncg
+snesncg.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/snes/impls/fas
+fas.c
+fasgalerkin.c
+fasfunc.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/snes/impls/gs
+snesgs.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/snes/impls/ms
+ms.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/snes/impls/nasm
+nasm.c
+aspin.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/snes/examples
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/snes/examples/tests
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/snes/examples/tutorials
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/snes/examples/tutorials/ex10d
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/snes/utils
+dmsnes.c
+dmdasnes.c
+dmlocalsnes.c
+dmplexsnes.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/snes/utils/ftn-custom
+zdmdasnesf.c
+zdmlocalsnesf.c
+zdmsnesf.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/snes/linesearch
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/snes/linesearch/interface
+linesearch.c
+linesearchregi.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/snes/linesearch/impls
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/snes/linesearch/impls/basic
+linesearchbasic.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/snes/linesearch/impls/l2
+linesearchl2.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/snes/linesearch/impls/cp
+linesearchcp.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/snes/linesearch/impls/shell
+linesearchshell.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/snes/linesearch/impls/bt
+linesearchbt.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ts
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ts/interface
+ts.c
+tscreate.c
+tsreg.c
+tsregall.c
+dlregists.c
+tseig.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ts/impls
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ts/impls/explicit
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ts/impls/explicit/euler
+euler.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ts/impls/explicit/rk
+rk.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ts/impls/explicit/ssp
+ssp.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ts/impls/implicit
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ts/impls/implicit/theta
+theta.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ts/impls/implicit/alpha
+alpha.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ts/impls/implicit/gl
+gl.c
+gladapt.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ts/impls/pseudo
+posindep.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ts/impls/python
+pythonts.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ts/impls/arkimex
+arkimex.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ts/impls/rosw
+rosw.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ts/impls/eimex
+eimex.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ts/examples
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ts/examples/tests
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ts/examples/tutorials
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ts/examples/tutorials/phasefield
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ts/examples/tutorials/advection-diffusion-reaction
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ts/characteristic
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ts/characteristic/interface
+characteristic.c
+mocregis.c
+slregis.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ts/characteristic/impls
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ts/characteristic/impls/da
+slda.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ts/characteristic/examples
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ts/characteristic/examples/tutorials
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ts/adapt
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ts/adapt/interface
+tsadapt.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ts/adapt/impls
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ts/adapt/impls/basic
+adaptbasic.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ts/adapt/impls/cfl
+adaptcfl.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ts/adapt/impls/none
+adaptnone.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/ts/utils
+dmts.c
+dmdats.c
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/contrib
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/contrib/fun3d
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/contrib/fun3d/comp
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/contrib/fun3d/incomp
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/src/benchmarks
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/include
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/include/petsc-private
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/include/sieve
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/tutorials
+libfast in: /cygdrive/z/code/third_party/petsc-3.4.3/tutorials/python
+Completed building libraries
+=========================================
+Now to check if the libraries are working do:
+make PETSC_DIR=/cygdrive/z/code/third_party/petsc-3.4.3 PETSC_ARCH=win64_vs2013 test
+=========================================

@@ -1,0 +1,80 @@
+<center><a href="petscvec.h">Actual source code: petscvec.h</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="http://www.mcs.anl.gov/petsc/petsc-current/include/finclude/petscvec.h.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2013-10-15T17:08:20+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>petsc-3.4.3 2013-10-15</b></div>
+<pre width="80"><a name="line1">  1: </a>!
+<a name="line2">  2: </a>!
+<a name="line3">  3: </a>!  Include file <font color="#4169E1">for</font> Fortran use of the <A href="../../docs/manualpages/Vec/Vec.html#Vec">Vec</A> package in PETSc
+<a name="line4">  4: </a>!
+<a name="line5"> 5: </a> #include <A href="../../include/finclude/petscvecdef.h.html">finclude/petscvecdef.h</A>
+<a name="line6">  6: </a>!
+<a name="line7">  7: </a>!
+<a name="line8">  8: </a>!  Types of vector and matrix norms
+<a name="line9">  9: </a>!
+<a name="line10"> 10: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> <A href="../../docs/manualpages/Vec/NORM_1.html#NORM_1">NORM_1</A>
+<a name="line11"> 11: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> <A href="../../docs/manualpages/Vec/NORM_2.html#NORM_2">NORM_2</A>
+<a name="line12"> 12: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> <A href="../../docs/manualpages/Vec/NORM_FROBENIUS.html#NORM_FROBENIUS">NORM_FROBENIUS</A>
+<a name="line13"> 13: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> <A href="../../docs/manualpages/Vec/NORM_INFINITY.html#NORM_INFINITY">NORM_INFINITY</A>
+<a name="line14"> 14: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> <A href="../../docs/manualpages/Vec/NORM_MAX.html#NORM_MAX">NORM_MAX</A>
+<a name="line15"> 15: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> <A href="../../docs/manualpages/Vec/NORM_1_AND_2.html#NORM_1_AND_2">NORM_1_AND_2</A>
+
+<a name="line17"> 17: </a>      parameter (<A href="../../docs/manualpages/Vec/NORM_1.html#NORM_1">NORM_1</A>=0,<A href="../../docs/manualpages/Vec/NORM_2.html#NORM_2">NORM_2</A>=1,<A href="../../docs/manualpages/Vec/NORM_FROBENIUS.html#NORM_FROBENIUS">NORM_FROBENIUS</A>=2,<A href="../../docs/manualpages/Vec/NORM_INFINITY.html#NORM_INFINITY">NORM_INFINITY</A>=3)
+<a name="line18"> 18: </a>      parameter (<A href="../../docs/manualpages/Vec/NORM_MAX.html#NORM_MAX">NORM_MAX</A>=3,<A href="../../docs/manualpages/Vec/NORM_1_AND_2.html#NORM_1_AND_2">NORM_1_AND_2</A>=4)
+<a name="line19"> 19: </a>!
+<a name="line20"> 20: </a>!  Flags <font color="#4169E1">for</font> <A href="../../docs/manualpages/Vec/VecSetValues.html#VecSetValues">VecSetValues</A>() and <A href="../../docs/manualpages/Mat/MatSetValues.html#MatSetValues">MatSetValues</A>()
+<a name="line21"> 21: </a>!
+<a name="line22"> 22: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> NOT_SET_VALUES
+<a name="line23"> 23: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> <A href="../../docs/manualpages/Sys/INSERT_VALUES.html#INSERT_VALUES">INSERT_VALUES</A>
+<a name="line24"> 24: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> <A href="../../docs/manualpages/Sys/ADD_VALUES.html#ADD_VALUES">ADD_VALUES</A>
+<a name="line25"> 25: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> <A href="../../docs/manualpages/Sys/MAX_VALUES.html#MAX_VALUES">MAX_VALUES</A>
+<a name="line26"> 26: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> INSERT_ALL_VALUES
+<a name="line27"> 27: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> ADD_ALL_VALUES
+<a name="line28"> 28: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> INSERT_BC_VALUES
+<a name="line29"> 29: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> ADD_BC_VALUES
+
+<a name="line31"> 31: </a>      parameter (NOT_SET_VALUES=0,<A href="../../docs/manualpages/Sys/INSERT_VALUES.html#INSERT_VALUES">INSERT_VALUES</A>=1,<A href="../../docs/manualpages/Sys/ADD_VALUES.html#ADD_VALUES">ADD_VALUES</A>=2)
+<a name="line32"> 32: </a>      parameter (<A href="../../docs/manualpages/Sys/MAX_VALUES.html#MAX_VALUES">MAX_VALUES</A>=3)
+<a name="line33"> 33: </a>      parameter (INSERT_ALL_VALUES=4,ADD_ALL_VALUES=5)
+<a name="line34"> 34: </a>      parameter (INSERT_BC_VALUES=6,ADD_BC_VALUES=7)
+<a name="line35"> 35: </a>!
+<a name="line36"> 36: </a>!  Types of vector scatters
+<a name="line37"> 37: </a>!
+<a name="line38"> 38: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> <A href="../../docs/manualpages/Vec/SCATTER_FORWARD.html#SCATTER_FORWARD">SCATTER_FORWARD</A>
+<a name="line39"> 39: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> <A href="../../docs/manualpages/Vec/SCATTER_REVERSE.html#SCATTER_REVERSE">SCATTER_REVERSE</A>
+<a name="line40"> 40: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> <A href="../../docs/manualpages/Vec/SCATTER_FORWARD_LOCAL.html#SCATTER_FORWARD_LOCAL">SCATTER_FORWARD_LOCAL</A>
+<a name="line41"> 41: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> <A href="../../docs/manualpages/Vec/SCATTER_REVERSE_LOCAL.html#SCATTER_REVERSE_LOCAL">SCATTER_REVERSE_LOCAL</A>
+<a name="line42"> 42: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> SCATTER_LOCAL
+
+<a name="line44"> 44: </a>      parameter (<A href="../../docs/manualpages/Vec/SCATTER_FORWARD.html#SCATTER_FORWARD">SCATTER_FORWARD</A>=0,<A href="../../docs/manualpages/Vec/SCATTER_REVERSE.html#SCATTER_REVERSE">SCATTER_REVERSE</A>=1)
+<a name="line45"> 45: </a>      parameter (<A href="../../docs/manualpages/Vec/SCATTER_FORWARD_LOCAL.html#SCATTER_FORWARD_LOCAL">SCATTER_FORWARD_LOCAL</A>=2,<A href="../../docs/manualpages/Vec/SCATTER_REVERSE_LOCAL.html#SCATTER_REVERSE_LOCAL">SCATTER_REVERSE_LOCAL</A>=3)
+<a name="line46"> 46: </a>      parameter (SCATTER_LOCAL=2)
+<a name="line47"> 47: </a>!
+<a name="line48"> 48: </a>!  VecOption
+<a name="line49"> 49: </a>!
+<a name="line50"> 50: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> VEC_IGNORE_OFF_PROC_ENTRIES
+<a name="line51"> 51: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> VEC_IGNORE_NEGATIVE_INDICES
+
+<a name="line53"> 53: </a>      parameter (VEC_IGNORE_OFF_PROC_ENTRIES=0)
+<a name="line54"> 54: </a>      parameter (VEC_IGNORE_NEGATIVE_INDICES=1)
+
+<a name="line56"> 56: </a>!
+<a name="line57"> 57: </a>!  VecOperation
+<a name="line58"> 58: </a>!
+<a name="line59"> 59: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> VECOP_VIEW
+<a name="line60"> 60: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> VECOP_LOADINTOVECTOR
+
+<a name="line62"> 62: </a>      parameter (VECOP_VIEW=33,VECOP_LOADINTOVECTOR=41)
+<a name="line63"> 63: </a>!
+<a name="line64"> 64: </a>!  End of Fortran include file <font color="#4169E1">for</font> the <A href="../../docs/manualpages/Vec/Vec.html#Vec">Vec</A> package in PETSc
+
+</pre>
+</body>
+
+</html>

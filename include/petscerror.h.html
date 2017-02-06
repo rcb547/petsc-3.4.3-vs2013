@@ -1,0 +1,752 @@
+<center><a href="petscerror.h">Actual source code: petscerror.h</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="http://www.mcs.anl.gov/petsc/petsc-current/include/petscerror.h.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2013-10-15T16:55:07+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>petsc-3.4.3 2013-10-15</b></div>
+<pre width="80"><a name="line1">  1: </a><font color="#B22222">/*</font>
+<a name="line2">  2: </a><font color="#B22222">    Contains all error handling interfaces for PETSc.</font>
+<a name="line3">  3: </a><font color="#B22222">*/</font>
+
+<a name="line7">  7: </a><font color="#B22222">/*</font>
+<a name="line8">  8: </a><font color="#B22222">   Defines the directory where the compiled source is located; used</font>
+<a name="line9">  9: </a><font color="#B22222">   in printing error messages. Each makefile has an entry</font>
+<a name="line10"> 10: </a><font color="#B22222">   LOCDIR  =  thedirectory</font>
+<a name="line11"> 11: </a><font color="#B22222">   and bmake/common_variables includes in CCPPFLAGS -D__SDIR__=${LOCDIR}</font>
+<a name="line12"> 12: </a><font color="#B22222">   which is a flag passed to the C/C++ compilers. This declaration below</font>
+<a name="line13"> 13: </a><font color="#B22222">   is only needed if some code is compiled without the -D__SDIR__</font>
+<a name="line14"> 14: </a><font color="#B22222">*/</font>
+<a name="line17"> 17: </a><font color="#A020F0">#endif</font>
+
+<a name="line19"> 19: </a><font color="#B22222">/*</font>
+<a name="line20"> 20: </a><font color="#B22222">   Defines the function where the compiled source is located; used</font>
+<a name="line21"> 21: </a><font color="#B22222">   in printing error messages. This is defined here in case the user</font>
+<a name="line22"> 22: </a><font color="#B22222">   does not declare it.</font>
+<a name="line23"> 23: </a><font color="#B22222">*/</font>
+<a name="line26"> 26: </a><font color="#A020F0">#endif</font>
+
+<a name="line28"> 28: </a><font color="#B22222">/*</font>
+<a name="line29"> 29: </a><font color="#B22222">     These are the generic error codes. These error codes are used</font>
+<a name="line30"> 30: </a><font color="#B22222">     many different places in the PETSc source code. The string versions are</font>
+<a name="line31"> 31: </a><font color="#B22222">     at src/sys/error/err.c any changes here must also be made there</font>
+<a name="line32"> 32: </a><font color="#B22222">     These are also define in include/finclude/petscerror.h any CHANGES here</font>
+<a name="line33"> 33: </a><font color="#B22222">     must be also made there.</font>
+
+<a name="line35"> 35: </a><font color="#B22222">*/</font>
+<a name="line36"> 36: </a><strong><font color="#228B22">#define PETSC_ERR_MIN_VALUE        54   </font><font color="#B22222">/* should always be one less then the smallest value */</font><font color="#228B22"></font></strong>
+
+<a name="line38"> 38: </a><strong><font color="#228B22">#define PETSC_ERR_MEM              55   </font><font color="#B22222">/* unable to allocate requested memory */</font><font color="#228B22"></font></strong>
+<a name="line39"> 39: </a><strong><font color="#228B22">#define PETSC_ERR_SUP              56   </font><font color="#B22222">/* no support for requested operation */</font><font color="#228B22"></font></strong>
+<a name="line40"> 40: </a><strong><font color="#228B22">#define PETSC_ERR_SUP_SYS          57   </font><font color="#B22222">/* no support for requested operation on this computer system */</font><font color="#228B22"></font></strong>
+<a name="line41"> 41: </a><strong><font color="#228B22">#define PETSC_ERR_ORDER            58   </font><font color="#B22222">/* operation done in wrong order */</font><font color="#228B22"></font></strong>
+<a name="line42"> 42: </a><strong><font color="#228B22">#define PETSC_ERR_SIG              59   </font><font color="#B22222">/* signal received */</font><font color="#228B22"></font></strong>
+<a name="line43"> 43: </a><strong><font color="#228B22">#define PETSC_ERR_FP               72   </font><font color="#B22222">/* floating point exception */</font><font color="#228B22"></font></strong>
+<a name="line44"> 44: </a><strong><font color="#228B22">#define PETSC_ERR_COR              74   </font><font color="#B22222">/* corrupted PETSc object */</font><font color="#228B22"></font></strong>
+<a name="line45"> 45: </a><strong><font color="#228B22">#define PETSC_ERR_LIB              76   </font><font color="#B22222">/* error in library called by PETSc */</font><font color="#228B22"></font></strong>
+<a name="line46"> 46: </a><strong><font color="#228B22">#define PETSC_ERR_PLIB             77   </font><font color="#B22222">/* PETSc library generated inconsistent data */</font><font color="#228B22"></font></strong>
+<a name="line47"> 47: </a><strong><font color="#228B22">#define PETSC_ERR_MEMC             78   </font><font color="#B22222">/* memory corruption */</font><font color="#228B22"></font></strong>
+<a name="line48"> 48: </a><strong><font color="#228B22">#define PETSC_ERR_CONV_FAILED      82   </font><font color="#B22222">/* iterative method (<A href="../docs/manualpages/KSP/KSP.html#KSP">KSP</A> or <A href="../docs/manualpages/SNES/SNES.html#SNES">SNES</A>) failed */</font><font color="#228B22"></font></strong>
+<a name="line49"> 49: </a><strong><font color="#228B22">#define PETSC_ERR_USER             83   </font><font color="#B22222">/* user has not provided needed function */</font><font color="#228B22"></font></strong>
+<a name="line50"> 50: </a><strong><font color="#228B22">#define PETSC_ERR_SYS              88   </font><font color="#B22222">/* error in system call */</font><font color="#228B22"></font></strong>
+<a name="line51"> 51: </a><strong><font color="#228B22">#define PETSC_ERR_POINTER          70   </font><font color="#B22222">/* pointer does not point to valid address */</font><font color="#228B22"></font></strong>
+
+<a name="line53"> 53: </a><strong><font color="#228B22">#define PETSC_ERR_ARG_SIZ          60   </font><font color="#B22222">/* nonconforming object sizes used in operation */</font><font color="#228B22"></font></strong>
+<a name="line54"> 54: </a><strong><font color="#228B22">#define PETSC_ERR_ARG_IDN          61   </font><font color="#B22222">/* two arguments not allowed to be the same */</font><font color="#228B22"></font></strong>
+<a name="line55"> 55: </a><strong><font color="#228B22">#define PETSC_ERR_ARG_WRONG        62   </font><font color="#B22222">/* wrong argument (but object probably ok) */</font><font color="#228B22"></font></strong>
+<a name="line56"> 56: </a><strong><font color="#228B22">#define PETSC_ERR_ARG_CORRUPT      64   </font><font color="#B22222">/* null or corrupted PETSc object as argument */</font><font color="#228B22"></font></strong>
+<a name="line57"> 57: </a><strong><font color="#228B22">#define PETSC_ERR_ARG_OUTOFRANGE   63   </font><font color="#B22222">/* input argument, out of range */</font><font color="#228B22"></font></strong>
+<a name="line58"> 58: </a><strong><font color="#228B22">#define PETSC_ERR_ARG_BADPTR       68   </font><font color="#B22222">/* invalid pointer argument */</font><font color="#228B22"></font></strong>
+<a name="line59"> 59: </a><strong><font color="#228B22">#define PETSC_ERR_ARG_NOTSAMETYPE  69   </font><font color="#B22222">/* two args must be same object type */</font><font color="#228B22"></font></strong>
+<a name="line60"> 60: </a><strong><font color="#228B22">#define PETSC_ERR_ARG_NOTSAMECOMM  80   </font><font color="#B22222">/* two args must be same communicators */</font><font color="#228B22"></font></strong>
+<a name="line61"> 61: </a><strong><font color="#228B22">#define PETSC_ERR_ARG_WRONGSTATE   73   </font><font color="#B22222">/* object in argument is in wrong state, e.g. unassembled mat */</font><font color="#228B22"></font></strong>
+<a name="line62"> 62: </a><strong><font color="#228B22">#define PETSC_ERR_ARG_TYPENOTSET   89   </font><font color="#B22222">/* the type of the object has not yet been set */</font><font color="#228B22"></font></strong>
+<a name="line63"> 63: </a><strong><font color="#228B22">#define PETSC_ERR_ARG_INCOMP       75   </font><font color="#B22222">/* two arguments are incompatible */</font><font color="#228B22"></font></strong>
+<a name="line64"> 64: </a><strong><font color="#228B22">#define PETSC_ERR_ARG_NULL         85   </font><font color="#B22222">/* argument is null that should not be */</font><font color="#228B22"></font></strong>
+<a name="line65"> 65: </a><strong><font color="#228B22">#define PETSC_ERR_ARG_UNKNOWN_TYPE 86   </font><font color="#B22222">/* type name doesn't match any registered type */</font><font color="#228B22"></font></strong>
+
+<a name="line67"> 67: </a><strong><font color="#228B22">#define PETSC_ERR_FILE_OPEN        65   </font><font color="#B22222">/* unable to open file */</font><font color="#228B22"></font></strong>
+<a name="line68"> 68: </a><strong><font color="#228B22">#define PETSC_ERR_FILE_READ        66   </font><font color="#B22222">/* unable to read from file */</font><font color="#228B22"></font></strong>
+<a name="line69"> 69: </a><strong><font color="#228B22">#define PETSC_ERR_FILE_WRITE       67   </font><font color="#B22222">/* unable to write to file */</font><font color="#228B22"></font></strong>
+<a name="line70"> 70: </a><strong><font color="#228B22">#define PETSC_ERR_FILE_UNEXPECTED  79   </font><font color="#B22222">/* unexpected data in file */</font><font color="#228B22"></font></strong>
+
+<a name="line72"> 72: </a><strong><font color="#228B22">#define PETSC_ERR_MAT_LU_ZRPVT     71   </font><font color="#B22222">/* detected a zero pivot during LU factorization */</font><font color="#228B22"></font></strong>
+<a name="line73"> 73: </a><strong><font color="#228B22">#define PETSC_ERR_MAT_CH_ZRPVT     81   </font><font color="#B22222">/* detected a zero pivot during Cholesky factorization */</font><font color="#228B22"></font></strong>
+
+<a name="line75"> 75: </a><strong><font color="#228B22">#define PETSC_ERR_INT_OVERFLOW     84   </font><font color="#B22222">/* should always be one less then the smallest value */</font><font color="#228B22"></font></strong>
+
+<a name="line77"> 77: </a><strong><font color="#228B22">#define PETSC_ERR_FLOP_COUNT       90</font></strong>
+<a name="line78"> 78: </a><strong><font color="#228B22">#define PETSC_ERR_NOT_CONVERGED    91  </font><font color="#B22222">/* solver did not converge */</font><font color="#228B22"></font></strong>
+<a name="line79"> 79: </a><strong><font color="#228B22">#define PETSC_ERR_MAX_VALUE        92  </font><font color="#B22222">/* this is always the one more than the largest error code */</font><font color="#228B22"></font></strong>
+
+<a name="line81"> 81: </a><strong><font color="#228B22">#define PetscStringizeArg(a) #a</font></strong>
+<a name="line82"> 82: </a><strong><font color="#228B22">#define PetscStringize(a) PetscStringizeArg(a)</font></strong>
+
+<a name="line85"> 85: </a><font color="#A020F0">#if defined(PETSC_USE_ERRORCHECKING)</font>
+
+<a name="line87"> 87: </a><font color="#B22222">/*MC</font>
+<a name="line88"> 88: </a><font color="#B22222">   <A href="../docs/manualpages/Sys/SETERRQ.html#SETERRQ">SETERRQ</A> - Macro that is called when an error has been detected,</font>
+
+<a name="line90"> 90: </a><font color="#B22222">   Synopsis:</font>
+<a name="line91"> 91: </a><font color="#B22222">   #include "petscsys.h"</font>
+<a name="line92"> 92: </a><font color="#B22222">   <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Sys/SETERRQ.html#SETERRQ">SETERRQ</A>(<A href="../docs/manualpages/Sys/MPI_Comm.html#MPI_Comm">MPI_Comm</A> comm,<A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> errorcode,char *message)</font>
+
+<a name="line94"> 94: </a><font color="#B22222">   Not Collective</font>
+
+<a name="line96"> 96: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line97"> 97: </a><font color="#B22222">+  errorcode - nonzero error code, see the list of standard error codes in include/petscerror.h</font>
+<a name="line98"> 98: </a><font color="#B22222">-  message - error message</font>
+
+<a name="line100">100: </a><font color="#B22222">  Level: beginner</font>
+
+<a name="line102">102: </a><font color="#B22222">   Notes:</font>
+<a name="line103">103: </a><font color="#B22222">    Once the error handler is called the calling function is then returned from with the given error code.</font>
+
+<a name="line105">105: </a><font color="#B22222">    See <A href="../docs/manualpages/Sys/SETERRQ1.html#SETERRQ1">SETERRQ1</A>(), <A href="../docs/manualpages/Sys/SETERRQ2.html#SETERRQ2">SETERRQ2</A>(), <A href="../docs/manualpages/Sys/SETERRQ3.html#SETERRQ3">SETERRQ3</A>() for versions that take arguments</font>
+
+<a name="line107">107: </a><font color="#B22222">    In Fortran <A href="http://www.mcs.anl.gov/mpi/www/www3/MPI_Abort.html#MPI_Abort">MPI_Abort</A>() is always called</font>
+
+<a name="line109">109: </a><font color="#B22222">    Experienced users can set the error handler with <A href="../docs/manualpages/Sys/PetscPushErrorHandler.html#PetscPushErrorHandler">PetscPushErrorHandler</A>().</font>
+
+<a name="line111">111: </a><font color="#B22222">   Concepts: error^setting condition</font>
+
+<a name="line113">113: </a><font color="#B22222">.seealso: <A href="../docs/manualpages/Sys/PetscTraceBackErrorHandler.html#PetscTraceBackErrorHandler">PetscTraceBackErrorHandler</A>(), <A href="../docs/manualpages/Sys/PetscPushErrorHandler.html#PetscPushErrorHandler">PetscPushErrorHandler</A>(), <A href="../docs/manualpages/Sys/PetscError.html#PetscError">PetscError</A>(), <A href="../docs/manualpages/Sys/CHKERRQ.html#CHKERRQ">CHKERRQ</A>(), <A href="../docs/manualpages/Sys/CHKMEMQ.html#CHKMEMQ">CHKMEMQ</A>, <A href="../docs/manualpages/Sys/SETERRQ1.html#SETERRQ1">SETERRQ1</A>(), <A href="../docs/manualpages/Sys/SETERRQ2.html#SETERRQ2">SETERRQ2</A>(), <A href="../docs/manualpages/Sys/SETERRQ3.html#SETERRQ3">SETERRQ3</A>()</font>
+<a name="line114">114: </a><font color="#B22222">M*/</font>
+<a name="line115">115: </a><strong><font color="#228B22">#define <A href="../docs/manualpages/Sys/SETERRQ.html#SETERRQ">SETERRQ</A>(comm,n,s)              return <A href="../docs/manualpages/Sys/PetscError.html#PetscError">PetscError</A>(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,n,PETSC_ERROR_INITIAL,s)</font></strong>
+
+<a name="line117">117: </a><font color="#B22222">/*MC</font>
+<a name="line118">118: </a><font color="#B22222">   <A href="../docs/manualpages/Sys/SETERRQ1.html#SETERRQ1">SETERRQ1</A> - Macro that is called when an error has been detected,</font>
+
+<a name="line120">120: </a><font color="#B22222">   Synopsis:</font>
+<a name="line121">121: </a><font color="#B22222">   #include "petscsys.h"</font>
+<a name="line122">122: </a><font color="#B22222">   <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Sys/SETERRQ1.html#SETERRQ1">SETERRQ1</A>(<A href="../docs/manualpages/Sys/MPI_Comm.html#MPI_Comm">MPI_Comm</A> comm,<A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> errorcode,char *formatmessage,arg)</font>
+
+<a name="line124">124: </a><font color="#B22222">   Not Collective</font>
+
+<a name="line126">126: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line127">127: </a><font color="#B22222">+  errorcode - nonzero error code, see the list of standard error codes in include/petscerror.h</font>
+<a name="line128">128: </a><font color="#B22222">.  message - error message in the printf format</font>
+<a name="line129">129: </a><font color="#B22222">-  arg - argument (for example an integer, string or double)</font>
+
+<a name="line131">131: </a><font color="#B22222">  Level: beginner</font>
+
+<a name="line133">133: </a><font color="#B22222">   Notes:</font>
+<a name="line134">134: </a><font color="#B22222">    Once the error handler is called the calling function is then returned from with the given error code.</font>
+
+<a name="line136">136: </a><font color="#B22222">   Experienced users can set the error handler with <A href="../docs/manualpages/Sys/PetscPushErrorHandler.html#PetscPushErrorHandler">PetscPushErrorHandler</A>().</font>
+
+<a name="line138">138: </a><font color="#B22222">   Concepts: error^setting condition</font>
+
+<a name="line140">140: </a><font color="#B22222">.seealso: <A href="../docs/manualpages/Sys/PetscTraceBackErrorHandler.html#PetscTraceBackErrorHandler">PetscTraceBackErrorHandler</A>(), <A href="../docs/manualpages/Sys/PetscPushErrorHandler.html#PetscPushErrorHandler">PetscPushErrorHandler</A>(), <A href="../docs/manualpages/Sys/PetscError.html#PetscError">PetscError</A>(), <A href="../docs/manualpages/Sys/CHKERRQ.html#CHKERRQ">CHKERRQ</A>(), <A href="../docs/manualpages/Sys/CHKMEMQ.html#CHKMEMQ">CHKMEMQ</A>, <A href="../docs/manualpages/Sys/SETERRQ.html#SETERRQ">SETERRQ</A>(), <A href="../docs/manualpages/Sys/SETERRQ2.html#SETERRQ2">SETERRQ2</A>(), <A href="../docs/manualpages/Sys/SETERRQ3.html#SETERRQ3">SETERRQ3</A>()</font>
+<a name="line141">141: </a><font color="#B22222">M*/</font>
+<a name="line142">142: </a><strong><font color="#228B22">#define <A href="../docs/manualpages/Sys/SETERRQ1.html#SETERRQ1">SETERRQ1</A>(comm,n,s,a1)          return <A href="../docs/manualpages/Sys/PetscError.html#PetscError">PetscError</A>(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,n,PETSC_ERROR_INITIAL,s,a1)</font></strong>
+
+<a name="line144">144: </a><font color="#B22222">/*MC</font>
+<a name="line145">145: </a><font color="#B22222">   <A href="../docs/manualpages/Sys/SETERRQ2.html#SETERRQ2">SETERRQ2</A> - Macro that is called when an error has been detected,</font>
+
+<a name="line147">147: </a><font color="#B22222">   Synopsis:</font>
+<a name="line148">148: </a><font color="#B22222">   #include "petscsys.h"</font>
+<a name="line149">149: </a><font color="#B22222">   <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Sys/SETERRQ2.html#SETERRQ2">SETERRQ2</A>(<A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> errorcode,char *formatmessage,arg1,arg2)</font>
+
+<a name="line151">151: </a><font color="#B22222">   Not Collective</font>
+
+<a name="line153">153: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line154">154: </a><font color="#B22222">+  errorcode - nonzero error code, see the list of standard error codes in include/petscerror.h</font>
+<a name="line155">155: </a><font color="#B22222">.  message - error message in the printf format</font>
+<a name="line156">156: </a><font color="#B22222">.  arg1 - argument (for example an integer, string or double)</font>
+<a name="line157">157: </a><font color="#B22222">-  arg2 - argument (for example an integer, string or double)</font>
+
+<a name="line159">159: </a><font color="#B22222">  Level: beginner</font>
+
+<a name="line161">161: </a><font color="#B22222">   Notes:</font>
+<a name="line162">162: </a><font color="#B22222">    Once the error handler is called the calling function is then returned from with the given error code.</font>
+
+<a name="line164">164: </a><font color="#B22222">   Experienced users can set the error handler with <A href="../docs/manualpages/Sys/PetscPushErrorHandler.html#PetscPushErrorHandler">PetscPushErrorHandler</A>().</font>
+
+<a name="line166">166: </a><font color="#B22222">   Concepts: error^setting condition</font>
+
+<a name="line168">168: </a><font color="#B22222">.seealso: <A href="../docs/manualpages/Sys/PetscTraceBackErrorHandler.html#PetscTraceBackErrorHandler">PetscTraceBackErrorHandler</A>(), <A href="../docs/manualpages/Sys/PetscPushErrorHandler.html#PetscPushErrorHandler">PetscPushErrorHandler</A>(), <A href="../docs/manualpages/Sys/PetscError.html#PetscError">PetscError</A>(), <A href="../docs/manualpages/Sys/CHKERRQ.html#CHKERRQ">CHKERRQ</A>(), <A href="../docs/manualpages/Sys/CHKMEMQ.html#CHKMEMQ">CHKMEMQ</A>, <A href="../docs/manualpages/Sys/SETERRQ1.html#SETERRQ1">SETERRQ1</A>(), <A href="../docs/manualpages/Sys/SETERRQ3.html#SETERRQ3">SETERRQ3</A>()</font>
+<a name="line169">169: </a><font color="#B22222">M*/</font>
+<a name="line170">170: </a><strong><font color="#228B22">#define <A href="../docs/manualpages/Sys/SETERRQ2.html#SETERRQ2">SETERRQ2</A>(comm,n,s,a1,a2)       return <A href="../docs/manualpages/Sys/PetscError.html#PetscError">PetscError</A>(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,n,PETSC_ERROR_INITIAL,s,a1,a2)</font></strong>
+
+<a name="line172">172: </a><font color="#B22222">/*MC</font>
+<a name="line173">173: </a><font color="#B22222">   <A href="../docs/manualpages/Sys/SETERRQ3.html#SETERRQ3">SETERRQ3</A> - Macro that is called when an error has been detected,</font>
+
+<a name="line175">175: </a><font color="#B22222">   Synopsis:</font>
+<a name="line176">176: </a><font color="#B22222">   #include "petscsys.h"</font>
+<a name="line177">177: </a><font color="#B22222">   <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Sys/SETERRQ3.html#SETERRQ3">SETERRQ3</A>(<A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> errorcode,char *formatmessage,arg1,arg2,arg3)</font>
+
+<a name="line179">179: </a><font color="#B22222">   Not Collective</font>
+
+<a name="line181">181: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line182">182: </a><font color="#B22222">+  errorcode - nonzero error code, see the list of standard error codes in include/petscerror.h</font>
+<a name="line183">183: </a><font color="#B22222">.  message - error message in the printf format</font>
+<a name="line184">184: </a><font color="#B22222">.  arg1 - argument (for example an integer, string or double)</font>
+<a name="line185">185: </a><font color="#B22222">.  arg2 - argument (for example an integer, string or double)</font>
+<a name="line186">186: </a><font color="#B22222">-  arg3 - argument (for example an integer, string or double)</font>
+
+<a name="line188">188: </a><font color="#B22222">  Level: beginner</font>
+
+<a name="line190">190: </a><font color="#B22222">   Notes:</font>
+<a name="line191">191: </a><font color="#B22222">    Once the error handler is called the calling function is then returned from with the given error code.</font>
+
+<a name="line193">193: </a><font color="#B22222">    There are also versions for 4, 5, 6 and 7 arguments.</font>
+
+<a name="line195">195: </a><font color="#B22222">   Experienced users can set the error handler with <A href="../docs/manualpages/Sys/PetscPushErrorHandler.html#PetscPushErrorHandler">PetscPushErrorHandler</A>().</font>
+
+<a name="line197">197: </a><font color="#B22222">   Concepts: error^setting condition</font>
+
+<a name="line199">199: </a><font color="#B22222">.seealso: <A href="../docs/manualpages/Sys/PetscTraceBackErrorHandler.html#PetscTraceBackErrorHandler">PetscTraceBackErrorHandler</A>(), <A href="../docs/manualpages/Sys/PetscPushErrorHandler.html#PetscPushErrorHandler">PetscPushErrorHandler</A>(), <A href="../docs/manualpages/Sys/PetscError.html#PetscError">PetscError</A>(), <A href="../docs/manualpages/Sys/CHKERRQ.html#CHKERRQ">CHKERRQ</A>(), <A href="../docs/manualpages/Sys/CHKMEMQ.html#CHKMEMQ">CHKMEMQ</A>, <A href="../docs/manualpages/Sys/SETERRQ1.html#SETERRQ1">SETERRQ1</A>(), <A href="../docs/manualpages/Sys/SETERRQ2.html#SETERRQ2">SETERRQ2</A>()</font>
+<a name="line200">200: </a><font color="#B22222">M*/</font>
+<a name="line201">201: </a><strong><font color="#228B22">#define <A href="../docs/manualpages/Sys/SETERRQ3.html#SETERRQ3">SETERRQ3</A>(comm,n,s,a1,a2,a3)    return <A href="../docs/manualpages/Sys/PetscError.html#PetscError">PetscError</A>(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,n,PETSC_ERROR_INITIAL,s,a1,a2,a3)</font></strong>
+
+<a name="line203">203: </a><strong><font color="#228B22">#define SETERRQ4(comm,n,s,a1,a2,a3,a4) return <A href="../docs/manualpages/Sys/PetscError.html#PetscError">PetscError</A>(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,n,PETSC_ERROR_INITIAL,s,a1,a2,a3,a4)</font></strong>
+<a name="line204">204: </a><strong><font color="#228B22">#define SETERRQ5(comm,n,s,a1,a2,a3,a4,a5)       return <A href="../docs/manualpages/Sys/PetscError.html#PetscError">PetscError</A>(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,n,PETSC_ERROR_INITIAL,s,a1,a2,a3,a4,a5)</font></strong>
+<a name="line205">205: </a><strong><font color="#228B22">#define SETERRQ6(comm,n,s,a1,a2,a3,a4,a5,a6)    return <A href="../docs/manualpages/Sys/PetscError.html#PetscError">PetscError</A>(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,n,PETSC_ERROR_INITIAL,s,a1,a2,a3,a4,a5,a6)</font></strong>
+<a name="line206">206: </a><strong><font color="#228B22">#define SETERRQ7(comm,n,s,a1,a2,a3,a4,a5,a6,a7) return <A href="../docs/manualpages/Sys/PetscError.html#PetscError">PetscError</A>(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,n,PETSC_ERROR_INITIAL,s,a1,a2,a3,a4,a5,a6,a7)</font></strong>
+<a name="line207">207: </a><strong><font color="#228B22">#define SETERRQ8(comm,n,s,a1,a2,a3,a4,a5,a6,a7,a8) return <A href="../docs/manualpages/Sys/PetscError.html#PetscError">PetscError</A>(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,n,PETSC_ERROR_INITIAL,s,a1,a2,a3,a4,a5,a6,a7,a8)</font></strong>
+<a name="line208">208: </a><strong><font color="#228B22">#define SETERRABORT(comm,n,s)     do {<A href="../docs/manualpages/Sys/PetscError.html#PetscError">PetscError</A>(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,n,PETSC_ERROR_INITIAL,s);<A href="http://www.mcs.anl.gov/mpi/www/www3/MPI_Abort.html#MPI_Abort">MPI_Abort</A>(comm,n);} while (0)</font></strong>
+
+<a name="line210">210: </a><font color="#B22222">/*MC</font>
+<a name="line211">211: </a><font color="#B22222">   <A href="../docs/manualpages/Sys/CHKERRQ.html#CHKERRQ">CHKERRQ</A> - Checks error code, if non-zero it calls the error handler and then returns</font>
+
+<a name="line213">213: </a><font color="#B22222">   Synopsis:</font>
+<a name="line214">214: </a><font color="#B22222">   #include "petscsys.h"</font>
+<a name="line215">215: </a><font color="#B22222">   <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Sys/CHKERRQ.html#CHKERRQ">CHKERRQ</A>(<A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> errorcode)</font>
+
+<a name="line217">217: </a><font color="#B22222">   Not Collective</font>
+
+<a name="line219">219: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line220">220: </a><font color="#B22222">.  errorcode - nonzero error code, see the list of standard error codes in include/petscerror.h</font>
+
+<a name="line222">222: </a><font color="#B22222">  Level: beginner</font>
+
+<a name="line224">224: </a><font color="#B22222">   Notes:</font>
+<a name="line225">225: </a><font color="#B22222">    Once the error handler is called the calling function is then returned from with the given error code.</font>
+
+<a name="line227">227: </a><font color="#B22222">    Experienced users can set the error handler with <A href="../docs/manualpages/Sys/PetscPushErrorHandler.html#PetscPushErrorHandler">PetscPushErrorHandler</A>().</font>
+
+<a name="line229">229: </a><font color="#B22222">    <A href="../docs/manualpages/Sys/CHKERRQ.html#CHKERRQ">CHKERRQ</A>(n) is fundamentally a macro replacement for</font>
+<a name="line230">230: </a><font color="#B22222">         if (n) return(<A href="../docs/manualpages/Sys/PetscError.html#PetscError">PetscError</A>(...,n,...));</font>
+
+<a name="line232">232: </a><font color="#B22222">    Although typical usage resembles "void <A href="../docs/manualpages/Sys/CHKERRQ.html#CHKERRQ">CHKERRQ</A>(<A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A>)" as described above, for certain uses it is</font>
+<a name="line233">233: </a><font color="#B22222">    highly inappropriate to use it in this manner as it invokes return(<A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A>). In particular,</font>
+<a name="line234">234: </a><font color="#B22222">    it cannot be used in functions which return(void) or any other datatype.  In these types of functions,</font>
+<a name="line235">235: </a><font color="#B22222">    you can use CHKERRV() which returns without an error code (bad idea since the error is ignored or</font>
+<a name="line236">236: </a><font color="#B22222">         if (n) {<A href="../docs/manualpages/Sys/PetscError.html#PetscError">PetscError</A>(....); return(YourReturnType);}</font>
+<a name="line237">237: </a><font color="#B22222">    where you may pass back a NULL to indicate an error. You can also call CHKERRABORT(comm,n) to have</font>
+<a name="line238">238: </a><font color="#B22222">    <A href="http://www.mcs.anl.gov/mpi/www/www3/MPI_Abort.html#MPI_Abort">MPI_Abort</A>() returned immediately.</font>
+
+<a name="line240">240: </a><font color="#B22222">    In Fortran <A href="http://www.mcs.anl.gov/mpi/www/www3/MPI_Abort.html#MPI_Abort">MPI_Abort</A>() is always called</font>
+
+<a name="line242">242: </a><font color="#B22222">   Concepts: error^setting condition</font>
+
+<a name="line244">244: </a><font color="#B22222">.seealso: <A href="../docs/manualpages/Sys/PetscTraceBackErrorHandler.html#PetscTraceBackErrorHandler">PetscTraceBackErrorHandler</A>(), <A href="../docs/manualpages/Sys/PetscPushErrorHandler.html#PetscPushErrorHandler">PetscPushErrorHandler</A>(), <A href="../docs/manualpages/Sys/PetscError.html#PetscError">PetscError</A>(), <A href="../docs/manualpages/Sys/SETERRQ.html#SETERRQ">SETERRQ</A>(), <A href="../docs/manualpages/Sys/CHKMEMQ.html#CHKMEMQ">CHKMEMQ</A>, <A href="../docs/manualpages/Sys/SETERRQ1.html#SETERRQ1">SETERRQ1</A>(), <A href="../docs/manualpages/Sys/SETERRQ2.html#SETERRQ2">SETERRQ2</A>(), <A href="../docs/manualpages/Sys/SETERRQ2.html#SETERRQ2">SETERRQ2</A>()</font>
+<a name="line245">245: </a><font color="#B22222">M*/</font>
+<a name="line246">246: </a><strong><font color="#228B22">#define <A href="../docs/manualpages/Sys/CHKERRQ.html#CHKERRQ">CHKERRQ</A>(n)             do {if (<A href="../docs/manualpages/Sys/PetscUnlikely.html#PetscUnlikely">PetscUnlikely</A>(n)) return <A href="../docs/manualpages/Sys/PetscError.html#PetscError">PetscError</A>(<A href="../docs/manualpages/Sys/PETSC_COMM_SELF.html#PETSC_COMM_SELF">PETSC_COMM_SELF</A>,__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,n,PETSC_ERROR_REPEAT,</font><font color="#666666">" "</font><font color="#228B22">);} while (0)</font></strong>
+
+<a name="line248">248: </a><strong><font color="#228B22">#define CHKERRV(n)             do {if (<A href="../docs/manualpages/Sys/PetscUnlikely.html#PetscUnlikely">PetscUnlikely</A>(n)) {n = <A href="../docs/manualpages/Sys/PetscError.html#PetscError">PetscError</A>(<A href="../docs/manualpages/Sys/PETSC_COMM_SELF.html#PETSC_COMM_SELF">PETSC_COMM_SELF</A>,__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,n,PETSC_ERROR_REPEAT,</font><font color="#666666">" "</font><font color="#228B22">);return;}} while(0)</font></strong>
+<a name="line249">249: </a><strong><font color="#228B22">#define CHKERRABORT(comm,n)    do {if (<A href="../docs/manualpages/Sys/PetscUnlikely.html#PetscUnlikely">PetscUnlikely</A>(n)) {<A href="../docs/manualpages/Sys/PetscError.html#PetscError">PetscError</A>(<A href="../docs/manualpages/Sys/PETSC_COMM_SELF.html#PETSC_COMM_SELF">PETSC_COMM_SELF</A>,__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,n,PETSC_ERROR_REPEAT,</font><font color="#666666">" "</font><font color="#228B22">);<A href="http://www.mcs.anl.gov/mpi/www/www3/MPI_Abort.html#MPI_Abort">MPI_Abort</A>(comm,n);}} while (0)</font></strong>
+<a name="line250">250: </a><strong><font color="#228B22">#define CHKERRCONTINUE(n)      do {if (<A href="../docs/manualpages/Sys/PetscUnlikely.html#PetscUnlikely">PetscUnlikely</A>(n)) {<A href="../docs/manualpages/Sys/PetscError.html#PetscError">PetscError</A>(<A href="../docs/manualpages/Sys/PETSC_COMM_SELF.html#PETSC_COMM_SELF">PETSC_COMM_SELF</A>,__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,n,PETSC_ERROR_REPEAT,</font><font color="#666666">" "</font><font color="#228B22">);}} while (0)</font></strong>
+
+<a name="line252">252: </a><font color="#A020F0">#ifdef PETSC_CLANGUAGE_CXX</font>
+
+<a name="line254">254: </a><font color="#B22222">/*MC</font>
+<a name="line255">255: </a><font color="#B22222">   <A href="../docs/manualpages/Sys/CHKERRXX.html#CHKERRXX">CHKERRXX</A> - Checks error code, if non-zero it calls the C++ error handler which throws an exception</font>
+
+<a name="line257">257: </a><font color="#B22222">   Synopsis:</font>
+<a name="line258">258: </a><font color="#B22222">   #include "petscsys.h"</font>
+<a name="line259">259: </a><font color="#B22222">   void <A href="../docs/manualpages/Sys/CHKERRXX.html#CHKERRXX">CHKERRXX</A>(<A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> errorcode)</font>
+
+<a name="line261">261: </a><font color="#B22222">   Not Collective</font>
+
+<a name="line263">263: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line264">264: </a><font color="#B22222">.  errorcode - nonzero error code, see the list of standard error codes in include/petscerror.h</font>
+
+<a name="line266">266: </a><font color="#B22222">  Level: beginner</font>
+
+<a name="line268">268: </a><font color="#B22222">   Notes:</font>
+<a name="line269">269: </a><font color="#B22222">    Once the error handler throws a ??? exception.</font>
+
+<a name="line271">271: </a><font color="#B22222">    You can use CHKERRV() which returns without an error code (bad idea since the error is ignored)</font>
+<a name="line272">272: </a><font color="#B22222">    or CHKERRABORT(comm,n) to have <A href="http://www.mcs.anl.gov/mpi/www/www3/MPI_Abort.html#MPI_Abort">MPI_Abort</A>() returned immediately.</font>
+
+<a name="line274">274: </a><font color="#B22222">   Concepts: error^setting condition</font>
+
+<a name="line276">276: </a><font color="#B22222">.seealso: <A href="../docs/manualpages/Sys/PetscTraceBackErrorHandler.html#PetscTraceBackErrorHandler">PetscTraceBackErrorHandler</A>(), <A href="../docs/manualpages/Sys/PetscPushErrorHandler.html#PetscPushErrorHandler">PetscPushErrorHandler</A>(), <A href="../docs/manualpages/Sys/PetscError.html#PetscError">PetscError</A>(), <A href="../docs/manualpages/Sys/SETERRQ.html#SETERRQ">SETERRQ</A>(), <A href="../docs/manualpages/Sys/CHKERRQ.html#CHKERRQ">CHKERRQ</A>(), <A href="../docs/manualpages/Sys/CHKMEMQ.html#CHKMEMQ">CHKMEMQ</A></font>
+<a name="line277">277: </a><font color="#B22222">M*/</font>
+<a name="line278">278: </a><strong><font color="#228B22">#define <A href="../docs/manualpages/Sys/CHKERRXX.html#CHKERRXX">CHKERRXX</A>(n)            do {if (<A href="../docs/manualpages/Sys/PetscUnlikely.html#PetscUnlikely">PetscUnlikely</A>(n)) {<A href="../docs/manualpages/Sys/PetscError.html#PetscError">PetscError</A>(<A href="../docs/manualpages/Sys/PETSC_COMM_SELF.html#PETSC_COMM_SELF">PETSC_COMM_SELF</A>,__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,n,PETSC_ERROR_IN_CXX,0);}} while(0)</font></strong>
+
+<a name="line280">280: </a><font color="#A020F0">#endif</font>
+
+<a name="line282">282: </a><font color="#B22222">/*MC</font>
+<a name="line283">283: </a><font color="#B22222">   <A href="../docs/manualpages/Sys/CHKMEMQ.html#CHKMEMQ">CHKMEMQ</A> - Checks the memory for corruption, calls error handler if any is detected</font>
+
+<a name="line285">285: </a><font color="#B22222">   Synopsis:</font>
+<a name="line286">286: </a><font color="#B22222">   #include "petscsys.h"</font>
+<a name="line287">287: </a><font color="#B22222">   <A href="../docs/manualpages/Sys/CHKMEMQ.html#CHKMEMQ">CHKMEMQ</A>;</font>
+
+<a name="line289">289: </a><font color="#B22222">   Not Collective</font>
+
+<a name="line291">291: </a><font color="#B22222">  Level: beginner</font>
+
+<a name="line293">293: </a><font color="#B22222">   Notes:</font>
+<a name="line294">294: </a><font color="#B22222">    Must run with the option -malloc_debug to enable this option</font>
+
+<a name="line296">296: </a><font color="#B22222">    Once the error handler is called the calling function is then returned from with the given error code.</font>
+
+<a name="line298">298: </a><font color="#B22222">    By defaults prints location where memory that is corrupted was allocated.</font>
+
+<a name="line300">300: </a><font color="#B22222">    Use CHKMEMA for functions that return void</font>
+
+<a name="line302">302: </a><font color="#B22222">   Concepts: memory corruption</font>
+
+<a name="line304">304: </a><font color="#B22222">.seealso: <A href="../docs/manualpages/Sys/PetscTraceBackErrorHandler.html#PetscTraceBackErrorHandler">PetscTraceBackErrorHandler</A>(), <A href="../docs/manualpages/Sys/PetscPushErrorHandler.html#PetscPushErrorHandler">PetscPushErrorHandler</A>(), <A href="../docs/manualpages/Sys/PetscError.html#PetscError">PetscError</A>(), <A href="../docs/manualpages/Sys/SETERRQ.html#SETERRQ">SETERRQ</A>(), <A href="../docs/manualpages/Sys/CHKMEMQ.html#CHKMEMQ">CHKMEMQ</A>, <A href="../docs/manualpages/Sys/SETERRQ1.html#SETERRQ1">SETERRQ1</A>(), <A href="../docs/manualpages/Sys/SETERRQ2.html#SETERRQ2">SETERRQ2</A>(), <A href="../docs/manualpages/Sys/SETERRQ3.html#SETERRQ3">SETERRQ3</A>(),</font>
+<a name="line305">305: </a><font color="#B22222">          <A href="../docs/manualpages/Sys/PetscMallocValidate.html#PetscMallocValidate">PetscMallocValidate</A>()</font>
+<a name="line306">306: </a><font color="#B22222">M*/</font>
+<a name="line307">307: </a><strong><font color="#228B22">#define <A href="../docs/manualpages/Sys/CHKMEMQ.html#CHKMEMQ">CHKMEMQ</A> do {<A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> _7_PetscMallocValidate(__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__);<A href="../docs/manualpages/Sys/CHKERRQ.html#CHKERRQ">CHKERRQ</A>(_7_ierr);} while(0)</font></strong>
+
+<a name="line309">309: </a><strong><font color="#228B22">#define CHKMEMA <A href="../docs/manualpages/Sys/PetscMallocValidate.html#PetscMallocValidate">PetscMallocValidate</A>(__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__)</font></strong>
+
+<a name="line311">311: </a><font color="#A020F0">#else </font><font color="#B22222">/* PETSC_USE_ERRORCHECKING */</font><font color="#A020F0"></font>
+
+<a name="line313">313: </a><font color="#B22222">/*</font>
+<a name="line314">314: </a><font color="#B22222">    These are defined to be empty for when error checking is turned off, with ./configure --with-errorchecking=0</font>
+<a name="line315">315: </a><font color="#B22222">*/</font>
+
+<a name="line317">317: </a><strong><font color="#228B22">#define <A href="../docs/manualpages/Sys/SETERRQ.html#SETERRQ">SETERRQ</A>(c,n,s)</font></strong>
+<a name="line318">318: </a><strong><font color="#228B22">#define <A href="../docs/manualpages/Sys/SETERRQ1.html#SETERRQ1">SETERRQ1</A>(c,n,s,a1)</font></strong>
+<a name="line319">319: </a><strong><font color="#228B22">#define <A href="../docs/manualpages/Sys/SETERRQ2.html#SETERRQ2">SETERRQ2</A>(c,n,s,a1,a2)</font></strong>
+<a name="line320">320: </a><strong><font color="#228B22">#define <A href="../docs/manualpages/Sys/SETERRQ3.html#SETERRQ3">SETERRQ3</A>(c,n,s,a1,a2,a3)</font></strong>
+<a name="line321">321: </a><strong><font color="#228B22">#define SETERRQ4(c,n,s,a1,a2,a3,a4)</font></strong>
+<a name="line322">322: </a><strong><font color="#228B22">#define SETERRQ5(c,n,s,a1,a2,a3,a4,a5)</font></strong>
+<a name="line323">323: </a><strong><font color="#228B22">#define SETERRQ6(c,n,s,a1,a2,a3,a4,a5,a6)</font></strong>
+<a name="line324">324: </a><strong><font color="#228B22">#define SETERRQ7(c,n,s,a1,a2,a3,a4,a5,a6,a7)</font></strong>
+<a name="line325">325: </a><strong><font color="#228B22">#define SETERRQ8(c,n,s,a1,a2,a3,a4,a5,a6,a7,a8)</font></strong>
+<a name="line326">326: </a><strong><font color="#228B22">#define SETERRABORT(comm,n,s)</font></strong>
+
+<a name="line328">328: </a><strong><font color="#228B22">#define <A href="../docs/manualpages/Sys/CHKERRQ.html#CHKERRQ">CHKERRQ</A>(n)     ;</font></strong>
+<a name="line329">329: </a><strong><font color="#228B22">#define CHKERRABORT(comm,n) ;</font></strong>
+<a name="line330">330: </a><strong><font color="#228B22">#define CHKERRCONTINUE(n) ;</font></strong>
+<a name="line331">331: </a><strong><font color="#228B22">#define <A href="../docs/manualpages/Sys/CHKMEMQ.html#CHKMEMQ">CHKMEMQ</A>        ;</font></strong>
+
+<a name="line333">333: </a><font color="#A020F0">#ifdef PETSC_CLANGUAGE_CXX</font>
+<a name="line334">334: </a><strong><font color="#228B22">#define <A href="../docs/manualpages/Sys/CHKERRXX.html#CHKERRXX">CHKERRXX</A>(n) ;</font></strong>
+<a name="line335">335: </a><font color="#A020F0">#endif</font>
+
+<a name="line337">337: </a><font color="#A020F0">#endif </font><font color="#B22222">/* PETSC_USE_ERRORCHECKING */</font><font color="#A020F0"></font>
+
+<a name="line339">339: </a><font color="#B22222">/*E</font>
+<a name="line340">340: </a><font color="#B22222">  <A href="../docs/manualpages/Sys/PetscErrorType.html#PetscErrorType">PetscErrorType</A> - passed to the PETSc error handling routines indicating if this is the first or a later call to the error handlers</font>
+
+<a name="line342">342: </a><font color="#B22222">  Level: advanced</font>
+
+<a name="line344">344: </a><font color="#B22222">  PETSC_ERROR_IN_CXX indicates the error was detected in C++ and an exception should be generated</font>
+
+<a name="line346">346: </a><font color="#B22222">  Developer Notes: This is currently used to decide when to print the detailed information about the run in PetscTraceBackErrorHandling()</font>
+
+<a name="line348">348: </a><font color="#B22222">.seealso: <A href="../docs/manualpages/Sys/PetscError.html#PetscError">PetscError</A>(), SETERRXX()</font>
+<a name="line349">349: </a><font color="#B22222">E*/</font>
+<a name="line350">350: </a><font color="#4169E1">typedef</font> <font color="#4169E1">enum</font> {PETSC_ERROR_INITIAL=0,PETSC_ERROR_REPEAT=1,PETSC_ERROR_IN_CXX = 2} <A href="../docs/manualpages/Sys/PetscErrorType.html#PetscErrorType">PetscErrorType</A>;
+
+<a name="line352">352: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> PetscErrorPrintfInitialize(void)</font></strong>;
+<a name="line353">353: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Sys/PetscErrorMessage.html#PetscErrorMessage">PetscErrorMessage</A>(int,const char*[],char **)</font></strong>;
+<a name="line354">354: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Sys/PetscTraceBackErrorHandler.html#PetscTraceBackErrorHandler">PetscTraceBackErrorHandler</A>(<A href="../docs/manualpages/Sys/MPI_Comm.html#MPI_Comm">MPI_Comm</A>,int,const char*,const char*,const char*,<A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A>,<A href="../docs/manualpages/Sys/PetscErrorType.html#PetscErrorType">PetscErrorType</A>,const char*,void*)</font></strong>;
+<a name="line355">355: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Sys/PetscIgnoreErrorHandler.html#PetscIgnoreErrorHandler">PetscIgnoreErrorHandler</A>(<A href="../docs/manualpages/Sys/MPI_Comm.html#MPI_Comm">MPI_Comm</A>,int,const char*,const char*,const char*,<A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A>,<A href="../docs/manualpages/Sys/PetscErrorType.html#PetscErrorType">PetscErrorType</A>,const char*,void*)</font></strong>;
+<a name="line356">356: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Sys/PetscEmacsClientErrorHandler.html#PetscEmacsClientErrorHandler">PetscEmacsClientErrorHandler</A>(<A href="../docs/manualpages/Sys/MPI_Comm.html#MPI_Comm">MPI_Comm</A>,int,const char*,const char*,const char*,<A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A>,<A href="../docs/manualpages/Sys/PetscErrorType.html#PetscErrorType">PetscErrorType</A>,const char*,void*)</font></strong>;
+<a name="line357">357: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Sys/PetscMPIAbortErrorHandler.html#PetscMPIAbortErrorHandler">PetscMPIAbortErrorHandler</A>(<A href="../docs/manualpages/Sys/MPI_Comm.html#MPI_Comm">MPI_Comm</A>,int,const char*,const char*,const char*,<A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A>,<A href="../docs/manualpages/Sys/PetscErrorType.html#PetscErrorType">PetscErrorType</A>,const char*,void*)</font></strong>;
+<a name="line358">358: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Sys/PetscAbortErrorHandler.html#PetscAbortErrorHandler">PetscAbortErrorHandler</A>(<A href="../docs/manualpages/Sys/MPI_Comm.html#MPI_Comm">MPI_Comm</A>,int,const char*,const char*,const char*,<A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A>,<A href="../docs/manualpages/Sys/PetscErrorType.html#PetscErrorType">PetscErrorType</A>,const char*,void*)</font></strong>;
+<a name="line359">359: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Sys/PetscAttachDebuggerErrorHandler.html#PetscAttachDebuggerErrorHandler">PetscAttachDebuggerErrorHandler</A>(<A href="../docs/manualpages/Sys/MPI_Comm.html#MPI_Comm">MPI_Comm</A>,int,const char*,const char*,const char*,<A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A>,<A href="../docs/manualpages/Sys/PetscErrorType.html#PetscErrorType">PetscErrorType</A>,const char*,void*)</font></strong>;
+<a name="line360">360: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Sys/PetscReturnErrorHandler.html#PetscReturnErrorHandler">PetscReturnErrorHandler</A>(<A href="../docs/manualpages/Sys/MPI_Comm.html#MPI_Comm">MPI_Comm</A>,int,const char*,const char*,const char*,<A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A>,<A href="../docs/manualpages/Sys/PetscErrorType.html#PetscErrorType">PetscErrorType</A>,const char*,void*)</font></strong>;
+<a name="line361">361: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Sys/PetscError.html#PetscError">PetscError</A>(<A href="../docs/manualpages/Sys/MPI_Comm.html#MPI_Comm">MPI_Comm</A>,int,const char*,const char*,const char*,<A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A>,<A href="../docs/manualpages/Sys/PetscErrorType.html#PetscErrorType">PetscErrorType</A>,const char*,...)</font></strong>;
+<a name="line362">362: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Sys/PetscPushErrorHandler.html#PetscPushErrorHandler">PetscPushErrorHandler</A>(<A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*handler)(<A href="../docs/manualpages/Sys/MPI_Comm.html#MPI_Comm">MPI_Comm</A>,int,const char*,const char*,const char*,<A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A>,<A href="../docs/manualpages/Sys/PetscErrorType.html#PetscErrorType">PetscErrorType</A>,const char*,void*),void*)</font></strong>;
+<a name="line363">363: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Sys/PetscPopErrorHandler.html#PetscPopErrorHandler">PetscPopErrorHandler</A>(void)</font></strong>;
+<a name="line364">364: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Sys/PetscSignalHandlerDefault.html#PetscSignalHandlerDefault">PetscSignalHandlerDefault</A>(int,void*)</font></strong>;
+<a name="line365">365: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Sys/PetscPushSignalHandler.html#PetscPushSignalHandler">PetscPushSignalHandler</A>(<A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*)(int,void *),void*)</font></strong>;
+<a name="line366">366: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Sys/PetscPopSignalHandler.html#PetscPopSignalHandler">PetscPopSignalHandler</A>(void)</font></strong>;
+
+<a name="line368">368: </a><font color="#B22222">/*MC</font>
+<a name="line369">369: </a><font color="#B22222">    <A href="../docs/manualpages/Sys/PetscErrorPrintf.html#PetscErrorPrintf">PetscErrorPrintf</A> - Prints error messages.</font>
+
+<a name="line371">371: </a><font color="#B22222">   Synopsis:</font>
+<a name="line372">372: </a><font color="#B22222">    #include "petscsys.h"</font>
+<a name="line373">373: </a><font color="#B22222">     <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*<A href="../docs/manualpages/Sys/PetscErrorPrintf.html#PetscErrorPrintf">PetscErrorPrintf</A>)(const char format[],...);</font>
+
+<a name="line375">375: </a><font color="#B22222">    Not Collective</font>
+
+<a name="line377">377: </a><font color="#B22222">    Input Parameters:</font>
+<a name="line378">378: </a><font color="#B22222">.   format - the usual printf() format string</font>
+
+<a name="line380">380: </a><font color="#B22222">   Options Database Keys:</font>
+<a name="line381">381: </a><font color="#B22222">+    -error_output_stdout - cause error messages to be printed to stdout instead of the</font>
+<a name="line382">382: </a><font color="#B22222">         (default) stderr</font>
+<a name="line383">383: </a><font color="#B22222">-    -error_output_none to turn off all printing of error messages (does not change the way the</font>
+<a name="line384">384: </a><font color="#B22222">          error is handled.)</font>
+
+<a name="line386">386: </a><font color="#B22222">   Notes: Use</font>
+<a name="line387">387: </a><font color="#B22222">$     <A href="../docs/manualpages/Sys/PetscErrorPrintf.html#PetscErrorPrintf">PetscErrorPrintf</A> = PetscErrorPrintfNone; to turn off all printing of error messages (does not change the way the</font>
+<a name="line388">388: </a><font color="#B22222">$                        error is handled.) and</font>
+<a name="line389">389: </a><font color="#B22222">$     <A href="../docs/manualpages/Sys/PetscErrorPrintf.html#PetscErrorPrintf">PetscErrorPrintf</A> = PetscErrorPrintfDefault; to turn it back on</font>
+<a name="line390">390: </a><font color="#B22222">$        of you can use your own function</font>
+
+<a name="line392">392: </a><font color="#B22222">          Use</font>
+<a name="line393">393: </a><font color="#B22222">     PETSC_STDERR = FILE* obtained from a file open etc. to have stderr printed to the file.</font>
+<a name="line394">394: </a><font color="#B22222">     PETSC_STDOUT = FILE* obtained from a file open etc. to have stdout printed to the file.</font>
+
+<a name="line396">396: </a><font color="#B22222">          Use</font>
+<a name="line397">397: </a><font color="#B22222">      <A href="../docs/manualpages/Sys/PetscPushErrorHandler.html#PetscPushErrorHandler">PetscPushErrorHandler</A>() to provide your own error handler that determines what kind of messages to print</font>
+
+<a name="line399">399: </a><font color="#B22222">   Level: developer</font>
+
+<a name="line401">401: </a><font color="#B22222">    Fortran Note:</font>
+<a name="line402">402: </a><font color="#B22222">    This routine is not supported in Fortran.</font>
+
+<a name="line404">404: </a><font color="#B22222">    Concepts: error messages^printing</font>
+<a name="line405">405: </a><font color="#B22222">    Concepts: printing^error messages</font>
+
+<a name="line407">407: </a><font color="#B22222">.seealso: <A href="../docs/manualpages/Sys/PetscFPrintf.html#PetscFPrintf">PetscFPrintf</A>(), <A href="../docs/manualpages/Sys/PetscSynchronizedPrintf.html#PetscSynchronizedPrintf">PetscSynchronizedPrintf</A>(), <A href="../docs/manualpages/Sys/PetscHelpPrintf.html#PetscHelpPrintf">PetscHelpPrintf</A>(), <A href="../docs/manualpages/Sys/PetscPrintf.html#PetscPrintf">PetscPrintf</A>(), PetscErrorHandlerPush(), <A href="../docs/manualpages/Sys/PetscVFPrintf.html#PetscVFPrintf">PetscVFPrintf</A>(), <A href="../docs/manualpages/Sys/PetscHelpPrintf.html#PetscHelpPrintf">PetscHelpPrintf</A>()</font>
+<a name="line408">408: </a><font color="#B22222">M*/</font>
+<a name="line409">409: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*<A href="../docs/manualpages/Sys/PetscErrorPrintf.html#PetscErrorPrintf">PetscErrorPrintf</A>)(const char[],...)</font></strong>;
+
+<a name="line411">411: </a><font color="#4169E1">typedef</font> <font color="#4169E1">enum</font> {PETSC_FP_TRAP_OFF=0,PETSC_FP_TRAP_ON=1} PetscFPTrap;
+<a name="line412">412: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Sys/PetscSetFPTrap.html#PetscSetFPTrap">PetscSetFPTrap</A>(PetscFPTrap)</font></strong>;
+<a name="line413">413: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Sys/PetscFPTrapPush.html#PetscFPTrapPush">PetscFPTrapPush</A>(PetscFPTrap)</font></strong>;
+<a name="line414">414: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Sys/PetscFPTrapPop.html#PetscFPTrapPop">PetscFPTrapPop</A>(void)</font></strong>;
+
+<a name="line416">416: </a><font color="#B22222">/*  Linux functions CPU_SET and others don't work if sched.h is not included before</font>
+<a name="line417">417: </a><font color="#B22222">    including pthread.h. Also, these functions are active only if either _GNU_SOURCE</font>
+<a name="line418">418: </a><font color="#B22222">    or __USE_GNU is not set (see /usr/include/sched.h and /usr/include/features.h), hence</font>
+<a name="line419">419: </a><font color="#B22222">    set these first.</font>
+<a name="line420">420: </a><font color="#B22222">*/</font>
+<a name="line421">421: </a><font color="#A020F0">#if defined(PETSC_HAVE_PTHREADCLASSES)</font>
+<a name="line422">422: </a><font color="#A020F0">#if defined(PETSC_HAVE_SCHED_H)</font>
+<a name="line423">423: </a><font color="#A020F0">#ifndef _GNU_SOURCE</font>
+<a name="line424">424: </a><strong><font color="#228B22">#define _GNU_SOURCE</font></strong>
+<a name="line425">425: </a><font color="#A020F0">#endif</font>
+<a name="line426">426: </a><font color="#A020F0">#include &lt;sched.h&gt;</font>
+<a name="line427">427: </a><font color="#A020F0">#endif</font>
+<a name="line428">428: </a><font color="#A020F0">#include &lt;pthread.h&gt;</font>
+<a name="line429">429: </a><font color="#A020F0">#endif</font>
+
+<a name="line431">431: </a><font color="#B22222">/*</font>
+<a name="line432">432: </a><font color="#B22222">     This code is for managing thread local global variables. Each of Linux, Microsoft WINDOWS, OpenMP, and Apple OS X have</font>
+<a name="line433">433: </a><font color="#B22222">   different ways to indicate this. On OS X each thread local global is accessed by using a pthread_key_t for that variable.</font>
+<a name="line434">434: </a><font color="#B22222">   Thus we have functions for creating destroying and using the keys. Except for OS X these access functions merely directly </font>
+<a name="line435">435: </a><font color="#B22222">   acess the thread local variable.</font>
+<a name="line436">436: </a><font color="#B22222">*/</font>
+
+<a name="line438">438: </a><font color="#A020F0">#if defined(PETSC_HAVE_PTHREADCLASSES) &amp;&amp; !defined(PETSC_PTHREAD_LOCAL)</font>
+<a name="line439">439: </a><font color="#4169E1">typedef pthread_key_t PetscThreadKey;</font>
+<a name="line440">440: </a><font color="#B22222">/* Get the value associated with key */</font>
+<a name="line441">441: </a><strong><font color="#4169E1"><a name="PetscThreadLocalGetValue"></a>PETSC_STATIC_INLINE void* PetscThreadLocalGetValue(PetscThreadKey key)</font></strong>
+<a name="line442">442: </a>{
+<a name="line443">443: </a>  <font color="#4169E1">return</font> pthread_getspecific(key);
+<a name="line444">444: </a>}
+
+<a name="line446">446: </a><font color="#B22222">/* Set the value for key */</font>
+<a name="line447">447: </a><strong><font color="#4169E1"><a name="PetscThreadLocalSetValue"></a>PETSC_STATIC_INLINE void PetscThreadLocalSetValue(PetscThreadKey *key,void* value)</font></strong>
+<a name="line448">448: </a>{
+<a name="line449">449: </a>  pthread_setspecific(*key,(void*)value);
+<a name="line450">450: </a>}
+
+<a name="line452">452: </a><font color="#B22222">/* Create pthread thread local key */</font>
+<a name="line453">453: </a><strong><font color="#4169E1"><a name="PetscThreadLocalRegister"></a>PETSC_STATIC_INLINE void PetscThreadLocalRegister(PetscThreadKey *key)</font></strong>
+<a name="line454">454: </a>{
+<a name="line455">455: </a>  pthread_key_create(key,NULL);
+<a name="line456">456: </a>}
+
+<a name="line458">458: </a><font color="#B22222">/* Delete pthread thread local key */</font>
+<a name="line459">459: </a><strong><font color="#4169E1"><a name="PetscThreadLocalDestroy"></a>PETSC_STATIC_INLINE void PetscThreadLocalDestroy(PetscThreadKey key)</font></strong>
+<a name="line460">460: </a>{
+<a name="line461">461: </a>  pthread_key_delete(key);
+<a name="line462">462: </a>}
+<a name="line463">463: </a><font color="#A020F0">#else</font>
+<a name="line464">464: </a><font color="#4169E1">typedef void* PetscThreadKey;</font>
+<a name="line465">465: </a><strong><font color="#4169E1"><a name="PetscThreadLocalGetValue"></a>PETSC_STATIC_INLINE void* PetscThreadLocalGetValue(PetscThreadKey key)</font></strong>
+<a name="line466">466: </a>{
+<a name="line467">467: </a>  <font color="#4169E1">return</font> key;
+<a name="line468">468: </a>}
+
+<a name="line470">470: </a><strong><font color="#4169E1"><a name="PetscThreadLocalSetValue"></a>PETSC_STATIC_INLINE void PetscThreadLocalSetValue(PetscThreadKey *key,void* value)</font></strong>
+<a name="line471">471: </a>{
+<a name="line472">472: </a>  *key = value;
+<a name="line473">473: </a>}
+
+<a name="line475">475: </a><strong><font color="#4169E1"><a name="PetscThreadLocalRegister"></a>PETSC_STATIC_INLINE void PetscThreadLocalRegister(PETSC_UNUSED PetscThreadKey *key)</font></strong>
+<a name="line476">476: </a>{
+<a name="line477">477: </a>}
+
+<a name="line479">479: </a><strong><font color="#4169E1"><a name="PetscThreadLocalDestroy"></a>PETSC_STATIC_INLINE void PetscThreadLocalDestroy(PETSC_UNUSED PetscThreadKey key)</font></strong>
+<a name="line480">480: </a>{
+<a name="line481">481: </a>}
+<a name="line482">482: </a><font color="#A020F0">#endif</font>
+
+<a name="line484">484: </a><font color="#B22222">/*</font>
+<a name="line485">485: </a><font color="#B22222">      Allows the code to build a stack frame as it runs</font>
+<a name="line486">486: </a><font color="#B22222">*/</font>
+<a name="line487">487: </a><font color="#A020F0">#if defined(PETSC_USE_DEBUG)</font>
+
+<a name="line489">489: </a><strong><font color="#228B22">#define PETSCSTACKSIZE 64</font></strong>
+
+<a name="line491">491: </a><font color="#4169E1">typedef</font> <font color="#4169E1">struct</font>  {
+<a name="line492">492: </a>  const char      *function[PETSCSTACKSIZE];
+<a name="line493">493: </a>  const char      *file[PETSCSTACKSIZE];
+<a name="line494">494: </a>  const char      *directory[PETSCSTACKSIZE];
+<a name="line495">495: </a>        int       line[PETSCSTACKSIZE];
+<a name="line496">496: </a>        <A href="../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A> petscroutine[PETSCSTACKSIZE];
+<a name="line497">497: </a>        int       currentsize;
+<a name="line498">498: </a>} PetscStack;
+
+<a name="line500">500: </a><font color="#A020F0">#if defined(PETSC_HAVE_PTHREADCLASSES)</font>
+<a name="line501">501: </a><font color="#A020F0">#if defined(PETSC_PTHREAD_LOCAL)</font>
+<a name="line502">502: </a>PETSC_EXTERN PETSC_PTHREAD_LOCAL PetscStack *petscstack;
+<a name="line503">503: </a><font color="#A020F0">#else</font>
+<a name="line504">504: </a>PETSC_EXTERN PetscThreadKey petscstack;
+<a name="line505">505: </a><font color="#A020F0">#endif</font>
+<a name="line506">506: </a><font color="#A020F0">#elif defined(PETSC_HAVE_OPENMP)</font>
+<a name="line507">507: </a>PETSC_EXTERN PetscStack *petscstack;
+<a name="line508">508: </a><font color="#A020F0">#pragma omp threadprivate(petscstack)</font>
+<a name="line509">509: </a><font color="#A020F0">#else</font>
+<a name="line510">510: </a>PETSC_EXTERN PetscStack *petscstack;
+<a name="line511">511: </a><font color="#A020F0">#endif</font>
+
+<a name="line513">513: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> PetscStackCopy(PetscStack*,PetscStack*)</font></strong>;
+<a name="line514">514: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> PetscStackPrint(PetscStack*,FILE* fp)</font></strong>;
+
+<a name="line516">516: </a><strong><font color="#4169E1"><a name="PetscStackActive"></a>PETSC_STATIC_INLINE <A href="../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A> PetscStackActive(void)</font></strong>
+<a name="line517">517: </a>{
+<a name="line518">518: </a>  <font color="#4169E1">return</font>(PetscThreadLocalGetValue(petscstack) ? <A href="../docs/manualpages/Sys/PETSC_TRUE.html#PETSC_TRUE">PETSC_TRUE</A> : <A href="../docs/manualpages/Sys/PETSC_FALSE.html#PETSC_FALSE">PETSC_FALSE</A>);
+<a name="line519">519: </a>}
+
+<a name="line521">521: </a><font color="#B22222">/* Stack handling is based on the following two "NoCheck" macros.  These should only be called directly by other error</font>
+<a name="line522">522: </a><font color="#B22222"> * handling macros.  We record the line of the call, which may or may not be the location of the definition.  But is at</font>
+<a name="line523">523: </a><font color="#B22222"> * least more useful than "unknown" because it can distinguish multiple calls from the same function.</font>
+<a name="line524">524: </a><font color="#B22222"> */</font>
+
+<a name="line526">526: </a><strong><font color="#228B22">#define PetscStackPushNoCheck(funct,petsc_routine)                            \</font></strong>
+<a name="line527">527: </a><strong><font color="#228B22">  do {                                                                        \</font></strong>
+<a name="line528">528: </a><strong><font color="#228B22">    PetscStack* petscstackp;                                                  \</font></strong>
+<a name="line529">529: </a><strong><font color="#228B22">    <A href="../docs/manualpages/Sys/PetscStackAMSTakeAccess.html#PetscStackAMSTakeAccess">PetscStackAMSTakeAccess</A>();                                                \</font></strong>
+<a name="line530">530: </a><strong><font color="#228B22">    petscstackp = (PetscStack*)PetscThreadLocalGetValue(petscstack);          \</font></strong>
+<a name="line531">531: </a><strong><font color="#228B22">    if (petscstackp &amp;&amp; (petscstackp-&gt;currentsize &lt; PETSCSTACKSIZE)) {         \</font></strong>
+<a name="line532">532: </a><strong><font color="#228B22">      petscstackp-&gt;function[petscstackp-&gt;currentsize]  = funct;               \</font></strong>
+<a name="line533">533: </a><strong><font color="#228B22">      petscstackp-&gt;file[petscstackp-&gt;currentsize]      = __FILE__;            \</font></strong>
+<a name="line534">534: </a><strong><font color="#228B22">      petscstackp-&gt;directory[petscstackp-&gt;currentsize] = __SDIR__;            \</font></strong>
+<a name="line535">535: </a><strong><font color="#228B22">      petscstackp-&gt;line[petscstackp-&gt;currentsize]      = __LINE__;            \</font></strong>
+<a name="line536">536: </a><strong><font color="#228B22">      petscstackp-&gt;petscroutine[petscstackp-&gt;currentsize] = petsc_routine;    \</font></strong>
+<a name="line537">537: </a><strong><font color="#228B22">      petscstackp-&gt;currentsize++;                                             \</font></strong>
+<a name="line538">538: </a><strong><font color="#228B22">    }                                                                         \</font></strong>
+<a name="line539">539: </a><strong><font color="#228B22">    <A href="../docs/manualpages/Sys/PetscStackAMSGrantAccess.html#PetscStackAMSGrantAccess">PetscStackAMSGrantAccess</A>();                                               \</font></strong>
+<a name="line540">540: </a><strong><font color="#228B22">  } while (0)</font></strong>
+
+<a name="line542">542: </a><strong><font color="#228B22">#define PetscStackPopNoCheck                                            \</font></strong>
+<a name="line543">543: </a><strong><font color="#228B22">  do {PetscStack* petscstackp;                                          \</font></strong>
+<a name="line544">544: </a><strong><font color="#228B22">    <A href="../docs/manualpages/Sys/PetscStackAMSTakeAccess.html#PetscStackAMSTakeAccess">PetscStackAMSTakeAccess</A>();                                          \</font></strong>
+<a name="line545">545: </a><strong><font color="#228B22">    petscstackp = (PetscStack*)PetscThreadLocalGetValue(petscstack);    \</font></strong>
+<a name="line546">546: </a><strong><font color="#228B22">    if (petscstackp &amp;&amp; petscstackp-&gt;currentsize &gt; 0) {                  \</font></strong>
+<a name="line547">547: </a><strong><font color="#228B22">      petscstackp-&gt;currentsize--;                                       \</font></strong>
+<a name="line548">548: </a><strong><font color="#228B22">      petscstackp-&gt;function[petscstackp-&gt;currentsize]  = 0;             \</font></strong>
+<a name="line549">549: </a><strong><font color="#228B22">      petscstackp-&gt;file[petscstackp-&gt;currentsize]      = 0;             \</font></strong>
+<a name="line550">550: </a><strong><font color="#228B22">      petscstackp-&gt;directory[petscstackp-&gt;currentsize] = 0;             \</font></strong>
+<a name="line551">551: </a><strong><font color="#228B22">      petscstackp-&gt;line[petscstackp-&gt;currentsize]      = 0;             \</font></strong>
+<a name="line552">552: </a><strong><font color="#228B22">      petscstackp-&gt;petscroutine[petscstackp-&gt;currentsize] = <A href="../docs/manualpages/Sys/PETSC_FALSE.html#PETSC_FALSE">PETSC_FALSE</A>;\</font></strong>
+<a name="line553">553: </a><strong><font color="#228B22">    }                                                                   \</font></strong>
+<a name="line554">554: </a><strong><font color="#228B22">    <A href="../docs/manualpages/Sys/PetscStackAMSGrantAccess.html#PetscStackAMSGrantAccess">PetscStackAMSGrantAccess</A>();                                         \</font></strong>
+<a name="line555">555: </a><strong><font color="#228B22">  } while (0)</font></strong>
+
+<a name="line557">557: </a><font color="#B22222">/*MC</font>
+<a name="line559">559: </a><font color="#B22222">        used for error handling.</font>
+
+<a name="line561">561: </a><font color="#B22222">   Synopsis:</font>
+<a name="line562">562: </a><font color="#B22222">   #include "petscsys.h"</font>
+
+<a name="line565">565: </a><font color="#B22222">   Not Collective</font>
+
+<a name="line567">567: </a><font color="#B22222">   Usage:</font>
+<a name="line568">568: </a><font color="#B22222">.vb</font>
+<a name="line569">569: </a><font color="#B22222">     int something;</font>
+
+<a name="line572">572: </a><font color="#B22222">.ve</font>
+
+<a name="line574">574: </a><font color="#B22222">   Notes:</font>
+<a name="line575">575: </a><font color="#B22222">     Not available in Fortran</font>
+
+<a name="line577">577: </a><font color="#B22222">   Level: developer</font>
+
+<a name="line579">579: </a><font color="#B22222">.seealso: <A href="../docs/manualpages/Sys/PetscFunctionReturn.html#PetscFunctionReturn">PetscFunctionReturn</A>()</font>
+
+<a name="line581">581: </a><font color="#B22222">.keywords: traceback, error handling</font>
+<a name="line582">582: </a><font color="#B22222">M*/</font>
+<a name="line584">584: </a><strong><font color="#228B22">    PetscStackPushNoCheck(PETSC_FUNCTION_NAME,<A href="../docs/manualpages/Sys/PETSC_TRUE.html#PETSC_TRUE">PETSC_TRUE</A>);        \</font></strong>
+<a name="line586">586: </a><strong><font color="#228B22">    PetscRegister__FUNCT__();                                     \</font></strong>
+<a name="line587">587: </a><strong><font color="#228B22">  } while (0)</font></strong>
+
+<a name="line589">589: </a><font color="#B22222">/*MC</font>
+
+<a name="line592">592: </a><font color="#B22222">   Synopsis:</font>
+<a name="line593">593: </a><font color="#B22222">   #include "petscsys.h"</font>
+
+<a name="line596">596: </a><font color="#B22222">   Not Collective</font>
+
+<a name="line598">598: </a><font color="#B22222">   Usage:</font>
+<a name="line599">599: </a><font color="#B22222">.vb</font>
+<a name="line600">600: </a><font color="#B22222">     int something;</font>
+
+<a name="line603">603: </a><font color="#B22222">.ve</font>
+
+<a name="line605">605: </a><font color="#B22222">   Notes:</font>
+<a name="line606">606: </a><font color="#B22222">     Not available in Fortran</font>
+
+<a name="line608">608: </a><font color="#B22222">   Level: developer</font>
+
+<a name="line610">610: </a><font color="#B22222">.seealso: <A href="../docs/manualpages/Sys/PetscFunctionReturn.html#PetscFunctionReturn">PetscFunctionReturn</A>()</font>
+
+<a name="line612">612: </a><font color="#B22222">.keywords: traceback, error handling</font>
+<a name="line613">613: </a><font color="#B22222">M*/</font>
+<a name="line615">615: </a><strong><font color="#228B22">  do {                                                                  \</font></strong>
+<a name="line616">616: </a><strong><font color="#228B22">    PetscStackPushNoCheck(PETSC_FUNCTION_NAME,<A href="../docs/manualpages/Sys/PETSC_FALSE.html#PETSC_FALSE">PETSC_FALSE</A>);             \</font></strong>
+<a name="line618">618: </a><strong><font color="#228B22">    PetscRegister__FUNCT__();                                           \</font></strong>
+<a name="line619">619: </a><strong><font color="#228B22">  } while (0)</font></strong>
+
+
+<a name="line622">622: </a><font color="#A020F0">#if defined(PETSC_SERIALIZE_FUNCTIONS)</font>
+<a name="line623">623: </a><font color="#A020F0">#include &lt;petsc-private/petscfptimpl.h&gt;</font>
+<a name="line624">624: </a><font color="#B22222">/*</font>
+<a name="line625">625: </a><font color="#B22222">   Registers the current function into the global function pointer to function name table</font>
+
+<a name="line627">627: </a><font color="#B22222">   Have to fix this to handle errors but cannot return error since used in <A href="../docs/manualpages/Viewer/PETSC_VIEWER_DRAW_.html#PETSC_VIEWER_DRAW_">PETSC_VIEWER_DRAW_</A>() etc</font>
+<a name="line628">628: </a><font color="#B22222">*/</font>
+<a name="line629">629: </a><strong><font color="#228B22">#define PetscRegister__FUNCT__() do { \</font></strong>
+<a name="line630">630: </a><strong><font color="#228B22">  static <A href="../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A> __chked = <A href="../docs/manualpages/Sys/PETSC_FALSE.html#PETSC_FALSE">PETSC_FALSE</A>; \</font></strong>
+<a name="line631">631: </a><strong><font color="#228B22">  if (!__chked) {\</font></strong>
+<a name="line632">632: </a><strong><font color="#228B22">  void *ptr; <A href="../docs/manualpages/Sys/PetscDLSym.html#PetscDLSym">PetscDLSym</A>(NULL,__FUNCT__,&amp;ptr);\</font></strong>
+<a name="line633">633: </a><strong><font color="#228B22">  __chked = <A href="../docs/manualpages/Sys/PETSC_TRUE.html#PETSC_TRUE">PETSC_TRUE</A>;\</font></strong>
+<a name="line634">634: </a><strong><font color="#228B22">  }} while (0)</font></strong>
+<a name="line635">635: </a><font color="#A020F0">#else</font>
+<a name="line636">636: </a><strong><font color="#228B22">#define PetscRegister__FUNCT__()</font></strong>
+<a name="line637">637: </a><font color="#A020F0">#endif</font>
+
+<a name="line640">640: </a><strong><font color="#228B22">    PetscStrcmpNoError(PETSC_FUNCTION_NAME,__FUNCT__,&amp;_sc1);\</font></strong>
+<a name="line641">641: </a><strong><font color="#228B22">    PetscStrcmpNoError(__FUNCT__,</font><font color="#666666">"User provided function"</font><font color="#228B22">,&amp;_sc2);\</font></strong>
+<a name="line642">642: </a><strong><font color="#228B22">    if (!_sc1 &amp;&amp; !_sc2) { \</font></strong>
+<a name="line643">643: </a><strong><font color="#228B22">      printf(</font><font color="#666666">"%s%s:%d: __FUNCT__=\"%s\" does not agree with %s=\"%s\"\n"</font><font color="#228B22">,__SDIR__,__FILE__,__LINE__,__FUNCT__,PetscStringize(PETSC_FUNCTION_NAME),PETSC_FUNCTION_NAME); \</font></strong>
+<a name="line644">644: </a><strong><font color="#228B22">    }                                                                   \</font></strong>
+<a name="line645">645: </a><strong><font color="#228B22">  } while (0)</font></strong>
+
+<a name="line647">647: </a><strong><font color="#228B22">#define PetscStackPush(n) \</font></strong>
+<a name="line648">648: </a><strong><font color="#228B22">  do {                                                                  \</font></strong>
+<a name="line649">649: </a><strong><font color="#228B22">    PetscStackPushNoCheck(n,<A href="../docs/manualpages/Sys/PETSC_FALSE.html#PETSC_FALSE">PETSC_FALSE</A>);                               \</font></strong>
+<a name="line650">650: </a><strong><font color="#228B22">    <A href="../docs/manualpages/Sys/CHKMEMQ.html#CHKMEMQ">CHKMEMQ</A>;                                                            \</font></strong>
+<a name="line651">651: </a><strong><font color="#228B22">  } while (0)</font></strong>
+
+<a name="line653">653: </a><strong><font color="#228B22">#define PetscStackPop                           \</font></strong>
+<a name="line654">654: </a><strong><font color="#228B22">    do {                                        \</font></strong>
+<a name="line655">655: </a><strong><font color="#228B22">      <A href="../docs/manualpages/Sys/CHKMEMQ.html#CHKMEMQ">CHKMEMQ</A>;                                  \</font></strong>
+<a name="line656">656: </a><strong><font color="#228B22">      PetscStackPopNoCheck;                     \</font></strong>
+<a name="line657">657: </a><strong><font color="#228B22">    } while (0)</font></strong>
+
+<a name="line659">659: </a><font color="#B22222">/*MC</font>
+<a name="line660">660: </a><font color="#B22222">   <A href="../docs/manualpages/Sys/PetscFunctionReturn.html#PetscFunctionReturn">PetscFunctionReturn</A> - Last executable line of each PETSc function</font>
+<a name="line661">661: </a><font color="#B22222">        used for error handling. Replaces return()</font>
+
+<a name="line663">663: </a><font color="#B22222">   Synopsis:</font>
+<a name="line664">664: </a><font color="#B22222">   #include "petscsys.h"</font>
+<a name="line665">665: </a><font color="#B22222">   void return(0);</font>
+
+<a name="line667">667: </a><font color="#B22222">   Not Collective</font>
+
+<a name="line669">669: </a><font color="#B22222">   Usage:</font>
+<a name="line670">670: </a><font color="#B22222">.vb</font>
+<a name="line671">671: </a><font color="#B22222">    ....</font>
+<a name="line672">672: </a><font color="#B22222">     return(0);</font>
+<a name="line673">673: </a><font color="#B22222">   }</font>
+<a name="line674">674: </a><font color="#B22222">.ve</font>
+
+<a name="line676">676: </a><font color="#B22222">   Notes:</font>
+<a name="line677">677: </a><font color="#B22222">     Not available in Fortran</font>
+
+<a name="line679">679: </a><font color="#B22222">   Level: developer</font>
+
+
+<a name="line683">683: </a><font color="#B22222">.keywords: traceback, error handling</font>
+<a name="line684">684: </a><font color="#B22222">M*/</font>
+<a name="line685">685: </a><strong><font color="#228B22">#define <A href="../docs/manualpages/Sys/PetscFunctionReturn.html#PetscFunctionReturn">PetscFunctionReturn</A>(a) \</font></strong>
+<a name="line686">686: </a><strong><font color="#228B22">  do {                                                                \</font></strong>
+<a name="line687">687: </a><strong><font color="#228B22">    PetscStackPopNoCheck;                                             \</font></strong>
+<a name="line688">688: </a><strong><font color="#228B22">    return(a);} while (0)</font></strong>
+
+<a name="line690">690: </a><strong><font color="#228B22">#define PetscFunctionReturnVoid() \</font></strong>
+<a name="line691">691: </a><strong><font color="#228B22">  do {                                                                \</font></strong>
+<a name="line692">692: </a><strong><font color="#228B22">    PetscStackPopNoCheck;                                             \</font></strong>
+<a name="line693">693: </a><strong><font color="#228B22">    return;} while (0)</font></strong>
+
+<a name="line695">695: </a><font color="#A020F0">#else</font>
+
+<a name="line697">697: </a><font color="#A020F0">#if defined(PETSC_HAVE_PTHREADCLASSES)</font>
+<a name="line698">698: </a><font color="#A020F0">#if defined(PETSC_PTHREAD_LOCAL)</font>
+<a name="line699">699: </a>PETSC_EXTERN PETSC_PTHREAD_LOCAL void *petscstack;
+<a name="line700">700: </a><font color="#A020F0">#else</font>
+<a name="line701">701: </a>PETSC_EXTERN PetscThreadKey petscstack;
+<a name="line702">702: </a><font color="#A020F0">#endif</font>
+<a name="line703">703: </a><font color="#A020F0">#elif defined(PETSC_HAVE_OPENMP)</font>
+<a name="line704">704: </a>PETSC_EXTERN void *petscstack;
+<a name="line705">705: </a><font color="#A020F0">#pragma omp threadprivate(petscstack)</font>
+<a name="line706">706: </a><font color="#A020F0">#else</font>
+<a name="line707">707: </a>PETSC_EXTERN void *petscstack;
+<a name="line708">708: </a><font color="#A020F0">#endif</font>
+
+<a name="line710">710: </a><strong><font color="#228B22">#define PetscStackPushNoCheck(funct,petsc_routine) do {} while (0)</font></strong>
+<a name="line711">711: </a><strong><font color="#228B22">#define PetscStackPopNoCheck                       do {} while (0)</font></strong>
+<a name="line714">714: </a><strong><font color="#228B22">#define <A href="../docs/manualpages/Sys/PetscFunctionReturn.html#PetscFunctionReturn">PetscFunctionReturn</A>(a)    return(a)</font></strong>
+<a name="line715">715: </a><strong><font color="#228B22">#define PetscFunctionReturnVoid() return</font></strong>
+<a name="line716">716: </a><strong><font color="#228B22">#define PetscStackPop             <A href="../docs/manualpages/Sys/CHKMEMQ.html#CHKMEMQ">CHKMEMQ</A></font></strong>
+<a name="line717">717: </a><strong><font color="#228B22">#define PetscStackPush(f)         <A href="../docs/manualpages/Sys/CHKMEMQ.html#CHKMEMQ">CHKMEMQ</A></font></strong>
+<a name="line718">718: </a><strong><font color="#228B22">#define PetscStackActive          <A href="../docs/manualpages/Sys/PETSC_FALSE.html#PETSC_FALSE">PETSC_FALSE</A></font></strong>
+
+<a name="line720">720: </a><font color="#A020F0">#endif</font>
+
+<a name="line722">722: </a><font color="#B22222">/*</font>
+<a name="line723">723: </a><font color="#B22222">    PetscStackCall - Calls an external library routine or user function after pushing the name of the routine on the stack.</font>
+
+<a name="line725">725: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line726">726: </a><font color="#B22222">+   name - string that gives the name of the function being called</font>
+<a name="line727">727: </a><font color="#B22222">-   routine - actual call to the routine, including and </font>
+
+<a name="line729">729: </a><font color="#B22222">   Note: Often one should use PetscStackCallStandard() instead. This routine is intended for external library routines that DO NOT return error codes</font>
+
+<a name="line731">731: </a><font color="#B22222">   Developer Note: this is so that when a user or external library routine results in a crash or corrupts memory, they get blamed instead of PETSc.</font>
+
+
+
+<a name="line735">735: </a><font color="#B22222">*/</font>
+<a name="line736">736: </a><strong><font color="#228B22">#define PetscStackCall(name,routine) do { PetscStackPush(name);routine;PetscStackPop; } while(0)</font></strong>
+
+<a name="line738">738: </a><font color="#B22222">/*</font>
+<a name="line739">739: </a><font color="#B22222">    PetscStackCallStandard - Calls an external library routine after pushing the name of the routine on the stack.</font>
+
+<a name="line741">741: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line742">742: </a><font color="#B22222">+   func-  name of the routine</font>
+<a name="line743">743: </a><font color="#B22222">-   args - arguments to the routine surrounded by ()</font>
+
+<a name="line745">745: </a><font color="#B22222">   Notes: This is intended for external package routines that return error codes. Use PetscStackCall() for those that do not.</font>
+
+<a name="line747">747: </a><font color="#B22222">   Developer Note: this is so that when an external packge routine results in a crash or corrupts memory, they get blamed instead of PETSc.</font>
+
+<a name="line749">749: </a><font color="#B22222">*/</font>
+<a name="line750">750: </a><strong><font color="#228B22">#define PetscStackCallStandard(func,args) do {                        \</font></strong>
+<a name="line751">751: </a><strong><font color="#228B22">    PetscStackPush(#func);func args;PetscStackPop; if (ierr) <A href="../docs/manualpages/Sys/SETERRQ1.html#SETERRQ1">SETERRQ1</A>(<A href="../docs/manualpages/Sys/PETSC_COMM_SELF.html#PETSC_COMM_SELF">PETSC_COMM_SELF</A>,PETSC_ERR_LIB,</font><font color="#666666">"Error in %s()"</font><font color="#228B22">,#func); \</font></strong>
+<a name="line752">752: </a><strong><font color="#228B22">  } while (0)</font></strong>
+
+<a name="line754">754: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> PetscStackCreate(void)</font></strong>;
+<a name="line755">755: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> PetscStackView(FILE*)</font></strong>;
+<a name="line756">756: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> PetscStackDestroy(void)</font></strong>;
+
+<a name="line758">758: </a><font color="#A020F0">#endif</font>
+</pre>
+</body>
+
+</html>

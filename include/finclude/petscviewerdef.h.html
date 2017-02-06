@@ -1,0 +1,43 @@
+<center><a href="petscviewerdef.h">Actual source code: petscviewerdef.h</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="http://www.mcs.anl.gov/petsc/petsc-current/include/finclude/petscviewerdef.h.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2013-10-15T17:08:24+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>petsc-3.4.3 2013-10-15</b></div>
+<pre width="80"><a name="line1">  1: </a>!
+<a name="line2">  2: </a>!  Include file <font color="#4169E1">for</font> Fortran use of the <A href="../../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A> package in PETSc
+<a name="line3">  3: </a>!
+<a name="line4">  4: </a><font color="#A020F0">#if !defined (__PETSCVIEWERDEF_H)</font>
+
+<a name="line7">  7: </a><font color="#A020F0">#if !defined(PETSC_USE_FORTRAN_DATATYPES)</font>
+<a name="line8">  8: </a><strong><font color="#228B22">#define <A href="../../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A> <A href="../../docs/manualpages/Sys/PetscFortranAddr.html#PetscFortranAddr">PetscFortranAddr</A></font></strong>
+<a name="line9">  9: </a><font color="#A020F0">#endif</font>
+
+<a name="line11"> 11: </a><strong><font color="#228B22">#define <A href="../../docs/manualpages/Viewer/PetscViewers.html#PetscViewers">PetscViewers</A> <A href="../../docs/manualpages/Sys/PetscFortranAddr.html#PetscFortranAddr">PetscFortranAddr</A></font></strong>
+<a name="line12"> 12: </a><strong><font color="#228B22">#define <A href="../../docs/manualpages/Sys/PetscFileMode.html#PetscFileMode">PetscFileMode</A> <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A></font></strong>
+<a name="line13"> 13: </a><strong><font color="#228B22">#define <A href="../../docs/manualpages/Viewer/PetscViewerType.html#PetscViewerType">PetscViewerType</A> character*(80)</font></strong>
+<a name="line14"> 14: </a><strong><font color="#228B22">#define <A href="../../docs/manualpages/Viewer/PetscViewerFormat.html#PetscViewerFormat">PetscViewerFormat</A> <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A></font></strong>
+
+<a name="line16"> 16: </a><strong><font color="#228B22">#define PETSCVIEWERSOCKET 'socket'</font></strong>
+<a name="line17"> 17: </a><strong><font color="#228B22">#define PETSCVIEWERASCII 'ascii'</font></strong>
+<a name="line18"> 18: </a><strong><font color="#228B22">#define PETSCVIEWERBINARY 'binary'</font></strong>
+<a name="line19"> 19: </a><strong><font color="#228B22">#define PETSCVIEWERSTRING 'string'</font></strong>
+<a name="line20"> 20: </a><strong><font color="#228B22">#define PETSCVIEWERDRAW 'draw'</font></strong>
+<a name="line21"> 21: </a><strong><font color="#228B22">#define PETSCVIEWERVU 'vu'</font></strong>
+<a name="line22"> 22: </a><strong><font color="#228B22">#define PETSCVIEWERMATHEMATICA 'mathematica'</font></strong>
+<a name="line23"> 23: </a><strong><font color="#228B22">#define PETSCVIEWERNETCDF 'netcdf'</font></strong>
+<a name="line24"> 24: </a><strong><font color="#228B22">#define PETSCVIEWERHDF5 'hdf5'</font></strong>
+<a name="line25"> 25: </a><strong><font color="#228B22">#define PETSCVIEWERVTK 'vtk'</font></strong>
+<a name="line26"> 26: </a><strong><font color="#228B22">#define <A href="../../docs/manualpages/Viewer/PETSCVIEWERMATLAB.html#PETSCVIEWERMATLAB">PETSCVIEWERMATLAB</A> 'matlab'</font></strong>
+<a name="line27"> 27: </a><strong><font color="#228B22">#define PETSCVIEWERAMS 'ams'</font></strong>
+
+<a name="line29"> 29: </a><font color="#A020F0">#endif</font>
+</pre>
+</body>
+
+</html>

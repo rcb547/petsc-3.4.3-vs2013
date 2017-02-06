@@ -1,0 +1,63 @@
+<center><a href="petsccharacteristic.h">Actual source code: petsccharacteristic.h</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="http://www.mcs.anl.gov/petsc/petsc-current/include/petsccharacteristic.h.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2013-10-15T17:07:43+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>petsc-3.4.3 2013-10-15</b></div>
+<pre width="80"><a name="line1">  1: </a><font color="#B22222">/*</font>
+<a name="line2">  2: </a><font color="#B22222">   Defines the interface functions for the method of characteristics solvers</font>
+<a name="line3">  3: </a><font color="#B22222">*/</font>
+<a name="line4">  4: </a><font color="#A020F0">#ifndef __PETSCCHARACTERISTICS_H</font>
+
+<a name="line7">  7: </a><font color="#A020F0">#include &lt;petscvec.h&gt;</font>
+<a name="line8">  8: </a><font color="#A020F0">#include &lt;petscdmdatypes.h&gt;</font>
+
+<a name="line10"> 10: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/SemiLagrange/CharacteristicInitializePackage.html#CharacteristicInitializePackage">CharacteristicInitializePackage</A>(void)</font></strong>;
+
+<a name="line12"> 12: </a><font color="#B22222">/*S</font>
+<a name="line13"> 13: </a><font color="#B22222">     <A href="../docs/manualpages/SemiLagrange/Characteristic.html#Characteristic">Characteristic</A> - Abstract PETSc object that manages method of characteristics solves</font>
+
+<a name="line15"> 15: </a><font color="#B22222">   Level: beginner</font>
+
+<a name="line17"> 17: </a><font color="#B22222">  Concepts: Method of characteristics</font>
+
+<a name="line19"> 19: </a><font color="#B22222">.seealso:  CharacteristicCreate(), <A href="../docs/manualpages/SemiLagrange/CharacteristicSetType.html#CharacteristicSetType">CharacteristicSetType</A>(), <A href="../docs/manualpages/SemiLagrange/CharacteristicType.html#CharacteristicType">CharacteristicType</A>, <A href="../docs/manualpages/SNES/SNES.html#SNES">SNES</A>, <A href="../docs/manualpages/TS/TS.html#TS">TS</A>, <A href="../docs/manualpages/PC/PC.html#PC">PC</A>, <A href="../docs/manualpages/KSP/KSP.html#KSP">KSP</A></font>
+<a name="line20"> 20: </a><font color="#B22222">S*/</font>
+<a name="line21"> 21: </a><font color="#4169E1">typedef struct _p_Characteristic *<A href="../docs/manualpages/SemiLagrange/Characteristic.html#Characteristic">Characteristic</A>;</font>
+
+<a name="line23"> 23: </a><font color="#B22222">/*J</font>
+<a name="line24"> 24: </a><font color="#B22222">    <A href="../docs/manualpages/SemiLagrange/CharacteristicType.html#CharacteristicType">CharacteristicType</A> - String with the name of a characteristics method.</font>
+
+<a name="line26"> 26: </a><font color="#B22222">   Level: beginner</font>
+
+<a name="line28"> 28: </a><font color="#B22222">.seealso: <A href="../docs/manualpages/SemiLagrange/CharacteristicSetType.html#CharacteristicSetType">CharacteristicSetType</A>(), <A href="../docs/manualpages/SemiLagrange/Characteristic.html#Characteristic">Characteristic</A></font>
+<a name="line29"> 29: </a><font color="#B22222">J*/</font>
+<a name="line30"> 30: </a><strong><font color="#228B22">#define CHARACTERISTICDA </font><font color="#666666">"da"</font><font color="#228B22"></font></strong>
+<a name="line31"> 31: </a><font color="#4169E1">typedef const char* <A href="../docs/manualpages/SemiLagrange/CharacteristicType.html#CharacteristicType">CharacteristicType</A>;</font>
+
+<a name="line33"> 33: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> CharacteristicCreate(<A href="../docs/manualpages/Sys/MPI_Comm.html#MPI_Comm">MPI_Comm</A>, <A href="../docs/manualpages/SemiLagrange/Characteristic.html#Characteristic">Characteristic</A> *)</font></strong>;
+<a name="line34"> 34: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/SemiLagrange/CharacteristicSetType.html#CharacteristicSetType">CharacteristicSetType</A>(<A href="../docs/manualpages/SemiLagrange/Characteristic.html#Characteristic">Characteristic</A>, <A href="../docs/manualpages/SemiLagrange/CharacteristicType.html#CharacteristicType">CharacteristicType</A>)</font></strong>;
+<a name="line35"> 35: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/SemiLagrange/CharacteristicSetUp.html#CharacteristicSetUp">CharacteristicSetUp</A>(<A href="../docs/manualpages/SemiLagrange/Characteristic.html#Characteristic">Characteristic</A>)</font></strong>;
+<a name="line36"> 36: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> CharacteristicSetVelocityInterpolation(<A href="../docs/manualpages/SemiLagrange/Characteristic.html#Characteristic">Characteristic</A>, DM, <A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>, <A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>, <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>, <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>[], <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*)(<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>, <A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>[], <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>, <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>[], <A href="../docs/manualpages/Sys/PetscScalar.html#PetscScalar">PetscScalar</A>[], void *), void *)</font></strong>;
+<a name="line37"> 37: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> CharacteristicSetVelocityInterpolationLocal(<A href="../docs/manualpages/SemiLagrange/Characteristic.html#Characteristic">Characteristic</A>, DM, <A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>, <A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>, <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>, <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>[], <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*)(void *, <A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>[], <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>, <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>[], <A href="../docs/manualpages/Sys/PetscScalar.html#PetscScalar">PetscScalar</A>[], void *), void *)</font></strong>;
+<a name="line38"> 38: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> CharacteristicSetFieldInterpolation(<A href="../docs/manualpages/SemiLagrange/Characteristic.html#Characteristic">Characteristic</A>, DM, <A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>, <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>, <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>[], <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*)(<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>, <A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>[], <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>, <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>[], <A href="../docs/manualpages/Sys/PetscScalar.html#PetscScalar">PetscScalar</A>[], void *), void *)</font></strong>;
+<a name="line39"> 39: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> CharacteristicSetFieldInterpolationLocal(<A href="../docs/manualpages/SemiLagrange/Characteristic.html#Characteristic">Characteristic</A>, DM, <A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>, <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>, <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>[], <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*)(void *, <A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>[], <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>, <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>[], <A href="../docs/manualpages/Sys/PetscScalar.html#PetscScalar">PetscScalar</A>[], void *), void *)</font></strong>;
+<a name="line40"> 40: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> CharacteristicSolve(<A href="../docs/manualpages/SemiLagrange/Characteristic.html#Characteristic">Characteristic</A>, <A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>, <A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>)</font></strong>;
+<a name="line41"> 41: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> CharacteristicDestroy(<A href="../docs/manualpages/SemiLagrange/Characteristic.html#Characteristic">Characteristic</A>*)</font></strong>;
+
+<a name="line43"> 43: </a>PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A>         CharacteristicRegisterAllCalled;
+<a name="line44"> 44: </a>PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscFunctionList.html#PetscFunctionList">PetscFunctionList</A> CharacteristicList;
+<a name="line45"> 45: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/SemiLagrange/CharacteristicRegisterAll.html#CharacteristicRegisterAll">CharacteristicRegisterAll</A>(void)</font></strong>;
+
+<a name="line47"> 47: </a><strong><font color="#4169E1"><a name="CharacteristicRegister"></a>PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/SemiLagrange/CharacteristicRegister.html#CharacteristicRegister">CharacteristicRegister</A>(const char[],<A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*)(<A href="../docs/manualpages/SemiLagrange/Characteristic.html#Characteristic">Characteristic</A>)</font></strong>);
+
+<a name="line49"> 49: </a><font color="#A020F0">#endif </font><font color="#B22222">/*__PETSCCHARACTERISTICS_H*/</font><font color="#A020F0"></font>
+</pre>
+</body>
+
+</html>

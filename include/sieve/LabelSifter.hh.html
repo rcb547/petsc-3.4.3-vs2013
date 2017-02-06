@@ -1,0 +1,879 @@
+<center><a href="LabelSifter.hh">Actual source code: LabelSifter.hh</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="http://www.mcs.anl.gov/petsc/petsc-current/include/sieve/LabelSifter.hh.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2013-10-15T17:08:46+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>petsc-3.4.3 2013-10-15</b></div>
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#ifndef included_ALE_LabelSifter_hh</font>
+<a name="line2">  2: </a><strong><font color="#228B22">#define included_ALE_LabelSifter_hh</font></strong>
+
+<a name="line4">  4: </a><font color="#A020F0">#include &lt;iostream&gt;</font>
+
+<a name="line6">  6: </a><font color="#A020F0">#ifndef  included_ALE_hh</font>
+<a name="line7">  7: </a><font color="#A020F0">#include &lt;sieve/ALE.hh&gt;</font>
+<a name="line8">  8: </a><font color="#A020F0">#endif</font>
+
+<a name="line10"> 10: </a>namespace ALE {
+<a name="line11"> 11: </a>  namespace NewSifterDef {
+<a name="line12"> 12: </a>    // Defines the traits of a sequence representing a subset of a multi_index container Index_.
+<a name="line13"> 13: </a>    // A sequence defines output (input in std terminology) iterators <font color="#4169E1">for</font> traversing an Index_ object.
+<a name="line14"> 14: </a>    // Upon dereferencing values are extracted from each result record using a ValueExtractor_ object.
+<a name="line15"> 15: </a>    template &lt;typename Index_, typename ValueExtractor_&gt;
+<a name="line16"> 16: </a>    <font color="#4169E1">struct IndexSequenceTraits</font> {
+<a name="line17"> 17: </a>      <font color="#4169E1">typedef</font> Index_ index_type;
+<a name="line18"> 18: </a>      class iterator_base {
+<a name="line19"> 19: </a><strong><font color="#FF0000">      public:</font></strong>
+<a name="line20"> 20: </a>        // Standard iterator typedefs
+<a name="line21"> 21: </a>        <font color="#4169E1">typedef</font> ValueExtractor_                        extractor_type;
+<a name="line22"> 22: </a>        <font color="#4169E1">typedef</font> std::input_iterator_tag                iterator_category;
+<a name="line23"> 23: </a>        <font color="#4169E1">typedef</font> typename extractor_type::result_type   value_type;
+<a name="line24"> 24: </a>        <font color="#4169E1">typedef</font> int                                    difference_type;
+<a name="line25"> 25: </a>        <font color="#4169E1">typedef</font> value_type*                            pointer;
+<a name="line26"> 26: </a>        <font color="#4169E1">typedef</font> value_type&amp;                            reference;
+
+<a name="line28"> 28: </a>        // Underlying iterator type
+<a name="line29"> 29: </a>        <font color="#4169E1">typedef</font> typename index_type::iterator          itor_type;
+<a name="line30"> 30: </a><strong><font color="#FF0000">      protected:</font></strong>
+<a name="line31"> 31: </a>        // Underlying iterator
+<a name="line32"> 32: </a>        itor_type      _itor;
+<a name="line33"> 33: </a>        // Member extractor
+<a name="line34"> 34: </a>        extractor_type _ex;
+<a name="line35"> 35: </a><strong><font color="#FF0000">      public:</font></strong>
+<a name="line36"> 36: </a>        iterator_base(itor_type itor) {
+<a name="line37"> 37: </a>          this-&gt;_itor = itor_type(itor);
+<a name="line38"> 38: </a>        };
+<a name="line39"> 39: </a>        virtual ~iterator_base() {};
+<a name="line40"> 40: </a>        virtual bool              operator==(const iterator_base&amp; iter) const {<font color="#4169E1">return</font> this-&gt;_itor == iter._itor;};
+<a name="line41"> 41: </a>        virtual bool              operator!=(const iterator_base&amp; iter) const {<font color="#4169E1">return</font> this-&gt;_itor != iter._itor;};
+<a name="line42"> 42: </a>        // FIX: operator*() should <font color="#4169E1">return</font> a const reference, but it won't compile that way, because _ex() returns const value_type
+<a name="line43"> 43: </a>        virtual const value_type  operator*() const {<font color="#4169E1">return</font> _ex(*(this-&gt;_itor));};
+<a name="line44"> 44: </a>      };// class iterator_base
+<a name="line45"> 45: </a>      class iterator : public iterator_base {
+<a name="line46"> 46: </a><strong><font color="#FF0000">      public:</font></strong>
+<a name="line47"> 47: </a>        // Standard iterator typedefs
+<a name="line48"> 48: </a>        <font color="#4169E1">typedef</font> typename iterator_base::iterator_category  iterator_category;
+<a name="line49"> 49: </a>        <font color="#4169E1">typedef</font> typename iterator_base::value_type         value_type;
+<a name="line50"> 50: </a>        <font color="#4169E1">typedef</font> typename iterator_base::extractor_type     extractor_type;
+<a name="line51"> 51: </a>        <font color="#4169E1">typedef</font> typename iterator_base::difference_type    difference_type;
+<a name="line52"> 52: </a>        <font color="#4169E1">typedef</font> typename iterator_base::pointer            pointer;
+<a name="line53"> 53: </a>        <font color="#4169E1">typedef</font> typename iterator_base::reference          reference;
+<a name="line54"> 54: </a>        // Underlying iterator type
+<a name="line55"> 55: </a>        <font color="#4169E1">typedef</font> typename iterator_base::itor_type          itor_type;
+<a name="line56"> 56: </a><strong><font color="#FF0000">      public:</font></strong>
+<a name="line57"> 57: </a>        iterator(const itor_type&amp; itor) : iterator_base(itor) {};
+<a name="line58"> 58: </a>        virtual ~iterator() {};
+<a name="line59"> 59: </a>        //
+<a name="line60"> 60: </a>        virtual iterator   operator++() {++this-&gt;_itor; <font color="#4169E1">return</font> *this;};
+<a name="line61"> 61: </a>        virtual iterator   operator++(int n) {iterator tmp(this-&gt;_itor); ++this-&gt;_itor; <font color="#4169E1">return</font> tmp;};
+<a name="line62"> 62: </a>      };// class iterator
+<a name="line63"> 63: </a>    }; // <font color="#4169E1">struct IndexSequenceTraits</font>
+
+<a name="line65"> 65: </a>    template &lt;typename Index_, typename ValueExtractor_&gt;
+<a name="line66"> 66: </a>    <font color="#4169E1">struct ReversibleIndexSequenceTraits</font> {
+<a name="line67"> 67: </a>      <font color="#4169E1">typedef</font> IndexSequenceTraits&lt;Index_, ValueExtractor_&gt; base_traits;
+<a name="line68"> 68: </a>      <font color="#4169E1">typedef</font> typename base_traits::iterator_base   iterator_base;
+<a name="line69"> 69: </a>      <font color="#4169E1">typedef</font> typename base_traits::iterator        iterator;
+<a name="line70"> 70: </a>      <font color="#4169E1">typedef</font> typename base_traits::index_type      index_type;
+
+<a name="line72"> 72: </a>      // reverse_iterator is the reverse of iterator
+<a name="line73"> 73: </a>      class reverse_iterator : public iterator_base {
+<a name="line74"> 74: </a><strong><font color="#FF0000">      public:</font></strong>
+<a name="line75"> 75: </a>        // Standard iterator typedefs
+<a name="line76"> 76: </a>        <font color="#4169E1">typedef</font> typename iterator_base::iterator_category  iterator_category;
+<a name="line77"> 77: </a>        <font color="#4169E1">typedef</font> typename iterator_base::value_type         value_type;
+<a name="line78"> 78: </a>        <font color="#4169E1">typedef</font> typename iterator_base::extractor_type     extractor_type;
+<a name="line79"> 79: </a>        <font color="#4169E1">typedef</font> typename iterator_base::difference_type    difference_type;
+<a name="line80"> 80: </a>        <font color="#4169E1">typedef</font> typename iterator_base::pointer            pointer;
+<a name="line81"> 81: </a>        <font color="#4169E1">typedef</font> typename iterator_base::reference          reference;
+<a name="line82"> 82: </a>        // Underlying iterator type
+<a name="line83"> 83: </a>        <font color="#4169E1">typedef</font> typename iterator_base::itor_type          itor_type;
+<a name="line84"> 84: </a><strong><font color="#FF0000">      public:</font></strong>
+<a name="line85"> 85: </a>        reverse_iterator(const itor_type&amp; itor) : iterator_base(itor) {};
+<a name="line86"> 86: </a>        virtual ~reverse_iterator() {};
+<a name="line87"> 87: </a>        //
+<a name="line88"> 88: </a>        virtual reverse_iterator     operator++() {--this-&gt;_itor; <font color="#4169E1">return</font> *this;};
+<a name="line89"> 89: </a>        virtual reverse_iterator     operator++(int n) {reverse_iterator tmp(this-&gt;_itor); --this-&gt;_itor; <font color="#4169E1">return</font> tmp;};
+<a name="line90"> 90: </a>      };
+<a name="line91"> 91: </a>    }; // class ReversibleIndexSequenceTraits
+
+<a name="line93"> 93: </a>    //
+<a name="line94"> 94: </a>    // Arrow &amp; ArrowContainer definitions
+<a name="line95"> 95: </a>    //
+<a name="line96"> 96: </a>    template&lt;typename Source_, typename Target_&gt;
+<a name="line97"> 97: </a>    <font color="#4169E1">struct</font>  Arrow { //: public ALE::def::Arrow&lt;Source_, Target_, Color_&gt; {
+<a name="line98"> 98: </a>      <font color="#4169E1">typedef</font> Arrow   arrow_type;
+<a name="line99"> 99: </a>      <font color="#4169E1">typedef</font> Source_ source_type;
+<a name="line100">100: </a>      <font color="#4169E1">typedef</font> Target_ target_type;
+<a name="line101">101: </a>      source_type source;
+<a name="line102">102: </a>      target_type target;
+<a name="line103">103: </a>      Arrow(const source_type&amp; s, const target_type&amp; t) : source(s), target(t) {};
+<a name="line104">104: </a>      // Flipping
+<a name="line105">105: </a>      template &lt;typename OtherSource_, typename OtherTarget_&gt;
+<a name="line106">106: </a>      <font color="#4169E1">struct rebind</font> {
+<a name="line107">107: </a>        <font color="#4169E1">typedef</font> Arrow&lt;OtherSource_, OtherTarget_&gt; type;
+<a name="line108">108: </a>      };
+<a name="line109">109: </a>      <font color="#4169E1">struct flip</font> {
+<a name="line110">110: </a>        <font color="#4169E1">typedef</font> Arrow&lt;target_type, source_type&gt; type;
+<a name="line111">111: </a>        type arrow(const arrow_type&amp; a) { <font color="#4169E1">return</font> type(a.target, a.source);};
+<a name="line112">112: </a>      };
+
+<a name="line114">114: </a>      // Printing
+<a name="line115">115: </a>      friend std::ostream&amp; operator&lt;&lt;(std::ostream&amp; os, const Arrow&amp; a) {
+<a name="line116">116: </a>        os &lt;&lt; a.source &lt;&lt; <font color="#666666">" ----&gt; "</font> &lt;&lt; a.target;
+<a name="line117">117: </a>        <font color="#4169E1">return</font> os;
+<a name="line118">118: </a>      }
+
+<a name="line120">120: </a>      // Arrow modifiers
+<a name="line121">121: </a>      <font color="#4169E1">struct sourceChanger</font> {
+<a name="line122">122: </a>        sourceChanger(const source_type&amp; newSource) : _newSource(newSource) {};
+<a name="line123">123: </a>        void operator()(arrow_type&amp; a) {a.source = this-&gt;_newSource;}
+<a name="line124">124: </a><strong><font color="#FF0000">      private:</font></strong>
+<a name="line125">125: </a>        source_type _newSource;
+<a name="line126">126: </a>      };
+
+<a name="line128">128: </a>      <font color="#4169E1">struct targetChanger</font> {
+<a name="line129">129: </a>        targetChanger(const target_type&amp; newTarget) : _newTarget(newTarget) {};
+<a name="line130">130: </a>        void operator()(arrow_type&amp; a) { a.target = this-&gt;_newTarget;}
+<a name="line131">131: </a><strong><font color="#FF0000">      private:</font></strong>
+<a name="line132">132: </a>        const target_type _newTarget;
+<a name="line133">133: </a>      };
+<a name="line134">134: </a>    };// <font color="#4169E1">struct Arrow</font>
+
+
+<a name="line137">137: </a>    template&lt;typename Source_, typename Target_&gt;
+<a name="line138">138: </a>    <font color="#4169E1">struct ArrowContainerTraits</font> {
+<a name="line139">139: </a><strong><font color="#FF0000">    public:</font></strong>
+<a name="line140">140: </a>      //
+<a name="line141">141: </a>      // Encapsulated types
+<a name="line142">142: </a>      //
+<a name="line143">143: </a>      <font color="#4169E1">typedef</font> Arrow&lt;Source_,Target_&gt;           arrow_type;
+<a name="line144">144: </a>      <font color="#4169E1">typedef</font> typename arrow_type::source_type source_type;
+<a name="line145">145: </a>      <font color="#4169E1">typedef</font> typename arrow_type::target_type target_type;
+<a name="line146">146: </a>      // Index tags
+<a name="line147">147: </a>      <font color="#4169E1">struct</font>                                   sourceTargetTag{};
+<a name="line148">148: </a>      <font color="#4169E1">struct</font>                                   targetSourceTag{};
+
+<a name="line150">150: </a>      // Sequence traits and sequence types
+<a name="line151">151: </a>      template &lt;typename Index_, typename Key_, typename SubKey_, typename ValueExtractor_&gt;
+<a name="line152">152: </a>      class ArrowSequence {
+<a name="line153">153: </a>        // ArrowSequence implements ReversibleIndexSequencTraits with Index_ and ValueExtractor_ types.
+<a name="line154">154: </a>        // A Key_ object and an optional SubKey_ object are used to extract the index subset.
+<a name="line155">155: </a><strong><font color="#FF0000">      public:</font></strong>
+<a name="line156">156: </a>        <font color="#4169E1">typedef</font> ReversibleIndexSequenceTraits&lt;Index_, ValueExtractor_&gt;  traits;
+<a name="line157">157: </a>        //<font color="#4169E1">typedef</font> source_type                                             source_type;
+<a name="line158">158: </a>        //<font color="#4169E1">typedef</font> target_type                                             target_type;
+<a name="line159">159: </a>        //<font color="#4169E1">typedef</font> arrow_type                                              arrow_type;
+<a name="line160">160: </a>        //
+<a name="line161">161: </a>        <font color="#4169E1">typedef</font> Key_                                                    key_type;
+<a name="line162">162: </a>        <font color="#4169E1">typedef</font> SubKey_                                                 subkey_type;
+<a name="line163">163: </a><strong><font color="#FF0000">      protected:</font></strong>
+<a name="line164">164: </a>        typename traits::index_type&amp;                                    _index;
+<a name="line165">165: </a>        key_type                                                  key;
+<a name="line166">166: </a>        subkey_type                                               subkey;
+<a name="line167">167: </a>        bool                                                      useSubkey;
+<a name="line168">168: </a><strong><font color="#FF0000">      public:</font></strong>
+<a name="line169">169: </a>        // Need to extend the inherited iterators to be able to extract arrow color
+<a name="line170">170: </a>        class iterator : public traits::iterator {
+<a name="line171">171: </a><strong><font color="#FF0000">        public:</font></strong>
+<a name="line172">172: </a>          iterator(const typename traits::iterator::itor_type&amp; itor) : traits::iterator(itor) {};
+<a name="line173">173: </a>          virtual const source_type&amp; source() const {<font color="#4169E1">return</font> this-&gt;_itor-&gt;source;};
+<a name="line174">174: </a>          virtual const target_type&amp; target() const {<font color="#4169E1">return</font> this-&gt;_itor-&gt;target;};
+<a name="line175">175: </a>          virtual const arrow_type&amp;  arrow()  const {<font color="#4169E1">return</font> *(this-&gt;_itor);};
+<a name="line176">176: </a>        };
+<a name="line177">177: </a>        class reverse_iterator : public traits::reverse_iterator {
+<a name="line178">178: </a><strong><font color="#FF0000">        public:</font></strong>
+<a name="line179">179: </a>          reverse_iterator(const typename traits::reverse_iterator::itor_type&amp; itor) : traits::reverse_iterator(itor) {};
+<a name="line180">180: </a>          virtual const source_type&amp; source() const {<font color="#4169E1">return</font> this-&gt;_itor-&gt;source;};
+<a name="line181">181: </a>          virtual const target_type&amp; target() const {<font color="#4169E1">return</font> this-&gt;_itor-&gt;target;};
+<a name="line182">182: </a>          virtual const arrow_type&amp;  arrow()  const {<font color="#4169E1">return</font> *(this-&gt;_itor);};
+<a name="line183">183: </a>        };
+<a name="line184">184: </a><strong><font color="#FF0000">      public:</font></strong>
+<a name="line185">185: </a>        //
+<a name="line186">186: </a>        // Basic ArrowSequence interface
+<a name="line187">187: </a>        //
+<a name="line188">188: </a>        ArrowSequence(const ArrowSequence&amp; seq) : _index(seq._index), key(seq.key), subkey(seq.subkey), useSubkey(seq.useSubkey) {};
+<a name="line189">189: </a>        ArrowSequence(typename traits::index_type&amp; index, const key_type&amp; k) :
+<a name="line190">190: </a>          _index(index), key(k), subkey(subkey_type()), useSubkey(0) {};
+<a name="line191">191: </a>        ArrowSequence(typename traits::index_type&amp; index, const key_type&amp; k, const subkey_type&amp; kk) :
+<a name="line192">192: </a>          _index(index), key(k), subkey(kk), useSubkey(1){};
+<a name="line193">193: </a>        virtual ~ArrowSequence() {};
+
+<a name="line195">195: </a>        void setKey(const key_type&amp; key) {this-&gt;key = key;};
+<a name="line196">196: </a>        void setSubkey(const subkey_type&amp; subkey) {this-&gt;subkey = subkey;};
+<a name="line197">197: </a>        void setUseSubkey(const bool&amp; useSubkey) {this-&gt;useSubkey = useSubkey;};
+
+<a name="line199">199: </a>        virtual bool         empty() {<font color="#4169E1">return</font> this-&gt;_index.empty();};
+
+<a name="line201">201: </a>        virtual typename traits::index_type::size_type  size()  {
+<a name="line202">202: </a>          <font color="#4169E1">if</font> (this-&gt;useSubkey) {
+<a name="line203">203: </a>            <font color="#4169E1">return</font> this-&gt;_index.count(::boost::make_tuple(this-&gt;key,this-&gt;subkey));
+<a name="line204">204: </a>          } <font color="#4169E1">else</font> {
+<a name="line205">205: </a>            <font color="#4169E1">return</font> this-&gt;_index.count(::boost::make_tuple(this-&gt;key));
+<a name="line206">206: </a>          }
+<a name="line207">207: </a>        };
+
+<a name="line209">209: </a>        virtual iterator begin() {
+<a name="line210">210: </a>          <font color="#4169E1">if</font> (this-&gt;useSubkey) {
+<a name="line211">211: </a>            <font color="#4169E1">return</font> iterator(this-&gt;_index.lower_bound(::boost::make_tuple(this-&gt;key,this-&gt;subkey)));
+<a name="line212">212: </a>          } <font color="#4169E1">else</font> {
+<a name="line213">213: </a>            <font color="#4169E1">return</font> iterator(this-&gt;_index.lower_bound(::boost::make_tuple(this-&gt;key)));
+<a name="line214">214: </a>          }
+<a name="line215">215: </a>        };
+
+<a name="line217">217: </a>        virtual iterator end() {
+<a name="line218">218: </a>          <font color="#4169E1">if</font> (this-&gt;useSubkey) {
+<a name="line219">219: </a>            <font color="#4169E1">return</font> iterator(this-&gt;_index.upper_bound(::boost::make_tuple(this-&gt;key,this-&gt;subkey)));
+<a name="line220">220: </a>          } <font color="#4169E1">else</font> {
+<a name="line221">221: </a>            <font color="#4169E1">return</font> iterator(this-&gt;_index.upper_bound(::boost::make_tuple(this-&gt;key)));
+<a name="line222">222: </a>          }
+<a name="line223">223: </a>        };
+
+<a name="line225">225: </a>        virtual reverse_iterator rbegin() {
+<a name="line226">226: </a>          <font color="#4169E1">if</font> (this-&gt;useSubkey) {
+<a name="line227">227: </a>            <font color="#4169E1">return</font> reverse_iterator(--this-&gt;_index.upper_bound(::boost::make_tuple(this-&gt;key,this-&gt;subkey)));
+<a name="line228">228: </a>          } <font color="#4169E1">else</font> {
+<a name="line229">229: </a>            <font color="#4169E1">return</font> reverse_iterator(--this-&gt;_index.upper_bound(::boost::make_tuple(this-&gt;key)));
+<a name="line230">230: </a>          }
+<a name="line231">231: </a>        };
+
+<a name="line233">233: </a>        virtual reverse_iterator rend() {
+<a name="line234">234: </a>          <font color="#4169E1">if</font> (this-&gt;useSubkey) {
+<a name="line235">235: </a>            <font color="#4169E1">return</font> reverse_iterator(--this-&gt;_index.lower_bound(::boost::make_tuple(this-&gt;key,this-&gt;subkey)));
+<a name="line236">236: </a>          } <font color="#4169E1">else</font> {
+<a name="line237">237: </a>            <font color="#4169E1">return</font> reverse_iterator(--this-&gt;_index.lower_bound(::boost::make_tuple(this-&gt;key)));
+<a name="line238">238: </a>          }
+<a name="line239">239: </a>        };
+
+<a name="line241">241: </a>        template&lt;typename ostream_type&gt;
+<a name="line242">242: </a>        void view(ostream_type&amp; os, const char* label = NULL){
+<a name="line243">243: </a>          <font color="#4169E1">if</font>(label != NULL) {
+<a name="line244">244: </a>            os &lt;&lt; <font color="#666666">"Viewing "</font> &lt;&lt; label &lt;&lt; <font color="#666666">" sequence:"</font> &lt;&lt; std::endl;
+<a name="line245">245: </a>          }
+<a name="line246">246: </a>          os &lt;&lt; <font color="#666666">"["</font>;
+<a name="line247">247: </a>          <font color="#4169E1">for</font>(iterator i = this-&gt;begin(); i != this-&gt;end(); i++) {
+<a name="line248">248: </a>            os &lt;&lt; <font color="#666666">" ("</font> &lt;&lt; *i &lt;&lt; <font color="#666666">")"</font>;
+<a name="line249">249: </a>          }
+<a name="line250">250: </a>          os &lt;&lt; <font color="#666666">" ]"</font> &lt;&lt; std::endl;
+<a name="line251">251: </a>        }
+<a name="line252">252: </a>      };// class ArrowSequence
+<a name="line253">253: </a>    };// class ArrowContainerTraits
+
+
+<a name="line256">256: </a>    // The specialized ArrowContainer types distinguish the cases of unique and multiple colors of arrows on
+<a name="line257">257: </a>    // <font color="#4169E1">for</font> each (source,target) pair (i.e., a single arrow, or multiple arrows between each pair of points).
+<a name="line258">258: </a>    template&lt;typename Source_, typename Target_, typename Alloc_ = ALE_ALLOCATOR&lt;typename ArrowContainerTraits&lt;Source_, Target_&gt;::arrow_type&gt; &gt;
+<a name="line259">259: </a>    <font color="#4169E1">struct ArrowContainer</font> {
+<a name="line260">260: </a>      // Define container's encapsulated types
+<a name="line261">261: </a>      <font color="#4169E1">typedef</font> ArrowContainerTraits&lt;Source_, Target_&gt; traits;
+<a name="line262">262: </a>      // need to def arrow_type locally, since BOOST_MULTI_INDEX_MEMBER barfs when first template parameter starts with 'typename'
+<a name="line263">263: </a>      <font color="#4169E1">typedef</font> typename traits::arrow_type                                   arrow_type;
+<a name="line264">264: </a>      <font color="#4169E1">typedef</font> Alloc_ alloc_type;
+
+<a name="line266">266: </a>      // multi-index set type -- arrow set
+<a name="line267">267: </a>      <font color="#4169E1">typedef</font> ::boost::multi_index::multi_index_container&lt;
+<a name="line268">268: </a>        typename traits::arrow_type,
+<a name="line269">269: </a>        ::boost::multi_index::indexed_by&lt;
+<a name="line270">270: </a>          ::boost::multi_index::ordered_unique&lt;
+<a name="line271">271: </a>            ::boost::multi_index::tag&lt;typename traits::sourceTargetTag&gt;,
+<a name="line272">272: </a>            ::boost::multi_index::composite_key&lt;
+<a name="line273">273: </a>              typename traits::arrow_type,
+<a name="line274">274: </a>              BOOST_MULTI_INDEX_MEMBER(arrow_type, typename traits::source_type, source),
+<a name="line275">275: </a>              BOOST_MULTI_INDEX_MEMBER(arrow_type, typename traits::target_type, target)
+<a name="line276">276: </a>            &gt;
+<a name="line277">277: </a>          &gt;,
+<a name="line278">278: </a>          ::boost::multi_index::ordered_unique&lt;
+<a name="line279">279: </a>            ::boost::multi_index::tag&lt;typename traits::targetSourceTag&gt;,
+<a name="line280">280: </a>            ::boost::multi_index::composite_key&lt;
+<a name="line281">281: </a>              typename traits::arrow_type,
+<a name="line282">282: </a>              BOOST_MULTI_INDEX_MEMBER(arrow_type, typename traits::target_type, target),
+<a name="line283">283: </a>              BOOST_MULTI_INDEX_MEMBER(arrow_type, typename traits::source_type, source)
+<a name="line284">284: </a>            &gt;
+<a name="line285">285: </a>          &gt;
+<a name="line286">286: </a>        &gt;,
+<a name="line287">287: </a>        Alloc_
+<a name="line288">288: </a>      &gt; set_type;
+<a name="line289">289: </a>      // multi-index set of arrow records
+<a name="line290">290: </a>      set_type set;
+
+<a name="line292">292: </a>      ArrowContainer() {};
+<a name="line293">293: </a>      ArrowContainer(const alloc_type&amp; allocator) {this-&gt;set = set_type(typename set_type::ctor_args_list(), allocator);};
+<a name="line294">294: </a>    }; // class ArrowContainer
+<a name="line295">295: </a>  }; // namespace NewSifterDef
+
+<a name="line297">297: </a>  template&lt;typename Source_, typename Target_, typename Alloc_ = ALE_ALLOCATOR&lt;typename NewSifterDef::ArrowContainer&lt;Source_, Target_&gt;::traits::arrow_type&gt; &gt;
+<a name="line298">298: </a>  class LabelSifter { // class Sifter
+<a name="line299">299: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line300">300: </a>    <font color="#4169E1">typedef</font> <font color="#4169E1">struct</font> {
+<a name="line301">301: </a>      <font color="#4169E1">typedef</font> LabelSifter&lt;Source_, Target_, Alloc_&gt; graph_type;
+<a name="line302">302: </a>      // Encapsulated container types
+<a name="line303">303: </a>      <font color="#4169E1">typedef</font> NewSifterDef::ArrowContainer&lt;Source_, Target_, Alloc_&gt;                 arrow_container_type;
+<a name="line304">304: </a>      // Types associated with records held in containers
+<a name="line305">305: </a>      <font color="#4169E1">typedef</font> typename arrow_container_type::traits::arrow_type                      arrow_type;
+<a name="line306">306: </a>      <font color="#4169E1">typedef</font> typename arrow_container_type::traits::source_type                     source_type;
+<a name="line307">307: </a>      <font color="#4169E1">typedef</font> typename arrow_container_type::traits::target_type                     target_type;
+<a name="line308">308: </a>      // Convenient tag names
+<a name="line309">309: </a>      <font color="#4169E1">typedef</font> typename arrow_container_type::traits::sourceTargetTag                 supportInd;
+<a name="line310">310: </a>      <font color="#4169E1">typedef</font> typename arrow_container_type::traits::targetSourceTag                 coneInd;
+<a name="line311">311: </a>      <font color="#4169E1">typedef</font> typename arrow_container_type::traits::sourceTargetTag                 arrowInd;
+<a name="line312">312: </a>      //
+<a name="line313">313: </a>      // Return types
+<a name="line314">314: </a>      //
+<a name="line315">315: </a>      <font color="#4169E1">typedef</font> typename
+<a name="line316">316: </a><strong><font color="#FF0000">      arrow_container_type:</font></strong>:traits::template ArrowSequence&lt;typename ::boost::multi_index::index&lt;typename arrow_container_type::set_type,arrowInd&gt;::type, source_type, target_type, BOOST_MULTI_INDEX_MEMBER(arrow_type, source_type, source)&gt;
+<a name="line317">317: </a>      arrowSequence;
+
+<a name="line319">319: </a>      // FIX: This is a temp fix to include addArrow into the interface; should probably be pushed up to ArrowSequence
+<a name="line320">320: </a>      <font color="#4169E1">struct coneSequence</font> : public arrow_container_type::traits::template ArrowSequence&lt;typename ::boost::multi_index::index&lt;typename arrow_container_type::set_type,coneInd&gt;::type, target_type, source_type, BOOST_MULTI_INDEX_MEMBER(arrow_type, source_type, source)&gt; {
+<a name="line321">321: </a><strong><font color="#FF0000">      protected:</font></strong>
+<a name="line322">322: </a>        graph_type&amp; _graph;
+<a name="line323">323: </a><strong><font color="#FF0000">      public:</font></strong>
+<a name="line324">324: </a>        <font color="#4169E1">typedef</font> typename
+<a name="line325">325: </a><strong><font color="#FF0000">          arrow_container_type:</font></strong>:traits::template ArrowSequence&lt;typename ::boost::multi_index::index&lt;typename arrow_container_type::set_type,coneInd&gt;::type, target_type, source_type, BOOST_MULTI_INDEX_MEMBER(arrow_type, source_type, source)&gt; base_type;
+<a name="line326">326: </a>        // Encapsulated types
+<a name="line327">327: </a>        <font color="#4169E1">typedef</font> typename base_type::traits traits;
+<a name="line328">328: </a>        <font color="#4169E1">typedef</font> typename base_type::iterator iterator;
+<a name="line329">329: </a>        <font color="#4169E1">typedef</font> typename base_type::reverse_iterator reverse_iterator;
+<a name="line330">330: </a>        // Basic interface
+<a name="line331">331: </a>        coneSequence(const coneSequence&amp; seq) : base_type(seq), _graph(seq._graph) {};
+<a name="line332">332: </a>          coneSequence(graph_type&amp; graph, typename traits::index_type&amp; index, const typename base_type::key_type&amp; k) : base_type(index, k), _graph(graph){};
+<a name="line333">333: </a>            coneSequence(graph_type&amp; graph, typename traits::index_type&amp; index, const typename base_type::key_type&amp; k, const typename base_type::subkey_type&amp; kk) : base_type(index, k, kk), _graph(graph) {};
+<a name="line334">334: </a>              virtual ~coneSequence() {};
+
+<a name="line336">336: </a>        // Extended interface
+<a name="line337">337: </a>        void addArrow(const arrow_type&amp; a) {
+<a name="line338">338: </a>          // <font color="#4169E1">if</font>(a.target != this-&gt;key) {
+<a name="line339">339: </a>          //               throw ALE::Exception(<font color="#666666">"Arrow target mismatch in a coneSequence"</font>);
+<a name="line340">340: </a>          //             }
+<a name="line341">341: </a>          this-&gt;_graph.addArrow(a);
+<a name="line342">342: </a>        };
+<a name="line343">343: </a>        void addArrow(const source_type&amp; s){
+<a name="line344">344: </a>          this-&gt;_graph.addArrow(arrow_type(s,this-&gt;key));
+<a name="line345">345: </a>        };
+
+<a name="line347">347: </a>        virtual bool contains(const source_type&amp; s) {
+<a name="line348">348: </a>          // Check whether a given point is in the index
+<a name="line349">349: </a>          typename ::boost::multi_index::index&lt;typename LabelSifter::traits::arrow_container_type::set_type,typename LabelSifter::traits::arrowInd&gt;::type&amp; index = ::boost::multi_index::get&lt;typename LabelSifter::traits::arrowInd&gt;(this-&gt;_graph._arrows.set);
+<a name="line350">350: </a>          <font color="#4169E1">return</font> (index.find(::boost::make_tuple(s,this-&gt;key)) != index.end());
+<a name="line351">351: </a>        };
+<a name="line352">352: </a>      };// <font color="#4169E1">struct coneSequence</font>
+
+<a name="line354">354: </a>      // FIX: This is a temp fix to include addArrow into the interface; should probably be pushed up to ArrowSequence
+<a name="line355">355: </a>      <font color="#4169E1">struct supportSequence</font> : public arrow_container_type::traits::template ArrowSequence&lt;typename ::boost::multi_index::index&lt;typename arrow_container_type::set_type,supportInd&gt;::type, source_type, target_type, BOOST_MULTI_INDEX_MEMBER(arrow_type, target_type, target)&gt; {
+<a name="line356">356: </a><strong><font color="#FF0000">      protected:</font></strong>
+<a name="line357">357: </a>        graph_type&amp; _graph;
+<a name="line358">358: </a><strong><font color="#FF0000">      public:</font></strong>
+<a name="line359">359: </a>        <font color="#4169E1">typedef</font> typename
+<a name="line360">360: </a><strong><font color="#FF0000">          arrow_container_type:</font></strong>:traits::template ArrowSequence&lt;typename ::boost::multi_index::index&lt;typename arrow_container_type::set_type,supportInd&gt;::type, source_type, target_type, BOOST_MULTI_INDEX_MEMBER(arrow_type, target_type, target)&gt; base_type;
+<a name="line361">361: </a>        // Encapsulated types
+<a name="line362">362: </a>        <font color="#4169E1">typedef</font> typename base_type::traits traits;
+<a name="line363">363: </a>        <font color="#4169E1">typedef</font> typename base_type::iterator iterator;
+<a name="line364">364: </a>        <font color="#4169E1">typedef</font> typename base_type::iterator const_iterator;
+<a name="line365">365: </a>        <font color="#4169E1">typedef</font> typename base_type::reverse_iterator reverse_iterator;
+<a name="line366">366: </a>        // Basic interface
+<a name="line367">367: </a>        supportSequence(const supportSequence&amp; seq) : base_type(seq), _graph(seq._graph) {};
+<a name="line368">368: </a>        supportSequence(graph_type&amp; graph, typename traits::index_type&amp; index, const typename base_type::key_type&amp; k) : base_type(index, k), _graph(graph){};
+<a name="line369">369: </a>        supportSequence(graph_type&amp; graph, typename traits::index_type&amp; index, const typename base_type::key_type&amp; k, const typename base_type::subkey_type&amp; kk) : base_type(index, k, kk), _graph(graph) {};
+<a name="line370">370: </a>        virtual ~supportSequence() {};
+
+<a name="line372">372: </a>        // FIX: WARNING: (or a HACK?): we flip the arrow on addition here.
+<a name="line373">373: </a>        // Fancy interface
+<a name="line374">374: </a>        void addArrow(const typename arrow_type::flip::type&amp; af) {
+<a name="line375">375: </a>          this-&gt;_graph.addArrow(af.target, af.source);
+<a name="line376">376: </a>        };
+<a name="line377">377: </a>        void addArrow(const target_type&amp; t){
+<a name="line378">378: </a>          this-&gt;_graph.addArrow(arrow_type(this-&gt;key,t));
+<a name="line379">379: </a>        };
+<a name="line380">380: </a>      };// <font color="#4169E1">struct supportSequence</font>
+
+<a name="line382">382: </a>      <font color="#4169E1">typedef</font> std::set&lt;source_type, std::less&lt;source_type&gt;, typename Alloc_::template rebind&lt;source_type&gt;::other&gt; coneSet;
+<a name="line383">383: </a>      <font color="#4169E1">typedef</font> ALE::array&lt;source_type&gt; coneArray;
+<a name="line384">384: </a>      <font color="#4169E1">typedef</font> std::set&lt;target_type, std::less&lt;target_type&gt;, typename Alloc_::template rebind&lt;source_type&gt;::other&gt; supportSet;
+<a name="line385">385: </a>      <font color="#4169E1">typedef</font> ALE::array&lt;target_type&gt; supportArray;
+<a name="line386">386: </a>    } traits;
+
+<a name="line388">388: </a>    template &lt;typename OtherSource_, typename OtherTarget_&gt;
+<a name="line389">389: </a>    <font color="#4169E1">struct rebind</font> {
+<a name="line390">390: </a>      <font color="#4169E1">typedef</font> LabelSifter&lt;OtherSource_, OtherTarget_&gt; type;
+<a name="line391">391: </a>    };
+
+<a name="line393">393: </a>    <font color="#4169E1">typedef</font> Alloc_                           alloc_type;
+<a name="line394">394: </a>    <font color="#4169E1">typedef</font> typename traits::source_type     source_type;
+<a name="line395">395: </a>    <font color="#4169E1">typedef</font> typename traits::target_type     target_type;
+<a name="line396">396: </a>    <font color="#4169E1">typedef</font> typename traits::coneSequence    coneSequence;
+<a name="line397">397: </a>    <font color="#4169E1">typedef</font> typename traits::supportSequence supportSequence;
+<a name="line398">398: </a>    <font color="#4169E1">typedef</font> std::set&lt;int&gt;                    capSequence;
+<a name="line399">399: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line400">400: </a>    // Debug level
+<a name="line401">401: </a>    int _debug;
+<a name="line402">402: </a>    //protected:
+<a name="line403">403: </a>    typename traits::arrow_container_type _arrows;
+<a name="line404">404: </a><strong><font color="#FF0000">  protected:</font></strong>
+<a name="line405">405: </a>    <A href="../../docs/manualpages/Sys/MPI_Comm.html#MPI_Comm">MPI_Comm</A>    _comm;
+<a name="line406">406: </a>    int         _commRank;
+<a name="line407">407: </a>    int         _commSize;
+<a name="line408">408: </a>    void __init(<A href="../../docs/manualpages/Sys/MPI_Comm.html#MPI_Comm">MPI_Comm</A> comm) {
+<a name="line409">409: </a>      static <A href="../../docs/manualpages/Sys/PetscClassId.html#PetscClassId">PetscClassId</A> sifterType = -1;
+<a name="line410">410: </a>      //const char        *id_name = ALE::getClassName&lt;T&gt;();
+<a name="line411">411: </a>      const char        *id_name = <font color="#666666">"LabelSifter"</font>;
+<a name="line412">412: </a>      <A href="../../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A>     ierr;
+
+<a name="line414">414: </a>      <font color="#4169E1">if</font> (sifterType &lt; 0) {
+<a name="line415">415: </a>        <A href="../../docs/manualpages/Profiling/PetscClassIdRegister.html#PetscClassIdRegister">PetscClassIdRegister</A>(id_name,&amp;sifterType);CHKERROR(ierr, <font color="#666666">"Error in <A href="http://www.mcs.anl.gov/mpi/www/www3/MPI_Comm_rank.html#MPI_Comm_rank">MPI_Comm_rank</A>"</font>);
+<a name="line416">416: </a>      }
+<a name="line417">417: </a>      this-&gt;_comm = comm;
+<a name="line418">418: </a>      <A href="http://www.mcs.anl.gov/mpi/www/www3/MPI_Comm_rank.html#MPI_Comm_rank">MPI_Comm_rank</A>(this-&gt;_comm, &amp;this-&gt;_commRank);CHKERROR(ierr, <font color="#666666">"Error in <A href="http://www.mcs.anl.gov/mpi/www/www3/MPI_Comm_rank.html#MPI_Comm_rank">MPI_Comm_rank</A>"</font>);
+<a name="line419">419: </a>      <A href="http://www.mcs.anl.gov/mpi/www/www3/MPI_Comm_size.html#MPI_Comm_size">MPI_Comm_size</A>(this-&gt;_comm, &amp;this-&gt;_commSize);CHKERROR(ierr, <font color="#666666">"Error in <A href="http://www.mcs.anl.gov/mpi/www/www3/MPI_Comm_rank.html#MPI_Comm_rank">MPI_Comm_rank</A>"</font>);
+<a name="line420">420: </a>      //ALE::restoreClassName&lt;T&gt;(id_name);
+<a name="line421">421: </a>    };
+<a name="line422">422: </a>    // We store these sequence objects to avoid creating them each query
+<a name="line423">423: </a>    Obj&lt;typename traits::coneSequence&gt; _coneSeq;
+<a name="line424">424: </a>    Obj&lt;typename traits::supportSequence&gt; _supportSeq;
+<a name="line425">425: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line426">426: </a>    //
+<a name="line427">427: </a>    // Basic interface
+<a name="line428">428: </a>    //
+<a name="line429">429: </a>    LabelSifter(<A href="../../docs/manualpages/Sys/MPI_Comm.html#MPI_Comm">MPI_Comm</A> comm = <A href="../../docs/manualpages/Sys/PETSC_COMM_SELF.html#PETSC_COMM_SELF">PETSC_COMM_SELF</A>, const int&amp; debug = 0) : _debug(debug) {
+<a name="line430">430: </a>      __init(comm);
+<a name="line431">431: </a>      this-&gt;_coneSeq    = new typename traits::coneSequence(*this, ::boost::multi_index::get&lt;typename traits::coneInd&gt;(this-&gt;_arrows.set), typename traits::target_type());
+<a name="line432">432: </a>      this-&gt;_supportSeq = new typename traits::supportSequence(*this, ::boost::multi_index::get&lt;typename traits::supportInd&gt;(this-&gt;_arrows.set), typename traits::source_type());
+<a name="line433">433: </a>    };
+<a name="line434">434: </a>    LabelSifter(<A href="../../docs/manualpages/Sys/MPI_Comm.html#MPI_Comm">MPI_Comm</A> comm, Alloc_&amp; allocator, const int&amp; debug) : _debug(debug), _arrows(allocator) {
+<a name="line435">435: </a>      __init(comm);
+<a name="line436">436: </a>      this-&gt;_coneSeq    = new typename traits::coneSequence(*this, ::boost::multi_index::get&lt;typename traits::coneInd&gt;(this-&gt;_arrows.set), typename traits::target_type());
+<a name="line437">437: </a>      this-&gt;_supportSeq = new typename traits::supportSequence(*this, ::boost::multi_index::get&lt;typename traits::supportInd&gt;(this-&gt;_arrows.set), typename traits::source_type());
+<a name="line438">438: </a>    };
+<a name="line439">439: </a>    virtual ~LabelSifter() {};
+<a name="line440">440: </a>    //
+<a name="line441">441: </a>    // Query methods
+<a name="line442">442: </a>    //
+<a name="line443">443: </a>    int         debug()    const {<font color="#4169E1">return</font> this-&gt;_debug;};
+<a name="line444">444: </a>    void        setDebug(const int debug) {this-&gt;_debug = debug;};
+<a name="line445">445: </a>    <A href="../../docs/manualpages/Sys/MPI_Comm.html#MPI_Comm">MPI_Comm</A>    comm()     const {<font color="#4169E1">return</font> this-&gt;_comm;};
+<a name="line446">446: </a>    int         commSize() const {<font color="#4169E1">return</font> this-&gt;_commSize;};
+<a name="line447">447: </a>    int         commRank() const {<font color="#4169E1">return</font> this-&gt;_commRank;}
+
+<a name="line449">449: </a>    // FIX: should probably have cone and const_cone etc, since arrows can be modified through an iterator (modifyColor).
+<a name="line450">450: </a>    Obj&lt;typename traits::arrowSequence&gt;
+<a name="line451">451: </a>    arrows(const typename traits::source_type&amp; s, const typename traits::target_type&amp; t) {
+<a name="line452">452: </a>      <font color="#4169E1">return</font> typename traits::arrowSequence(::boost::multi_index::get&lt;typename traits::arrowInd&gt;(this-&gt;_arrows.set), s, t);
+<a name="line453">453: </a>    };
+<a name="line454">454: </a>    Obj&lt;typename traits::arrowSequence&gt;
+<a name="line455">455: </a>    arrows(const typename traits::source_type&amp; s) {
+<a name="line456">456: </a>      <font color="#4169E1">return</font> typename traits::arrowSequence(::boost::multi_index::get&lt;typename traits::arrowInd&gt;(this-&gt;_arrows.set), s);
+<a name="line457">457: </a>    };
+<a name="line458">458: </a><font color="#A020F0">#ifdef SLOW</font>
+<a name="line459">459: </a>    Obj&lt;typename traits::coneSequence&gt;
+<a name="line460">460: </a>    cone(const typename traits::target_type&amp; p) {
+<a name="line461">461: </a>      <font color="#4169E1">return</font> typename traits::coneSequence(*this, ::boost::multi_index::get&lt;typename traits::coneInd&gt;(this-&gt;_arrows.set), p);
+<a name="line462">462: </a>    };
+<a name="line463">463: </a><font color="#A020F0">#else</font>
+<a name="line464">464: </a>    const Obj&lt;typename traits::coneSequence&gt;&amp;
+<a name="line465">465: </a>    cone(const typename traits::target_type&amp; p) {
+<a name="line466">466: </a>      this-&gt;_coneSeq-&gt;setKey(p);
+<a name="line467">467: </a>      this-&gt;_coneSeq-&gt;setUseSubkey(false);
+<a name="line468">468: </a>      <font color="#4169E1">return</font> this-&gt;_coneSeq;
+<a name="line469">469: </a>    };
+<a name="line470">470: </a><font color="#A020F0">#endif</font>
+<a name="line471">471: </a>    template&lt;class InputSequence&gt;
+<a name="line472">472: </a>    Obj&lt;typename traits::coneSet&gt;
+<a name="line473">473: </a>    cone(const Obj&lt;InputSequence&gt;&amp; points) {
+<a name="line474">474: </a>      Obj&lt;typename traits::coneSet&gt; cone = typename traits::coneSet();
+
+<a name="line476">476: </a>      <font color="#4169E1">for</font>(typename InputSequence::iterator p_itor = points-&gt;begin(); p_itor != points-&gt;end(); ++p_itor) {
+<a name="line477">477: </a>        const Obj&lt;typename traits::coneSequence&gt;&amp; pCone = this-&gt;cone(*p_itor);
+<a name="line478">478: </a>        cone-&gt;insert(pCone-&gt;begin(), pCone-&gt;end());
+<a name="line479">479: </a>      }
+<a name="line480">480: </a>      <font color="#4169E1">return</font> cone;
+<a name="line481">481: </a>    }
+<a name="line482">482: </a>    int getConeSize(const typename traits::target_type&amp; p) {
+<a name="line483">483: </a>      <font color="#4169E1">return</font> this-&gt;cone(p)-&gt;size();
+<a name="line484">484: </a>    };
+<a name="line485">485: </a>    template&lt;typename PointCheck&gt;
+<a name="line486">486: </a>    bool coneContains(const typename traits::target_type&amp; p, const PointCheck&amp; checker) {
+<a name="line487">487: </a>      typename traits::coneSequence cone(*this, ::boost::multi_index::get&lt;typename traits::coneInd&gt;(this-&gt;_arrows.set), p);
+
+<a name="line489">489: </a>      <font color="#4169E1">for</font>(typename traits::coneSequence::iterator c_iter = cone.begin(); c_iter != cone.end(); ++c_iter) {
+<a name="line490">490: </a>        <font color="#4169E1">if</font> (checker(*c_iter, p)) <font color="#4169E1">return</font> true;
+<a name="line491">491: </a>      }
+<a name="line492">492: </a>      <font color="#4169E1">return</font> false;
+<a name="line493">493: </a>    }
+<a name="line494">494: </a>    template&lt;typename PointProcess&gt;
+<a name="line495">495: </a>    void coneApply(const typename traits::target_type&amp; p, PointProcess&amp; processor) {
+<a name="line496">496: </a>      typename traits::coneSequence cone(*this, ::boost::multi_index::get&lt;typename traits::coneInd&gt;(this-&gt;_arrows.set), p);
+
+<a name="line498">498: </a>      <font color="#4169E1">for</font>(typename traits::coneSequence::iterator c_iter = cone.begin(); c_iter != cone.end(); ++c_iter) {
+<a name="line499">499: </a>        processor(*c_iter, p);
+<a name="line500">500: </a>      }
+<a name="line501">501: </a>    }
+<a name="line502">502: </a><font color="#A020F0">#ifdef SLOW</font>
+<a name="line503">503: </a>    Obj&lt;typename traits::supportSequence&gt;
+<a name="line504">504: </a>    support(const typename traits::source_type&amp; p) {
+<a name="line505">505: </a>      <font color="#4169E1">return</font> typename traits::supportSequence(*this, ::boost::multi_index::get&lt;typename traits::supportInd&gt;(this-&gt;_arrows.set), p);
+<a name="line506">506: </a>    };
+<a name="line507">507: </a><font color="#A020F0">#else</font>
+<a name="line508">508: </a>    const Obj&lt;typename traits::supportSequence&gt;&amp;
+<a name="line509">509: </a>    support(const typename traits::source_type&amp; p) {
+<a name="line510">510: </a>      this-&gt;_supportSeq-&gt;setKey(p);
+<a name="line511">511: </a>      this-&gt;_supportSeq-&gt;setUseSubkey(false);
+<a name="line512">512: </a>      <font color="#4169E1">return</font> this-&gt;_supportSeq;
+<a name="line513">513: </a>    };
+<a name="line514">514: </a><font color="#A020F0">#endif</font>
+<a name="line515">515: </a>    template&lt;class InputSequence&gt;
+<a name="line516">516: </a>    Obj&lt;typename traits::supportSet&gt;
+<a name="line517">517: </a>    support(const Obj&lt;InputSequence&gt;&amp; points){
+<a name="line518">518: </a>      Obj&lt;typename traits::supportSet&gt; supp = typename traits::supportSet();
+<a name="line519">519: </a>      <font color="#4169E1">for</font>(typename InputSequence::iterator p_itor = points-&gt;begin(); p_itor != points-&gt;end(); ++p_itor) {
+<a name="line520">520: </a>        const Obj&lt;typename traits::supportSequence&gt;&amp; pSupport = this-&gt;support(*p_itor);
+<a name="line521">521: </a>        supp-&gt;insert(pSupport-&gt;begin(), pSupport-&gt;end());
+<a name="line522">522: </a>      }
+<a name="line523">523: </a>      <font color="#4169E1">return</font> supp;
+<a name="line524">524: </a>    }
+<a name="line525">525: </a>    template&lt;typename PointCheck&gt;
+<a name="line526">526: </a>    bool supportContains(const typename traits::source_type&amp; p, const PointCheck&amp; checker) {
+<a name="line527">527: </a>      typename traits::supportSequence support(*this, ::boost::multi_index::get&lt;typename traits::supportInd&gt;(this-&gt;_arrows.set), p);
+
+<a name="line529">529: </a>      <font color="#4169E1">for</font>(typename traits::supportSequence::iterator s_iter = support.begin(); s_iter != support.end(); ++s_iter) {
+<a name="line530">530: </a>        <font color="#4169E1">if</font> (checker(*s_iter, p)) <font color="#4169E1">return</font> true;
+<a name="line531">531: </a>      }
+<a name="line532">532: </a>      <font color="#4169E1">return</font> false;
+<a name="line533">533: </a>    }
+<a name="line534">534: </a>    template&lt;typename PointProcess&gt;
+<a name="line535">535: </a>    void supportApply(const typename traits::source_type&amp; p, PointProcess&amp; processor) {
+<a name="line536">536: </a>      typename traits::supportSequence support(*this, ::boost::multi_index::get&lt;typename traits::supportInd&gt;(this-&gt;_arrows.set), p);
+
+<a name="line538">538: </a>      <font color="#4169E1">for</font>(typename traits::supportSequence::iterator s_iter = support.begin(); s_iter != support.end(); ++s_iter) {
+<a name="line539">539: </a>        processor(*s_iter, p);
+<a name="line540">540: </a>      }
+<a name="line541">541: </a>    }
+
+<a name="line543">543: </a>    template&lt;typename ostream_type&gt;
+<a name="line544">544: </a>    void view(ostream_type&amp; os, const char* label = NULL, bool rawData = false){
+<a name="line545">545: </a>      const int rank = this-&gt;commRank();
+
+<a name="line547">547: </a>      <font color="#4169E1">if</font>(label != NULL) {
+<a name="line548">548: </a>        os &lt;&lt; <font color="#666666">"["</font>&lt;&lt;rank&lt;&lt;<font color="#666666">"]Viewing LabelSifter '"</font> &lt;&lt; label &lt;&lt; <font color="#666666">"':"</font> &lt;&lt; std::endl;
+<a name="line549">549: </a>      }
+<a name="line550">550: </a>      <font color="#4169E1">else</font> {
+<a name="line551">551: </a>        os &lt;&lt; <font color="#666666">"["</font>&lt;&lt;rank&lt;&lt;<font color="#666666">"]Viewing a LabelSifter:"</font> &lt;&lt; std::endl;
+<a name="line552">552: </a>      }
+<a name="line553">553: </a>      os &lt;&lt; <font color="#666666">"'raw' arrow set:"</font> &lt;&lt; std::endl;
+<a name="line554">554: </a>      <font color="#4169E1">for</font>(typename traits::arrow_container_type::set_type::iterator ai = _arrows.set.begin(); ai != _arrows.set.end(); ai++) {
+<a name="line555">555: </a>        os &lt;&lt; *ai &lt;&lt; std::endl;
+<a name="line556">556: </a>      }
+<a name="line557">557: </a>    }
+<a name="line558">558: </a>    // A parallel viewer
+<a name="line561">561: </a>    <A href="../../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> view(const char* label = NULL, bool raw = false){
+<a name="line563">563: </a>      ostringstream txt;
+<a name="line565">565: </a>      <font color="#4169E1">if</font>(this-&gt;_debug) {
+<a name="line566">566: </a><strong><font color="#FF0000">        std:</font></strong>:cout &lt;&lt; <font color="#666666">"viewing a LabelSifter, comm = "</font> &lt;&lt; this-&gt;comm() &lt;&lt; <font color="#666666">", <A href="../../docs/manualpages/Sys/PETSC_COMM_SELF.html#PETSC_COMM_SELF">PETSC_COMM_SELF</A> = "</font> &lt;&lt; <A href="../../docs/manualpages/Sys/PETSC_COMM_SELF.html#PETSC_COMM_SELF">PETSC_COMM_SELF</A> &lt;&lt; <font color="#666666">", commRank = "</font> &lt;&lt; this-&gt;commRank() &lt;&lt; std::endl;
+<a name="line567">567: </a>      }
+<a name="line568">568: </a>      <font color="#4169E1">if</font>(label != NULL) {
+<a name="line569">569: </a>        <A href="../../docs/manualpages/Sys/PetscPrintf.html#PetscPrintf">PetscPrintf</A>(this-&gt;comm(), <font color="#666666">"viewing LabelSifter: '%s'\n"</font>, label);
+<a name="line570">570: </a>      } <font color="#4169E1">else</font> {
+<a name="line571">571: </a>        <A href="../../docs/manualpages/Sys/PetscPrintf.html#PetscPrintf">PetscPrintf</A>(this-&gt;comm(), <font color="#666666">"viewing a LabelSifter: \n"</font>);
+<a name="line572">572: </a>      }
+<a name="line573">573: </a>      <font color="#4169E1">if</font>(!raw) {
+<a name="line574">574: </a>        ostringstream txt;
+<a name="line575">575: </a>        <font color="#4169E1">if</font>(this-&gt;commRank() == 0) {
+<a name="line576">576: </a>          txt &lt;&lt; <font color="#666666">"cap --&gt; base:\n"</font>;
+<a name="line577">577: </a>        }
+<a name="line578">578: </a>        <font color="#4169E1">if</font>(_arrows.set.empty()) {
+<a name="line579">579: </a>          txt &lt;&lt; <font color="#666666">"["</font> &lt;&lt; this-&gt;commRank() &lt;&lt; <font color="#666666">"]: empty"</font> &lt;&lt; std::endl;
+<a name="line580">580: </a>        }
+<a name="line581">581: </a>        <font color="#4169E1">for</font>(typename traits::arrow_container_type::set_type::iterator ai = _arrows.set.begin(); ai != _arrows.set.end(); ai++) {
+<a name="line582">582: </a>          txt &lt;&lt; <font color="#666666">"["</font> &lt;&lt; this-&gt;commRank() &lt;&lt; <font color="#666666">"]: "</font> &lt;&lt; ai-&gt;source &lt;&lt; <font color="#666666">"----&gt;"</font> &lt;&lt; ai-&gt;target &lt;&lt; std::endl;
+<a name="line583">583: </a>        }
+<a name="line584">584: </a>        <A href="../../docs/manualpages/Sys/PetscSynchronizedPrintf.html#PetscSynchronizedPrintf">PetscSynchronizedPrintf</A>(this-&gt;comm(), txt.str().c_str());CHKERROR(ierr, <font color="#666666">"Error in <A href="../../docs/manualpages/Sys/PetscSynchronizedFlush.html#PetscSynchronizedFlush">PetscSynchronizedFlush</A>"</font>);
+<a name="line585">585: </a>        <A href="../../docs/manualpages/Sys/PetscSynchronizedFlush.html#PetscSynchronizedFlush">PetscSynchronizedFlush</A>(this-&gt;comm());CHKERROR(ierr, <font color="#666666">"Error in <A href="../../docs/manualpages/Sys/PetscSynchronizedFlush.html#PetscSynchronizedFlush">PetscSynchronizedFlush</A>"</font>);
+<a name="line586">586: </a>      }
+<a name="line587">587: </a>      <font color="#4169E1">else</font> { // <font color="#4169E1">if</font>(raw)
+<a name="line588">588: </a>        ostringstream txt;
+<a name="line589">589: </a>        <font color="#4169E1">if</font>(this-&gt;commRank() == 0) {
+<a name="line590">590: </a>          txt &lt;&lt; <font color="#666666">"'raw' arrow set:"</font> &lt;&lt; std::endl;
+<a name="line591">591: </a>        }
+<a name="line592">592: </a>        <font color="#4169E1">for</font>(typename traits::arrow_container_type::set_type::iterator ai = _arrows.set.begin(); ai != _arrows.set.end(); ai++)
+<a name="line593">593: </a>        {
+<a name="line594">594: </a>          typename traits::arrow_type arr = *ai;
+<a name="line595">595: </a>          txt &lt;&lt; <font color="#666666">"["</font> &lt;&lt; this-&gt;commRank() &lt;&lt; <font color="#666666">"]: "</font> &lt;&lt; arr &lt;&lt; std::endl;
+<a name="line596">596: </a>        }
+<a name="line597">597: </a>        <A href="../../docs/manualpages/Sys/PetscSynchronizedPrintf.html#PetscSynchronizedPrintf">PetscSynchronizedPrintf</A>(this-&gt;comm(), txt.str().c_str());CHKERROR(ierr, <font color="#666666">"Error in <A href="../../docs/manualpages/Sys/PetscSynchronizedFlush.html#PetscSynchronizedFlush">PetscSynchronizedFlush</A>"</font>);
+<a name="line598">598: </a>        <A href="../../docs/manualpages/Sys/PetscSynchronizedFlush.html#PetscSynchronizedFlush">PetscSynchronizedFlush</A>(this-&gt;comm());CHKERROR(ierr, <font color="#666666">"Error in <A href="../../docs/manualpages/Sys/PetscSynchronizedFlush.html#PetscSynchronizedFlush">PetscSynchronizedFlush</A>"</font>);
+<a name="line599">599: </a>      }// <font color="#4169E1">if</font>(raw)
+
+<a name="line601">601: </a>      <font color="#4169E1">return</font>(0);
+<a name="line602">602: </a>    }
+<a name="line603">603: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line604">604: </a>    //
+<a name="line605">605: </a>    // Lattice queries
+<a name="line606">606: </a>    //
+<a name="line607">607: </a>    template&lt;class targetInputSequence&gt;
+<a name="line608">608: </a>    Obj&lt;typename traits::coneSequence&gt; meet(const Obj&lt;targetInputSequence&gt;&amp; targets);
+<a name="line609">609: </a>    // unimplemented
+<a name="line610">610: </a>    template&lt;class sourceInputSequence&gt;
+<a name="line611">611: </a>    Obj&lt;typename traits::coneSequence&gt; join(const Obj&lt;sourceInputSequence&gt;&amp; sources);
+<a name="line612">612: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line613">613: </a>    //
+<a name="line614">614: </a>    // Structural manipulation
+<a name="line615">615: </a>    //
+<a name="line616">616: </a>    void clear() {
+<a name="line617">617: </a>      this-&gt;_arrows.set.clear();
+<a name="line618">618: </a>    };
+<a name="line619">619: </a>    // This is necessary to work with Completion right now
+<a name="line620">620: </a>    virtual void addArrow(const typename traits::source_type&amp; p, const typename traits::target_type&amp; q, const int dummy) {
+<a name="line621">621: </a>      this-&gt;addArrow(p, q);
+<a name="line622">622: </a>    };
+<a name="line623">623: </a>    virtual void addArrow(const typename traits::source_type&amp; p, const typename traits::target_type&amp; q) {
+<a name="line624">624: </a>      this-&gt;addArrow(typename traits::arrow_type(p, q));
+<a name="line625">625: </a>      //std::cout &lt;&lt; <font color="#666666">"Added "</font> &lt;&lt; arrow_type(p, q);
+<a name="line626">626: </a>    };
+<a name="line627">627: </a>    virtual void addArrow(const typename traits::arrow_type&amp; a) {
+<a name="line628">628: </a>      this-&gt;_arrows.set.insert(a);
+<a name="line629">629: </a>    };
+<a name="line630">630: </a>    virtual void removeArrow(const typename traits::arrow_type&amp; a) {
+<a name="line631">631: </a>      // First, produce an arrow sequence <font color="#4169E1">for</font> the given source, target combination.
+<a name="line632">632: </a>      typename traits::arrowSequence::traits::index_type&amp; arrowIndex =
+<a name="line633">633: </a>        ::boost::multi_index::get&lt;typename traits::arrowInd&gt;(this-&gt;_arrows.set);
+<a name="line634">634: </a>      typename traits::arrowSequence::traits::index_type::iterator i,ii,j;
+<a name="line635">635: </a>      i = arrowIndex.lower_bound(::boost::make_tuple(a.source,a.target));
+<a name="line636">636: </a>      ii = arrowIndex.upper_bound(::boost::make_tuple(a.source, a.target));
+<a name="line637">637: </a>      <font color="#4169E1">if</font> (this-&gt;_debug) {
+<a name="line638">638: </a><strong><font color="#FF0000">        std:</font></strong>:cout &lt;&lt; <font color="#666666">"removeArrow: attempting to remove arrow:"</font> &lt;&lt; a &lt;&lt; std::endl;
+<a name="line639">639: </a><strong><font color="#FF0000">        std:</font></strong>:cout &lt;&lt; <font color="#666666">"removeArrow: candidate arrows are:"</font> &lt;&lt; std::endl;
+<a name="line640">640: </a>      }
+<a name="line641">641: </a>      <font color="#4169E1">for</font>(j = i; j != ii; j++) {
+<a name="line642">642: </a>        <font color="#4169E1">if</font> (this-&gt;_debug) {
+<a name="line643">643: </a><strong><font color="#FF0000">          std:</font></strong>:cout &lt;&lt; <font color="#666666">" "</font> &lt;&lt; *j;
+<a name="line644">644: </a>        }
+<a name="line645">645: </a>        // Find the arrow of right color and remove it
+<a name="line646">646: </a>        <font color="#4169E1">if</font> (this-&gt;_debug) {
+<a name="line647">647: </a><strong><font color="#FF0000">          std:</font></strong>:cout &lt;&lt; std::endl &lt;&lt; <font color="#666666">"removeArrow: found:"</font> &lt;&lt; *j &lt;&lt; std::endl;
+<a name="line648">648: </a>        }
+<a name="line649">649: </a>        arrowIndex.erase(j);
+<a name="line650">650: </a>        <font color="#4169E1">break</font>;
+<a name="line651">651: </a>      }
+<a name="line652">652: </a>    };
+
+<a name="line654">654: </a>    void addCone(const typename traits::source_type&amp; source, const typename traits::target_type&amp; target){
+<a name="line655">655: </a>      this-&gt;addArrow(source, target);
+<a name="line656">656: </a>    };
+<a name="line657">657: </a>    template&lt;class sourceInputSequence&gt;
+<a name="line658">658: </a>    void
+<a name="line659">659: </a>    addCone(const Obj&lt;sourceInputSequence&gt;&amp; sources, const typename traits::target_type&amp; target){
+<a name="line660">660: </a>      <font color="#4169E1">if</font> (this-&gt;_debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"Adding a cone "</font> &lt;&lt; std::endl;}
+<a name="line661">661: </a>      <font color="#4169E1">for</font>(typename sourceInputSequence::iterator iter = sources-&gt;begin(); iter != sources-&gt;end(); ++iter) {
+<a name="line662">662: </a>        <font color="#4169E1">if</font> (this-&gt;_debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"Adding arrow from "</font> &lt;&lt; *iter &lt;&lt; <font color="#666666">" to "</font> &lt;&lt; target &lt;&lt; std::endl;}
+<a name="line663">663: </a>        this-&gt;addArrow(*iter, target);
+<a name="line664">664: </a>      }
+<a name="line665">665: </a>    }
+<a name="line666">666: </a>    void clearCone(const typename traits::target_type&amp; t) {
+<a name="line667">667: </a>      // Use the cone sequence types to clear the cone
+<a name="line668">668: </a>      typename traits::coneSequence::traits::index_type&amp; coneIndex =
+<a name="line669">669: </a>        ::boost::multi_index::get&lt;typename traits::coneInd&gt;(this-&gt;_arrows.set);
+<a name="line670">670: </a>      typename traits::coneSequence::traits::index_type::iterator i, ii, j;
+<a name="line671">671: </a>      <font color="#4169E1">if</font> (this-&gt;_debug &gt; 20) {
+<a name="line672">672: </a><strong><font color="#FF0000">        std:</font></strong>:cout &lt;&lt; <font color="#666666">"clearCone: removing cone over "</font> &lt;&lt; t;
+<a name="line673">673: </a><strong><font color="#FF0000">        std:</font></strong>:cout &lt;&lt; std::endl;
+<a name="line674">674: </a>        const Obj&lt;typename traits::coneSequence&gt;&amp; cone = this-&gt;cone(t);
+<a name="line675">675: </a><strong><font color="#FF0000">        std:</font></strong>:cout &lt;&lt; <font color="#666666">"["</font>;
+<a name="line676">676: </a>        <font color="#4169E1">for</font>(typename traits::coneSequence::iterator ci = cone-&gt;begin(); ci != cone-&gt;end(); ci++) {
+<a name="line677">677: </a><strong><font color="#FF0000">          std:</font></strong>:cout &lt;&lt; <font color="#666666">"  "</font> &lt;&lt; ci.arrow();
+<a name="line678">678: </a>        }
+<a name="line679">679: </a><strong><font color="#FF0000">        std:</font></strong>:cout &lt;&lt; <font color="#666666">"]"</font> &lt;&lt; std::endl;
+<a name="line680">680: </a>      }
+<a name="line681">681: </a>      i = coneIndex.lower_bound(::boost::make_tuple(t));
+<a name="line682">682: </a>      ii = coneIndex.upper_bound(::boost::make_tuple(t));
+<a name="line683">683: </a>      coneIndex.erase(i,ii);
+<a name="line684">684: </a>    }// clearCone()
+
+<a name="line686">686: </a>    void clearSupport(const typename traits::source_type&amp; s) {
+<a name="line687">687: </a>      // Use the cone sequence types to clear the cone
+<a name="line688">688: </a>      typename
+<a name="line689">689: </a><strong><font color="#FF0000">        traits:</font></strong>:supportSequence::traits::index_type&amp; suppIndex = ::boost::multi_index::get&lt;typename traits::supportInd&gt;(this-&gt;_arrows.set);
+<a name="line690">690: </a>      typename traits::supportSequence::traits::index_type::iterator i, ii, j;
+<a name="line691">691: </a>      i = suppIndex.lower_bound(::boost::make_tuple(s));
+<a name="line692">692: </a>      ii = suppIndex.upper_bound(::boost::make_tuple(s));
+<a name="line693">693: </a>      suppIndex.erase(i,ii);
+<a name="line694">694: </a>    }
+<a name="line695">695: </a>    void setCone(const typename traits::source_type&amp; source, const typename traits::target_type&amp; target){
+<a name="line696">696: </a>      this-&gt;clearCone(target); this-&gt;addCone(source, target);
+<a name="line697">697: </a>    }
+<a name="line698">698: </a>    template&lt;class sourceInputSequence&gt;
+<a name="line699">699: </a>    void setCone(const Obj&lt;sourceInputSequence&gt;&amp; sources, const typename traits::target_type&amp; target) {
+<a name="line700">700: </a>      this-&gt;clearCone(target); this-&gt;addCone(sources, target);
+<a name="line701">701: </a>    }
+<a name="line702">702: </a>    template&lt;class targetInputSequence&gt;
+<a name="line703">703: </a>    void addSupport(const typename traits::source_type&amp; source, const Obj&lt;targetInputSequence &gt;&amp; targets) {
+<a name="line704">704: </a>      <font color="#4169E1">if</font> (this-&gt;_debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"Adding a support "</font> &lt;&lt; std::endl;}
+<a name="line705">705: </a>      <font color="#4169E1">for</font>(typename targetInputSequence::iterator iter = targets-&gt;begin(); iter != targets-&gt;end(); ++iter) {
+<a name="line706">706: </a>        <font color="#4169E1">if</font> (this-&gt;_debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"Adding arrow from "</font> &lt;&lt; source &lt;&lt; <font color="#666666">" to "</font> &lt;&lt; *iter &lt;&lt; std::endl;}
+<a name="line707">707: </a>        this-&gt;addArrow(source, *iter);
+<a name="line708">708: </a>      }
+<a name="line709">709: </a>    }
+<a name="line710">710: </a>    template&lt;typename Sifter_, typename AnotherSifter_&gt;
+<a name="line711">711: </a>    void add(const Obj&lt;Sifter_&gt;&amp; cbg, const Obj&lt;AnotherSifter_&gt;&amp; baseRestriction = NULL) {
+<a name="line712">712: </a>      typename ::boost::multi_index::index&lt;typename Sifter_::traits::arrow_container_type::set_type, typename Sifter_::traits::arrowInd&gt;::type&amp; aInd = ::boost::multi_index::get&lt;typename Sifter_::traits::arrowInd&gt;(cbg-&gt;_arrows.set);
+<a name="line713">713: </a>      bool baseRestrict = !baseRestriction.isNull();
+
+<a name="line715">715: </a>      <font color="#4169E1">for</font>(typename ::boost::multi_index::index&lt;typename Sifter_::traits::arrow_container_type::set_type, typename Sifter_::traits::arrowInd&gt;::type::iterator a_iter = aInd.begin(); a_iter != aInd.end(); ++a_iter) {
+<a name="line716">716: </a>        <font color="#4169E1">if</font> (baseRestrict) {
+<a name="line717">717: </a>          <font color="#4169E1">if</font> (!baseRestriction-&gt;getSupportSize(a_iter-&gt;target) &amp;&amp; !baseRestriction-&gt;getConeSize(a_iter-&gt;target)) <font color="#4169E1">continue</font>;
+<a name="line718">718: </a>        }
+<a name="line719">719: </a>        this-&gt;addArrow(*a_iter);
+<a name="line720">720: </a>      }
+<a name="line721">721: </a>    }
+<a name="line722">722: </a>    template&lt;typename Sifter_, typename AnotherSifter_, typename Renumbering_&gt;
+<a name="line723">723: </a>    void add(const Obj&lt;Sifter_&gt;&amp; cbg, const Obj&lt;AnotherSifter_&gt;&amp; baseRestriction, Renumbering_&amp; renumbering) {
+<a name="line724">724: </a>      typename ::boost::multi_index::index&lt;typename Sifter_::traits::arrow_container_type::set_type, typename Sifter_::traits::arrowInd&gt;::type&amp; aInd = ::boost::multi_index::get&lt;typename Sifter_::traits::arrowInd&gt;(cbg-&gt;_arrows.set);
+
+<a name="line726">726: </a>      <font color="#4169E1">for</font>(typename ::boost::multi_index::index&lt;typename Sifter_::traits::arrow_container_type::set_type, typename Sifter_::traits::arrowInd&gt;::type::iterator a_iter = aInd.begin(); a_iter != aInd.end(); ++a_iter) {
+<a name="line727">727: </a>        <font color="#4169E1">if</font> (renumbering.find(a_iter-&gt;target) == renumbering.end()) <font color="#4169E1">continue</font>;
+<a name="line728">728: </a>        target_type target = renumbering[a_iter-&gt;target];
+
+<a name="line730">730: </a>        <font color="#4169E1">if</font> (!baseRestriction-&gt;getSupportSize(target) &amp;&amp; !baseRestriction-&gt;getConeSize(target)) <font color="#4169E1">continue</font>;
+<a name="line731">731: </a>        this-&gt;addArrow(a_iter-&gt;source, target);
+<a name="line732">732: </a>      }
+<a name="line733">733: </a>    }
+<a name="line734">734: </a>    template&lt;typename Labeling, typename AnotherSifter&gt;
+<a name="line735">735: </a>    void relabel(Labeling&amp; relabeling, AnotherSifter&amp; newLabel) {
+<a name="line736">736: </a>      typename ::boost::multi_index::index&lt;typename traits::arrow_container_type::set_type, typename traits::arrowInd&gt;::type&amp; aInd = ::boost::multi_index::get&lt;typename traits::arrowInd&gt;(this-&gt;_arrows.set);
+
+<a name="line738">738: </a>      <font color="#4169E1">for</font>(typename ::boost::multi_index::index&lt;typename traits::arrow_container_type::set_type, typename traits::arrowInd&gt;::type::iterator a_iter = aInd.begin(); a_iter != aInd.end(); ++a_iter) {
+<a name="line739">739: </a>        const typename traits::target_type newTarget = relabeling.restrictPoint(a_iter-&gt;target)[0];
+
+<a name="line741">741: </a>        newLabel.addArrow(a_iter-&gt;source, newTarget);
+<a name="line742">742: </a>      }
+<a name="line743">743: </a>    }
+
+<a name="line745">745: </a>    int size() const {<font color="#4169E1">return</font> _arrows.set.size();};
+<a name="line746">746: </a>    int getCapSize() const {
+<a name="line747">747: </a><strong><font color="#FF0000">      std:</font></strong>:set&lt;source_type&gt; cap;
+<a name="line748">748: </a>      <font color="#4169E1">for</font>(typename traits::arrow_container_type::set_type::iterator a_iter = _arrows.set.begin(); a_iter != _arrows.set.end(); ++a_iter) {
+<a name="line749">749: </a>        cap.insert(a_iter-&gt;source);
+<a name="line750">750: </a>      }
+<a name="line751">751: </a>      <font color="#4169E1">return</font> cap.size();
+<a name="line752">752: </a>    };
+<a name="line753">753: </a>    capSequence cap() const {
+<a name="line754">754: </a><strong><font color="#FF0000">      std:</font></strong>:set&lt;source_type&gt; cap;
+<a name="line755">755: </a>      <font color="#4169E1">for</font>(typename traits::arrow_container_type::set_type::iterator a_iter = _arrows.set.begin(); a_iter != _arrows.set.end(); ++a_iter) {
+<a name="line756">756: </a>        cap.insert(a_iter-&gt;source);
+<a name="line757">757: </a>      }
+<a name="line758">758: </a>      <font color="#4169E1">return</font> cap;
+<a name="line759">759: </a>    };
+<a name="line760">760: </a>    int getBaseSize() const {
+<a name="line761">761: </a><strong><font color="#FF0000">      std:</font></strong>:set&lt;target_type&gt; base;
+<a name="line762">762: </a>      <font color="#4169E1">for</font>(typename traits::arrow_container_type::set_type::iterator a_iter = _arrows.set.begin(); a_iter != _arrows.set.end(); ++a_iter) {
+<a name="line763">763: </a>        base.insert(a_iter-&gt;target);
+<a name="line764">764: </a>      }
+<a name="line765">765: </a>      <font color="#4169E1">return</font> base.size();
+<a name="line766">766: </a>    };
+<a name="line767">767: </a><strong><font color="#FF0000">  public:</font></strong> // Compatibility with fixed storage variants
+<a name="line768">768: </a>    <font color="#4169E1">typedef</font> Interval&lt;target_type&gt; chart_type;
+<a name="line769">769: </a>    chart_type&amp; getChart() {static chart_type chart(0, 0); <font color="#4169E1">return</font> chart;}
+<a name="line770">770: </a>    template&lt;typename chart_type&gt;
+<a name="line771">771: </a>    void setChart(const chart_type&amp; chart) {}
+<a name="line772">772: </a>    void setConeSize(target_type p, int s) {}
+<a name="line773">773: </a>    void setSupportSize(source_type p, int s) {}
+<a name="line774">774: </a>    void allocate() {}
+<a name="line775">775: </a>    void recalculateLabel() {}
+<a name="line776">776: </a>  }; // class LabelSifter
+
+<a name="line778">778: </a>  class LabelSifterSerializer {
+<a name="line779">779: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line780">780: </a>    template&lt;typename LabelSifter&gt;
+<a name="line781">781: </a>    static void writeLabel(std::ofstream&amp; fs, LabelSifter&amp; label) {
+<a name="line782">782: </a>      <font color="#4169E1">if</font> (label.commRank() == 0) {
+<a name="line783">783: </a>        // Write local
+<a name="line784">784: </a>        fs &lt;&lt; label._arrows.set.size() &lt;&lt; std::endl;
+<a name="line785">785: </a>        <font color="#4169E1">for</font>(typename LabelSifter::traits::arrow_container_type::set_type::iterator ai = label._arrows.set.begin(); ai != label._arrows.set.end(); ai++) {
+<a name="line786">786: </a>          fs &lt;&lt; ai-&gt;source &lt;&lt; <font color="#666666">" "</font> &lt;&lt; ai-&gt;target &lt;&lt; std::endl;
+<a name="line787">787: </a>        }
+<a name="line788">788: </a>        // Receive and write remote
+<a name="line789">789: </a>        <font color="#4169E1">for</font>(int p = 1; p &lt; label.commSize(); ++p) {
+<a name="line790">790: </a>          <A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>       size;
+<a name="line791">791: </a>          <A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>      *arrows;
+<a name="line792">792: </a>          MPI_Status     status;
+
+<a name="line795">795: </a>          <A href="http://www.mcs.anl.gov/mpi/www/www3/MPI_Recv.html#MPI_Recv">MPI_Recv</A>(&amp;size, 1, MPIU_INT, p, 1, label.comm(), &amp;status);<A href="../../docs/manualpages/Sys/CHKERRXX.html#CHKERRXX">CHKERRXX</A>(ierr);
+<a name="line796">796: </a>          fs &lt;&lt; size &lt;&lt; std::endl;
+<a name="line797">797: </a>          <A href="../../docs/manualpages/Sys/PetscMalloc.html#PetscMalloc">PetscMalloc</A>(size*2 * <font color="#4169E1">sizeof</font>(<A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>), &amp;arrows);<A href="../../docs/manualpages/Sys/CHKERRXX.html#CHKERRXX">CHKERRXX</A>(ierr);
+<a name="line798">798: </a>          <A href="http://www.mcs.anl.gov/mpi/www/www3/MPI_Recv.html#MPI_Recv">MPI_Recv</A>(arrows, size*2, MPIU_INT, p, 1, label.comm(), &amp;status);<A href="../../docs/manualpages/Sys/CHKERRXX.html#CHKERRXX">CHKERRXX</A>(ierr);
+<a name="line799">799: </a>          <font color="#4169E1">for</font>(<A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A> a = 0; a &lt; size; ++a) {
+<a name="line800">800: </a>            fs &lt;&lt; arrows[a*2+0] &lt;&lt; <font color="#666666">" "</font> &lt;&lt; arrows[a*2+1] &lt;&lt; std::endl;
+<a name="line801">801: </a>          }
+<a name="line802">802: </a>          <A href="../../docs/manualpages/Sys/PetscFree.html#PetscFree">PetscFree</A>(arrows);<A href="../../docs/manualpages/Sys/CHKERRXX.html#CHKERRXX">CHKERRXX</A>(ierr);
+<a name="line803">803: </a>        }
+<a name="line804">804: </a>      } <font color="#4169E1">else</font> {
+<a name="line805">805: </a>        // Send remote
+<a name="line806">806: </a>        <A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>       size = label._arrows.set.size();
+<a name="line807">807: </a>        <A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>       a    = 0;
+<a name="line808">808: </a>        <A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>      *arrows;
+
+<a name="line811">811: </a>        <A href="http://www.mcs.anl.gov/mpi/www/www3/MPI_Send.html#MPI_Send">MPI_Send</A>(&amp;size, 1, MPIU_INT, 0, 1, label.comm());<A href="../../docs/manualpages/Sys/CHKERRXX.html#CHKERRXX">CHKERRXX</A>(ierr);
+<a name="line812">812: </a>        // There is no nice way to make a generic MPI type here. Really sucky
+<a name="line813">813: </a>        <A href="../../docs/manualpages/Sys/PetscMalloc.html#PetscMalloc">PetscMalloc</A>(size*2 * <font color="#4169E1">sizeof</font>(<A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>), &amp;arrows);<A href="../../docs/manualpages/Sys/CHKERRXX.html#CHKERRXX">CHKERRXX</A>(ierr);
+<a name="line814">814: </a>        <font color="#4169E1">for</font>(typename LabelSifter::traits::arrow_container_type::set_type::iterator ai = label._arrows.set.begin(); ai != label._arrows.set.end(); ai++, ++a) {
+<a name="line815">815: </a>          arrows[a*2+0] = ai-&gt;source;
+<a name="line816">816: </a>          arrows[a*2+1] = ai-&gt;target;
+<a name="line817">817: </a>        }
+<a name="line818">818: </a>        <A href="http://www.mcs.anl.gov/mpi/www/www3/MPI_Send.html#MPI_Send">MPI_Send</A>(arrows, size*2, MPIU_INT, 0, 1, label.comm());<A href="../../docs/manualpages/Sys/CHKERRXX.html#CHKERRXX">CHKERRXX</A>(ierr);
+<a name="line819">819: </a>        <A href="../../docs/manualpages/Sys/PetscFree.html#PetscFree">PetscFree</A>(arrows);<A href="../../docs/manualpages/Sys/CHKERRXX.html#CHKERRXX">CHKERRXX</A>(ierr);
+<a name="line820">820: </a>      }
+<a name="line821">821: </a>    }
+<a name="line822">822: </a>    template&lt;typename LabelSifter&gt;
+<a name="line823">823: </a>    static void loadLabel(std::ifstream&amp; fs, LabelSifter&amp; label) {
+<a name="line824">824: </a>      <font color="#4169E1">if</font> (label.commRank() == 0) {
+<a name="line825">825: </a>        // Load local
+<a name="line826">826: </a>        size_t numArrows;
+
+<a name="line828">828: </a>        fs &gt;&gt; numArrows;
+<a name="line829">829: </a>        <font color="#4169E1">for</font>(size_t a = 0; a &lt; numArrows; ++a) {
+<a name="line830">830: </a>          typename LabelSifter::traits::arrow_type::source_type source;
+<a name="line831">831: </a>          typename LabelSifter::traits::arrow_type::target_type target;
+
+<a name="line833">833: </a>          fs &gt;&gt; source;
+<a name="line834">834: </a>          fs &gt;&gt; target;
+<a name="line835">835: </a>          label.addArrow(typename LabelSifter::traits::arrow_type(source, target));
+<a name="line836">836: </a>        }
+<a name="line837">837: </a>        // Load and send remote
+<a name="line838">838: </a>        <font color="#4169E1">for</font>(int p = 1; p &lt; label.commSize(); ++p) {
+<a name="line839">839: </a>          <A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>       size;
+<a name="line840">840: </a>          <A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>      *arrows;
+
+<a name="line843">843: </a>          fs &gt;&gt; size;
+<a name="line844">844: </a>          <A href="http://www.mcs.anl.gov/mpi/www/www3/MPI_Send.html#MPI_Send">MPI_Send</A>(&amp;size, 1, MPIU_INT, p, 1, label.comm());<A href="../../docs/manualpages/Sys/CHKERRXX.html#CHKERRXX">CHKERRXX</A>(ierr);
+<a name="line845">845: </a>          <A href="../../docs/manualpages/Sys/PetscMalloc.html#PetscMalloc">PetscMalloc</A>(size*2 * <font color="#4169E1">sizeof</font>(<A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>), &amp;arrows);<A href="../../docs/manualpages/Sys/CHKERRXX.html#CHKERRXX">CHKERRXX</A>(ierr);
+<a name="line846">846: </a>          <font color="#4169E1">for</font>(<A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A> a = 0; a &lt; size; ++a) {
+<a name="line847">847: </a>            fs &gt;&gt; arrows[a*2+0];
+<a name="line848">848: </a>            fs &gt;&gt; arrows[a*2+1];
+<a name="line849">849: </a>          }
+<a name="line850">850: </a>          <A href="http://www.mcs.anl.gov/mpi/www/www3/MPI_Send.html#MPI_Send">MPI_Send</A>(arrows, size*2, MPIU_INT, p, 1, label.comm());<A href="../../docs/manualpages/Sys/CHKERRXX.html#CHKERRXX">CHKERRXX</A>(ierr);
+<a name="line851">851: </a>          <A href="../../docs/manualpages/Sys/PetscFree.html#PetscFree">PetscFree</A>(arrows);<A href="../../docs/manualpages/Sys/CHKERRXX.html#CHKERRXX">CHKERRXX</A>(ierr);
+<a name="line852">852: </a>        }
+<a name="line853">853: </a>      } <font color="#4169E1">else</font> {
+<a name="line854">854: </a>        // Load remote
+<a name="line855">855: </a>        <A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>       size;
+<a name="line856">856: </a>        <A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>      *arrows;
+<a name="line857">857: </a>        MPI_Status     status;
+
+<a name="line860">860: </a>        <A href="http://www.mcs.anl.gov/mpi/www/www3/MPI_Recv.html#MPI_Recv">MPI_Recv</A>(&amp;size, 1, MPIU_INT, 0, 1, label.comm(), &amp;status);<A href="../../docs/manualpages/Sys/CHKERRXX.html#CHKERRXX">CHKERRXX</A>(ierr);
+<a name="line861">861: </a>        <A href="../../docs/manualpages/Sys/PetscMalloc.html#PetscMalloc">PetscMalloc</A>(size*2 * <font color="#4169E1">sizeof</font>(<A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>), &amp;arrows);<A href="../../docs/manualpages/Sys/CHKERRXX.html#CHKERRXX">CHKERRXX</A>(ierr);
+<a name="line862">862: </a>        <A href="http://www.mcs.anl.gov/mpi/www/www3/MPI_Recv.html#MPI_Recv">MPI_Recv</A>(arrows, size*2, MPIU_INT, 0, 1, label.comm(), &amp;status);<A href="../../docs/manualpages/Sys/CHKERRXX.html#CHKERRXX">CHKERRXX</A>(ierr);
+<a name="line863">863: </a>        <font color="#4169E1">for</font>(<A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A> a = 0; a &lt; size; ++a) {
+<a name="line864">864: </a>          label.addArrow(typename LabelSifter::traits::arrow_type(arrows[a*2+0], arrows[a*2+1]));
+<a name="line865">865: </a>        }
+<a name="line866">866: </a>        <A href="../../docs/manualpages/Sys/PetscFree.html#PetscFree">PetscFree</A>(arrows);<A href="../../docs/manualpages/Sys/CHKERRXX.html#CHKERRXX">CHKERRXX</A>(ierr);
+<a name="line867">867: </a>      }
+<a name="line868">868: </a>    }
+<a name="line869">869: </a>  };
+<a name="line870">870: </a>} // namespace ALE
+
+<a name="line872">872: </a><font color="#A020F0">#endif // ifdef included_ALE_LabelSifter_hh</font>
+</pre>
+</body>
+
+</html>

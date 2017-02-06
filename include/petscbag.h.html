@@ -1,0 +1,74 @@
+<center><a href="petscbag.h">Actual source code: petscbag.h</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="http://www.mcs.anl.gov/petsc/petsc-current/include/petscbag.h.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2013-10-15T16:55:02+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>petsc-3.4.3 2013-10-15</b></div>
+<pre width="80">
+<a name="line4">  4: </a><font color="#A020F0">#include &lt;petscsys.h&gt;</font>
+
+<a name="line6">  6: </a><font color="#B22222">/*S</font>
+<a name="line7">  7: </a><font color="#B22222">     <A href="../docs/manualpages/Sys/PetscBag.html#PetscBag">PetscBag</A> - PETSc object that manages a collection of user data including parameters.</font>
+<a name="line8">  8: </a><font color="#B22222">           A bag is essentially a C struct with serialization (you can save it and load it from files).</font>
+
+<a name="line10"> 10: </a><font color="#B22222">   Level: beginner</font>
+
+<a name="line12"> 12: </a><font color="#B22222">    Sample Usage:</font>
+<a name="line13"> 13: </a><font color="#B22222">$      typedef struct {</font>
+<a name="line14"> 14: </a><font color="#B22222">$         <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>     height;</font>
+<a name="line15"> 15: </a><font color="#B22222">$         <A href="../docs/manualpages/Sys/PetscScalar.html#PetscScalar">PetscScalar</A>  root;</font>
+<a name="line16"> 16: </a><font color="#B22222">$         <A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>    byebye;</font>
+<a name="line17"> 17: </a><font color="#B22222">$      } MyParameters;</font>
+<a name="line18"> 18: </a><font color="#B22222">$</font>
+<a name="line19"> 19: </a><font color="#B22222">$      <A href="../docs/manualpages/Sys/PetscBag.html#PetscBag">PetscBag</A>     bag;</font>
+<a name="line20"> 20: </a><font color="#B22222">$      MyParameters *params;</font>
+<a name="line21"> 21: </a><font color="#B22222">$</font>
+<a name="line22"> 22: </a><font color="#B22222">$      <A href="../docs/manualpages/Sys/PetscBagCreate.html#PetscBagCreate">PetscBagCreate</A>(<A href="../docs/manualpages/Sys/PETSC_COMM_WORLD.html#PETSC_COMM_WORLD">PETSC_COMM_WORLD</A>,sizeof(MyParameters),&amp;bag);</font>
+<a name="line23"> 23: </a><font color="#B22222">$      <A href="../docs/manualpages/Sys/PetscBagGetData.html#PetscBagGetData">PetscBagGetData</A>(bag,(void **)&amp;params);</font>
+<a name="line24"> 24: </a><font color="#B22222">$      <A href="../docs/manualpages/Sys/PetscBagSetName.html#PetscBagSetName">PetscBagSetName</A>(bag,"MyParameters");</font>
+<a name="line25"> 25: </a><font color="#B22222">$      <A href="../docs/manualpages/Sys/PetscBagRegisterInt.html#PetscBagRegisterInt">PetscBagRegisterInt</A>(bag,&amp;params.height,22,"height","Height of the water tower");</font>
+<a name="line26"> 26: </a><font color="#B22222">$</font>
+
+<a name="line28"> 28: </a><font color="#B22222">.seealso:  <A href="../docs/manualpages/Sys/PetscBagSetName.html#PetscBagSetName">PetscBagSetName</A>(), <A href="../docs/manualpages/Sys/PetscBagGetName.html#PetscBagGetName">PetscBagGetName</A>(), <A href="../docs/manualpages/Sys/PetscBagView.html#PetscBagView">PetscBagView</A>(), <A href="../docs/manualpages/Sys/PetscBagLoad.html#PetscBagLoad">PetscBagLoad</A>(), <A href="../docs/manualpages/Sys/PetscBagGetData.html#PetscBagGetData">PetscBagGetData</A>()</font>
+<a name="line29"> 29: </a><font color="#B22222">           <A href="../docs/manualpages/Sys/PetscBagRegisterReal.html#PetscBagRegisterReal">PetscBagRegisterReal</A>(), <A href="../docs/manualpages/Sys/PetscBagRegisterInt.html#PetscBagRegisterInt">PetscBagRegisterInt</A>(), <A href="../docs/manualpages/Sys/PetscBagRegisterBool.html#PetscBagRegisterBool">PetscBagRegisterBool</A>(), <A href="../docs/manualpages/Sys/PetscBagRegisterScalar.html#PetscBagRegisterScalar">PetscBagRegisterScalar</A>()</font>
+<a name="line30"> 30: </a><font color="#B22222">           <A href="../docs/manualpages/Sys/PetscBagSetFromOptions.html#PetscBagSetFromOptions">PetscBagSetFromOptions</A>(), PetscBagRegisterVec(), <A href="../docs/manualpages/Sys/PetscBagCreate.html#PetscBagCreate">PetscBagCreate</A>(), <A href="../docs/manualpages/Sys/PetscBagDestroy.html#PetscBagDestroy">PetscBagDestroy</A>(), <A href="../docs/manualpages/Sys/PetscBagRegisterEnum.html#PetscBagRegisterEnum">PetscBagRegisterEnum</A>()</font>
+<a name="line31"> 31: </a><font color="#B22222">S*/</font>
+<a name="line32"> 32: </a><font color="#4169E1">typedef struct _n_PetscBag*     <A href="../docs/manualpages/Sys/PetscBag.html#PetscBag">PetscBag</A>;</font>
+<a name="line33"> 33: </a><font color="#4169E1">typedef struct _n_PetscBagItem* PetscBagItem;</font>
+
+<a name="line35"> 35: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Sys/PetscBagCreate.html#PetscBagCreate">PetscBagCreate</A>(<A href="../docs/manualpages/Sys/MPI_Comm.html#MPI_Comm">MPI_Comm</A>,size_t,<A href="../docs/manualpages/Sys/PetscBag.html#PetscBag">PetscBag</A>*)</font></strong>;
+<a name="line36"> 36: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Sys/PetscBagDestroy.html#PetscBagDestroy">PetscBagDestroy</A>(<A href="../docs/manualpages/Sys/PetscBag.html#PetscBag">PetscBag</A>*)</font></strong>;
+<a name="line37"> 37: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Sys/PetscBagGetData.html#PetscBagGetData">PetscBagGetData</A>(<A href="../docs/manualpages/Sys/PetscBag.html#PetscBag">PetscBag</A>,void **)</font></strong>;
+<a name="line38"> 38: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Sys/PetscBagRegisterReal.html#PetscBagRegisterReal">PetscBagRegisterReal</A>(<A href="../docs/manualpages/Sys/PetscBag.html#PetscBag">PetscBag</A>,void*,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>, const char*, const char*)</font></strong>;
+<a name="line39"> 39: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Sys/PetscBagRegisterRealArray.html#PetscBagRegisterRealArray">PetscBagRegisterRealArray</A>(<A href="../docs/manualpages/Sys/PetscBag.html#PetscBag">PetscBag</A>,void*,<A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>, const char*, const char*)</font></strong>;
+<a name="line40"> 40: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Sys/PetscBagRegisterString.html#PetscBagRegisterString">PetscBagRegisterString</A>(<A href="../docs/manualpages/Sys/PetscBag.html#PetscBag">PetscBag</A>,void*,<A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>,const char*, const char*, const char*)</font></strong>;
+<a name="line41"> 41: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Sys/PetscBagRegisterScalar.html#PetscBagRegisterScalar">PetscBagRegisterScalar</A>(<A href="../docs/manualpages/Sys/PetscBag.html#PetscBag">PetscBag</A>,void*,<A href="../docs/manualpages/Sys/PetscScalar.html#PetscScalar">PetscScalar</A>,const  char*,const  char*)</font></strong>;
+<a name="line42"> 42: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Sys/PetscBagRegisterInt.html#PetscBagRegisterInt">PetscBagRegisterInt</A>(<A href="../docs/manualpages/Sys/PetscBag.html#PetscBag">PetscBag</A>,void*,<A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>,const  char*,const  char*)</font></strong>;
+<a name="line43"> 43: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Sys/PetscBagRegisterIntArray.html#PetscBagRegisterIntArray">PetscBagRegisterIntArray</A>(<A href="../docs/manualpages/Sys/PetscBag.html#PetscBag">PetscBag</A>,void*,<A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>,const  char*,const  char*)</font></strong>;
+<a name="line44"> 44: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Sys/PetscBagRegisterEnum.html#PetscBagRegisterEnum">PetscBagRegisterEnum</A>(<A href="../docs/manualpages/Sys/PetscBag.html#PetscBag">PetscBag</A>,void*,const char*const*,<A href="../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A>,const char*,const  char*)</font></strong>;
+<a name="line45"> 45: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Sys/PetscBagRegisterBool.html#PetscBagRegisterBool">PetscBagRegisterBool</A>(<A href="../docs/manualpages/Sys/PetscBag.html#PetscBag">PetscBag</A>,void*,<A href="../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A> ,const  char*,const  char*)</font></strong>;
+
+<a name="line47"> 47: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Sys/PetscBagSetFromOptions.html#PetscBagSetFromOptions">PetscBagSetFromOptions</A>(<A href="../docs/manualpages/Sys/PetscBag.html#PetscBag">PetscBag</A>)</font></strong>;
+<a name="line48"> 48: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Sys/PetscBagGetName.html#PetscBagGetName">PetscBagGetName</A>(<A href="../docs/manualpages/Sys/PetscBag.html#PetscBag">PetscBag</A>, char **)</font></strong>;
+<a name="line49"> 49: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Sys/PetscBagSetName.html#PetscBagSetName">PetscBagSetName</A>(<A href="../docs/manualpages/Sys/PetscBag.html#PetscBag">PetscBag</A>, const char *, const char *)</font></strong>;
+<a name="line50"> 50: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Sys/PetscBagSetOptionsPrefix.html#PetscBagSetOptionsPrefix">PetscBagSetOptionsPrefix</A>(<A href="../docs/manualpages/Sys/PetscBag.html#PetscBag">PetscBag</A>, const char *)</font></strong>;
+
+<a name="line52"> 52: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Sys/PetscBagView.html#PetscBagView">PetscBagView</A>(<A href="../docs/manualpages/Sys/PetscBag.html#PetscBag">PetscBag</A>,<A href="../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A>)</font></strong>;
+<a name="line53"> 53: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Sys/PetscBagLoad.html#PetscBagLoad">PetscBagLoad</A>(<A href="../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A>,<A href="../docs/manualpages/Sys/PetscBag.html#PetscBag">PetscBag</A>)</font></strong>;
+
+<a name="line55"> 55: </a><strong><font color="#4169E1"><a name="PetscBagSetViewer"></a>PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> PetscBagSetViewer(<A href="../docs/manualpages/Sys/PetscBag.html#PetscBag">PetscBag</A>,<A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*)(<A href="../docs/manualpages/Sys/PetscBag.html#PetscBag">PetscBag</A>,<A href="../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A>)</font></strong>);
+<a name="line56"> 56: </a><strong><font color="#4169E1"><a name="PetscBagSetLoader"></a>PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> PetscBagSetLoader(<A href="../docs/manualpages/Sys/PetscBag.html#PetscBag">PetscBag</A>,<A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*)(<A href="../docs/manualpages/Sys/PetscBag.html#PetscBag">PetscBag</A>,<A href="../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A>)</font></strong>);
+<a name="line57"> 57: </a><strong><font color="#4169E1"><a name="PetscBagSetDestroy"></a>PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> PetscBagSetDestroy(<A href="../docs/manualpages/Sys/PetscBag.html#PetscBag">PetscBag</A>,<A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*)(<A href="../docs/manualpages/Sys/PetscBag.html#PetscBag">PetscBag</A>)</font></strong>);
+
+<a name="line59"> 59: </a><strong><font color="#228B22">#define PETSC_BAG_FILE_CLASSID 1211219</font></strong>
+
+<a name="line61"> 61: </a><font color="#A020F0">#endif</font>
+</pre>
+</body>
+
+</html>

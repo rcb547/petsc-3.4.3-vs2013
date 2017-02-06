@@ -1,0 +1,519 @@
+<center><a href="SieveAlgorithms.hh">Actual source code: SieveAlgorithms.hh</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="http://www.mcs.anl.gov/petsc/petsc-current/include/sieve/SieveAlgorithms.hh.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2013-10-15T17:09:16+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>petsc-3.4.3 2013-10-15</b></div>
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#ifndef included_ALE_SieveAlgorithms_hh</font>
+<a name="line2">  2: </a><strong><font color="#228B22">#define included_ALE_SieveAlgorithms_hh</font></strong>
+
+<a name="line4">  4: </a><font color="#A020F0">#ifndef  included_ALE_Sieve_hh</font>
+<a name="line5">  5: </a><font color="#A020F0">#include &lt;sieve/Sieve.hh&gt;</font>
+<a name="line6">  6: </a><font color="#A020F0">#endif</font>
+
+<a name="line8">  8: </a>namespace ALE {
+<a name="line9">  9: </a>  template&lt;typename Bundle_&gt;
+<a name="line10"> 10: </a>  class SieveAlg {
+<a name="line11"> 11: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line12"> 12: </a>    <font color="#4169E1">typedef</font> Bundle_                                  bundle_type;
+<a name="line13"> 13: </a>    <font color="#4169E1">typedef</font> typename bundle_type::sieve_type         sieve_type;
+<a name="line14"> 14: </a>    <font color="#4169E1">typedef</font> typename sieve_type::point_type          point_type;
+<a name="line15"> 15: </a>    <font color="#4169E1">typedef</font> typename sieve_type::coneSet             coneSet;
+<a name="line16"> 16: </a>    <font color="#4169E1">typedef</font> typename sieve_type::coneArray           coneArray;
+<a name="line17"> 17: </a>    <font color="#4169E1">typedef</font> typename sieve_type::supportSet          supportSet;
+<a name="line18"> 18: </a>    <font color="#4169E1">typedef</font> typename sieve_type::supportArray        supportArray;
+<a name="line19"> 19: </a>    <font color="#4169E1">typedef</font> typename bundle_type::arrow_section_type arrow_section_type;
+<a name="line20"> 20: </a>    <font color="#4169E1">typedef</font> std::pair&lt;point_type, int&gt;               oriented_point_type;
+<a name="line21"> 21: </a>    <font color="#4169E1">typedef</font> ALE::array&lt;oriented_point_type&gt;          orientedConeArray;
+<a name="line22"> 22: </a><strong><font color="#FF0000">  protected:</font></strong>
+<a name="line23"> 23: </a>    <font color="#4169E1">typedef</font> MinimalArrow&lt;point_type, point_type&gt;     arrow_type;
+<a name="line24"> 24: </a>    <font color="#4169E1">typedef</font> std::pair&lt;arrow_type, int&gt;               oriented_arrow_type;
+<a name="line25"> 25: </a>    <font color="#4169E1">typedef</font> ALE::array&lt;oriented_arrow_type&gt;          orientedArrowArray;
+<a name="line26"> 26: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line27"> 27: </a>    static Obj&lt;coneArray&gt; closure(const Obj&lt;bundle_type&gt;&amp; bundle, const point_type&amp; p) {
+<a name="line28"> 28: </a>      <font color="#4169E1">return</font> closure(bundle.ptr(), bundle-&gt;getArrowSection(<font color="#666666">"orientation"</font>), p);
+<a name="line29"> 29: </a>    };
+<a name="line30"> 30: </a>    static Obj&lt;coneArray&gt; closure(const Bundle_ *bundle, const Obj&lt;arrow_section_type&gt;&amp; orientation, const point_type&amp; p) {
+<a name="line31"> 31: </a>      const Obj&lt;sieve_type&gt;&amp;  sieve   = bundle-&gt;getSieve();
+<a name="line32"> 32: </a>      const int               depth   = bundle-&gt;depth();
+<a name="line33"> 33: </a>      Obj&lt;orientedArrowArray&gt; cone    = new orientedArrowArray();
+<a name="line34"> 34: </a>      Obj&lt;orientedArrowArray&gt; base    = new orientedArrowArray();
+<a name="line35"> 35: </a>      Obj&lt;coneArray&gt;          closure = new coneArray();
+<a name="line36"> 36: </a>      coneSet                 seen;
+
+<a name="line38"> 38: </a>      // Cone is guarateed to be ordered correctly
+<a name="line39"> 39: </a>      const Obj&lt;typename sieve_type::traits::coneSequence&gt;&amp; initCone = sieve-&gt;cone(p);
+
+<a name="line41"> 41: </a>      closure-&gt;push_back(p);
+<a name="line42"> 42: </a>      <font color="#4169E1">for</font>(typename sieve_type::traits::coneSequence::iterator c_iter = initCone-&gt;begin(); c_iter != initCone-&gt;end(); ++c_iter) {
+<a name="line43"> 43: </a>        cone-&gt;push_back(oriented_arrow_type(arrow_type(*c_iter, p), 1));
+<a name="line44"> 44: </a>        closure-&gt;push_back(*c_iter);
+<a name="line45"> 45: </a>      }
+<a name="line46"> 46: </a>      <font color="#4169E1">for</font>(int i = 1; i &lt; depth; ++i) {
+<a name="line47"> 47: </a>        Obj&lt;orientedArrowArray&gt; tmp = cone; cone = base; base = tmp;
+
+<a name="line49"> 49: </a>        cone-&gt;clear();
+<a name="line50"> 50: </a>        <font color="#4169E1">for</font>(typename orientedArrowArray::iterator b_iter = base-&gt;begin(); b_iter != base-&gt;end(); ++b_iter) {
+<a name="line51"> 51: </a>          const arrow_type&amp;                                     arrow = b_iter-&gt;first;
+<a name="line52"> 52: </a>          const Obj&lt;typename sieve_type::traits::coneSequence&gt;&amp; pCone = sieve-&gt;cone(arrow.source);
+<a name="line53"> 53: </a>          typename arrow_section_type::value_type               o     = orientation-&gt;restrictPoint(arrow)[0];
+
+<a name="line55"> 55: </a>          <font color="#4169E1">if</font> (b_iter-&gt;second &lt; 0) {
+<a name="line56"> 56: </a>            o = -(o+1);
+<a name="line57"> 57: </a>          }
+<a name="line58"> 58: </a>          <font color="#4169E1">if</font> (o &lt; 0) {
+<a name="line59"> 59: </a>            const int size = pCone-&gt;size();
+
+<a name="line61"> 61: </a>            <font color="#4169E1">if</font> (o == -size) {
+<a name="line62"> 62: </a>              <font color="#4169E1">for</font>(typename sieve_type::traits::coneSequence::reverse_iterator c_iter = pCone-&gt;rbegin(); c_iter != pCone-&gt;rend(); ++c_iter) {
+<a name="line63"> 63: </a>                <font color="#4169E1">if</font> (seen.find(*c_iter) == seen.end()) {
+<a name="line64"> 64: </a>                  seen.insert(*c_iter);
+<a name="line65"> 65: </a>                  cone-&gt;push_back(oriented_arrow_type(arrow_type(*c_iter, arrow.source), o));
+<a name="line66"> 66: </a>                  closure-&gt;push_back(*c_iter);
+<a name="line67"> 67: </a>                }
+<a name="line68"> 68: </a>              }
+<a name="line69"> 69: </a>            } <font color="#4169E1">else</font> {
+<a name="line70"> 70: </a>              const int numSkip = size + o;
+<a name="line71"> 71: </a>              int       count   = 0;
+
+<a name="line73"> 73: </a>              <font color="#4169E1">for</font>(typename sieve_type::traits::coneSequence::reverse_iterator c_iter = pCone-&gt;rbegin(); c_iter != pCone-&gt;rend(); ++c_iter, ++count) {
+<a name="line74"> 74: </a>                <font color="#4169E1">if</font> (count &lt; numSkip) <font color="#4169E1">continue</font>;
+<a name="line75"> 75: </a>                <font color="#4169E1">if</font> (seen.find(*c_iter) == seen.end()) {
+<a name="line76"> 76: </a>                  seen.insert(*c_iter);
+<a name="line77"> 77: </a>                  cone-&gt;push_back(oriented_arrow_type(arrow_type(*c_iter, arrow.source), o));
+<a name="line78"> 78: </a>                  closure-&gt;push_back(*c_iter);
+<a name="line79"> 79: </a>                }
+<a name="line80"> 80: </a>              }
+<a name="line81"> 81: </a>              count = 0;
+<a name="line82"> 82: </a>              <font color="#4169E1">for</font>(typename sieve_type::traits::coneSequence::reverse_iterator c_iter = pCone-&gt;rbegin(); c_iter != pCone-&gt;rend(); ++c_iter, ++count) {
+<a name="line83"> 83: </a>                <font color="#4169E1">if</font> (count &gt;= numSkip) <font color="#4169E1">break</font>;
+<a name="line84"> 84: </a>                <font color="#4169E1">if</font> (seen.find(*c_iter) == seen.end()) {
+<a name="line85"> 85: </a>                  seen.insert(*c_iter);
+<a name="line86"> 86: </a>                  cone-&gt;push_back(oriented_arrow_type(arrow_type(*c_iter, arrow.source), o));
+<a name="line87"> 87: </a>                  closure-&gt;push_back(*c_iter);
+<a name="line88"> 88: </a>                }
+<a name="line89"> 89: </a>              }
+<a name="line90"> 90: </a>            }
+<a name="line91"> 91: </a>          } <font color="#4169E1">else</font> {
+<a name="line92"> 92: </a>            <font color="#4169E1">if</font> (o == 1) {
+<a name="line93"> 93: </a>              <font color="#4169E1">for</font>(typename sieve_type::traits::coneSequence::iterator c_iter = pCone-&gt;begin(); c_iter != pCone-&gt;end(); ++c_iter) {
+<a name="line94"> 94: </a>                <font color="#4169E1">if</font> (seen.find(*c_iter) == seen.end()) {
+<a name="line95"> 95: </a>                  seen.insert(*c_iter);
+<a name="line96"> 96: </a>                  cone-&gt;push_back(oriented_arrow_type(arrow_type(*c_iter, arrow.source), o));
+<a name="line97"> 97: </a>                  closure-&gt;push_back(*c_iter);
+<a name="line98"> 98: </a>                }
+<a name="line99"> 99: </a>              }
+<a name="line100">100: </a>            } <font color="#4169E1">else</font> {
+<a name="line101">101: </a>              const int numSkip = o-1;
+<a name="line102">102: </a>              int       count   = 0;
+
+<a name="line104">104: </a>              <font color="#4169E1">for</font>(typename sieve_type::traits::coneSequence::iterator c_iter = pCone-&gt;begin(); c_iter != pCone-&gt;end(); ++c_iter, ++count) {
+<a name="line105">105: </a>                <font color="#4169E1">if</font> (count &lt; numSkip) <font color="#4169E1">continue</font>;
+<a name="line106">106: </a>                <font color="#4169E1">if</font> (seen.find(*c_iter) == seen.end()) {
+<a name="line107">107: </a>                  seen.insert(*c_iter);
+<a name="line108">108: </a>                  cone-&gt;push_back(oriented_arrow_type(arrow_type(*c_iter, arrow.source), o));
+<a name="line109">109: </a>                  closure-&gt;push_back(*c_iter);
+<a name="line110">110: </a>                }
+<a name="line111">111: </a>              }
+<a name="line112">112: </a>              count = 0;
+<a name="line113">113: </a>              <font color="#4169E1">for</font>(typename sieve_type::traits::coneSequence::iterator c_iter = pCone-&gt;begin(); c_iter != pCone-&gt;end(); ++c_iter, ++count) {
+<a name="line114">114: </a>                <font color="#4169E1">if</font> (count &gt;= numSkip) <font color="#4169E1">break</font>;
+<a name="line115">115: </a>                <font color="#4169E1">if</font> (seen.find(*c_iter) == seen.end()) {
+<a name="line116">116: </a>                  seen.insert(*c_iter);
+<a name="line117">117: </a>                  cone-&gt;push_back(oriented_arrow_type(arrow_type(*c_iter, arrow.source), o));
+<a name="line118">118: </a>                  closure-&gt;push_back(*c_iter);
+<a name="line119">119: </a>                }
+<a name="line120">120: </a>              }
+<a name="line121">121: </a>            }
+<a name="line122">122: </a>          }
+<a name="line123">123: </a>        }
+<a name="line124">124: </a>      }
+<a name="line125">125: </a>      <font color="#4169E1">return</font> closure;
+<a name="line126">126: </a>    };
+<a name="line127">127: </a>    static Obj&lt;orientedConeArray&gt; orientedClosure(const Obj&lt;bundle_type&gt;&amp; bundle, const point_type&amp; p) {
+<a name="line128">128: </a>      <font color="#4169E1">return</font> orientedClosure(bundle.ptr(), bundle-&gt;getArrowSection(<font color="#666666">"orientation"</font>), p);
+<a name="line129">129: </a>    };
+<a name="line130">130: </a>    static Obj&lt;orientedConeArray&gt; orientedClosure(const bundle_type *bundle, const Obj&lt;arrow_section_type&gt;&amp; orientation, const point_type&amp; p) {
+<a name="line131">131: </a>      const Obj&lt;sieve_type&gt;&amp;  sieve   = bundle-&gt;getSieve();
+<a name="line132">132: </a>      const int               depth   = bundle-&gt;depth();
+<a name="line133">133: </a>      Obj&lt;orientedArrowArray&gt; cone    = new orientedArrowArray();
+<a name="line134">134: </a>      Obj&lt;orientedArrowArray&gt; base    = new orientedArrowArray();
+<a name="line135">135: </a>      Obj&lt;orientedConeArray&gt;  closure = new orientedConeArray();
+<a name="line136">136: </a>      coneSet                 seen;
+
+<a name="line138">138: </a>      // Cone is guarateed to be ordered correctly
+<a name="line139">139: </a>      const Obj&lt;typename sieve_type::traits::coneSequence&gt;&amp; initCone = sieve-&gt;cone(p);
+
+<a name="line141">141: </a>      closure-&gt;push_back(oriented_point_type(p, 0));
+<a name="line142">142: </a>      <font color="#4169E1">for</font>(typename sieve_type::traits::coneSequence::iterator c_iter = initCone-&gt;begin(); c_iter != initCone-&gt;end(); ++c_iter) {
+<a name="line143">143: </a>        const arrow_type arrow(*c_iter, p);
+
+<a name="line145">145: </a>        cone-&gt;push_back(oriented_arrow_type(arrow, 1));
+<a name="line146">146: </a>        closure-&gt;push_back(oriented_point_type(*c_iter, orientation-&gt;restrictPoint(arrow)[0]));
+<a name="line147">147: </a>      }
+<a name="line148">148: </a>      <font color="#4169E1">for</font>(int i = 1; i &lt; depth; ++i) {
+<a name="line149">149: </a>        Obj&lt;orientedArrowArray&gt; tmp = cone; cone = base; base = tmp;
+
+<a name="line151">151: </a>        cone-&gt;clear();
+<a name="line152">152: </a>        <font color="#4169E1">for</font>(typename orientedArrowArray::iterator b_iter = base-&gt;begin(); b_iter != base-&gt;end(); ++b_iter) {
+<a name="line153">153: </a>          const arrow_type&amp;                                     arrow = b_iter-&gt;first;
+<a name="line154">154: </a>          const Obj&lt;typename sieve_type::traits::coneSequence&gt;&amp; pCone = sieve-&gt;cone(arrow.source);
+<a name="line155">155: </a>          typename arrow_section_type::value_type               o     = orientation-&gt;restrictPoint(arrow)[0];
+
+<a name="line157">157: </a>          <font color="#4169E1">if</font> (b_iter-&gt;second &lt; 0) {
+<a name="line158">158: </a>            o = -(o+1);
+<a name="line159">159: </a>          }
+<a name="line160">160: </a>          <font color="#4169E1">if</font> (o &lt; 0) {
+<a name="line161">161: </a>            const int size = pCone-&gt;size();
+
+<a name="line163">163: </a>            <font color="#4169E1">if</font> (o == -size) {
+<a name="line164">164: </a>              <font color="#4169E1">for</font>(typename sieve_type::traits::coneSequence::reverse_iterator c_iter = pCone-&gt;rbegin(); c_iter != pCone-&gt;rend(); ++c_iter) {
+<a name="line165">165: </a>                <font color="#4169E1">if</font> (seen.find(*c_iter) == seen.end()) {
+<a name="line166">166: </a>                  const arrow_type newArrow(*c_iter, arrow.source);
+<a name="line167">167: </a>                  int              pointO = orientation-&gt;restrictPoint(newArrow)[0];
+
+<a name="line169">169: </a>                  seen.insert(*c_iter);
+<a name="line170">170: </a>                  cone-&gt;push_back(oriented_arrow_type(newArrow, o));
+<a name="line171">171: </a>                  closure-&gt;push_back(oriented_point_type(*c_iter, pointO ? -(pointO+1): pointO));
+<a name="line172">172: </a>                }
+<a name="line173">173: </a>              }
+<a name="line174">174: </a>            } <font color="#4169E1">else</font> {
+<a name="line175">175: </a>              const int numSkip = size + o;
+<a name="line176">176: </a>              int       count   = 0;
+
+<a name="line178">178: </a>              <font color="#4169E1">for</font>(typename sieve_type::traits::coneSequence::reverse_iterator c_iter = pCone-&gt;rbegin(); c_iter != pCone-&gt;rend(); ++c_iter, ++count) {
+<a name="line179">179: </a>                <font color="#4169E1">if</font> (count &lt; numSkip) <font color="#4169E1">continue</font>;
+<a name="line180">180: </a>                <font color="#4169E1">if</font> (seen.find(*c_iter) == seen.end()) {
+<a name="line181">181: </a>                  const arrow_type newArrow(*c_iter, arrow.source);
+<a name="line182">182: </a>                  int              pointO = orientation-&gt;restrictPoint(newArrow)[0];
+
+<a name="line184">184: </a>                  seen.insert(*c_iter);
+<a name="line185">185: </a>                  cone-&gt;push_back(oriented_arrow_type(newArrow, o));
+<a name="line186">186: </a>                  closure-&gt;push_back(oriented_point_type(*c_iter, pointO ? -(pointO+1): pointO));
+<a name="line187">187: </a>                }
+<a name="line188">188: </a>              }
+<a name="line189">189: </a>              count = 0;
+<a name="line190">190: </a>              <font color="#4169E1">for</font>(typename sieve_type::traits::coneSequence::reverse_iterator c_iter = pCone-&gt;rbegin(); c_iter != pCone-&gt;rend(); ++c_iter, ++count) {
+<a name="line191">191: </a>                <font color="#4169E1">if</font> (count &gt;= numSkip) <font color="#4169E1">break</font>;
+<a name="line192">192: </a>                <font color="#4169E1">if</font> (seen.find(*c_iter) == seen.end()) {
+<a name="line193">193: </a>                  const arrow_type newArrow(*c_iter, arrow.source);
+<a name="line194">194: </a>                  int              pointO = orientation-&gt;restrictPoint(newArrow)[0];
+
+<a name="line196">196: </a>                  seen.insert(*c_iter);
+<a name="line197">197: </a>                  cone-&gt;push_back(oriented_arrow_type(newArrow, o));
+<a name="line198">198: </a>                  closure-&gt;push_back(oriented_point_type(*c_iter, pointO ? -(pointO+1): pointO));
+<a name="line199">199: </a>                }
+<a name="line200">200: </a>              }
+<a name="line201">201: </a>            }
+<a name="line202">202: </a>          } <font color="#4169E1">else</font> {
+<a name="line203">203: </a>            <font color="#4169E1">if</font> (o == 1) {
+<a name="line204">204: </a>              <font color="#4169E1">for</font>(typename sieve_type::traits::coneSequence::iterator c_iter = pCone-&gt;begin(); c_iter != pCone-&gt;end(); ++c_iter) {
+<a name="line205">205: </a>                <font color="#4169E1">if</font> (seen.find(*c_iter) == seen.end()) {
+<a name="line206">206: </a>                  const arrow_type newArrow(*c_iter, arrow.source);
+
+<a name="line208">208: </a>                  seen.insert(*c_iter);
+<a name="line209">209: </a>                  cone-&gt;push_back(oriented_arrow_type(newArrow, o));
+<a name="line210">210: </a>                  closure-&gt;push_back(oriented_point_type(*c_iter, orientation-&gt;restrictPoint(newArrow)[0]));
+<a name="line211">211: </a>                }
+<a name="line212">212: </a>              }
+<a name="line213">213: </a>            } <font color="#4169E1">else</font> {
+<a name="line214">214: </a>              const int numSkip = o-1;
+<a name="line215">215: </a>              int       count   = 0;
+
+<a name="line217">217: </a>              <font color="#4169E1">for</font>(typename sieve_type::traits::coneSequence::iterator c_iter = pCone-&gt;begin(); c_iter != pCone-&gt;end(); ++c_iter, ++count) {
+<a name="line218">218: </a>                <font color="#4169E1">if</font> (count &lt; numSkip) <font color="#4169E1">continue</font>;
+<a name="line219">219: </a>                <font color="#4169E1">if</font> (seen.find(*c_iter) == seen.end()) {
+<a name="line220">220: </a>                  const arrow_type newArrow(*c_iter, arrow.source);
+
+<a name="line222">222: </a>                  seen.insert(*c_iter);
+<a name="line223">223: </a>                  cone-&gt;push_back(oriented_arrow_type(newArrow, o));
+<a name="line224">224: </a>                  closure-&gt;push_back(oriented_point_type(*c_iter, orientation-&gt;restrictPoint(newArrow)[0]));
+<a name="line225">225: </a>                }
+<a name="line226">226: </a>              }
+<a name="line227">227: </a>              count = 0;
+<a name="line228">228: </a>              <font color="#4169E1">for</font>(typename sieve_type::traits::coneSequence::iterator c_iter = pCone-&gt;begin(); c_iter != pCone-&gt;end(); ++c_iter, ++count) {
+<a name="line229">229: </a>                <font color="#4169E1">if</font> (count &gt;= numSkip) <font color="#4169E1">break</font>;
+<a name="line230">230: </a>                <font color="#4169E1">if</font> (seen.find(*c_iter) == seen.end()) {
+<a name="line231">231: </a>                  const arrow_type newArrow(*c_iter, arrow.source);
+
+<a name="line233">233: </a>                  seen.insert(*c_iter);
+<a name="line234">234: </a>                  cone-&gt;push_back(oriented_arrow_type(newArrow, o));
+<a name="line235">235: </a>                  closure-&gt;push_back(oriented_point_type(*c_iter, orientation-&gt;restrictPoint(newArrow)[0]));
+<a name="line236">236: </a>                }
+<a name="line237">237: </a>              }
+<a name="line238">238: </a>            }
+<a name="line239">239: </a>          }
+<a name="line240">240: </a>        }
+<a name="line241">241: </a>      }
+<a name="line242">242: </a>      <font color="#4169E1">return</font> closure;
+<a name="line243">243: </a>    };
+<a name="line244">244: </a>    static Obj&lt;coneArray&gt; nCone(const Obj&lt;bundle_type&gt;&amp; bundle, const point_type&amp; p, const int n) {
+<a name="line245">245: </a>      const Obj&lt;sieve_type&gt;&amp;         sieve       = bundle-&gt;getSieve();
+<a name="line246">246: </a>      const Obj&lt;arrow_section_type&gt;&amp; orientation = bundle-&gt;getArrowSection(<font color="#666666">"orientation"</font>);
+<a name="line247">247: </a>      const int                      height      = std::min(n, bundle-&gt;height());
+<a name="line248">248: </a>      Obj&lt;orientedArrowArray&gt;        cone        = new orientedArrowArray();
+<a name="line249">249: </a>      Obj&lt;orientedArrowArray&gt;        base        = new orientedArrowArray();
+<a name="line250">250: </a>      Obj&lt;coneArray&gt;                 nCone       = new coneArray();
+<a name="line251">251: </a>      coneSet                        seen;
+
+<a name="line253">253: </a>      <font color="#4169E1">if</font> (height == 0) {
+<a name="line254">254: </a>        nCone-&gt;push_back(p);
+<a name="line255">255: </a>        <font color="#4169E1">return</font> nCone;
+<a name="line256">256: </a>      }
+
+<a name="line258">258: </a>      // Cone is guarateed to be ordered correctly
+<a name="line259">259: </a>      const Obj&lt;typename sieve_type::traits::coneSequence&gt;&amp; initCone = sieve-&gt;cone(p);
+
+<a name="line261">261: </a>      <font color="#4169E1">if</font> (height == 1) {
+<a name="line262">262: </a>        <font color="#4169E1">for</font>(typename sieve_type::traits::coneSequence::iterator c_iter = initCone-&gt;begin(); c_iter != initCone-&gt;end(); ++c_iter) {
+<a name="line263">263: </a>          nCone-&gt;push_back(*c_iter);
+<a name="line264">264: </a>        }
+<a name="line265">265: </a>        <font color="#4169E1">return</font> nCone;
+<a name="line266">266: </a>      } <font color="#4169E1">else</font> {
+<a name="line267">267: </a>        <font color="#4169E1">for</font>(typename sieve_type::traits::coneSequence::iterator c_iter = initCone-&gt;begin(); c_iter != initCone-&gt;end(); ++c_iter) {
+<a name="line268">268: </a>          cone-&gt;push_back(oriented_arrow_type(arrow_type(*c_iter, p), 1));
+<a name="line269">269: </a>        }
+<a name="line270">270: </a>      }
+<a name="line271">271: </a>      <font color="#4169E1">for</font>(int i = 1; i &lt; height; ++i) {
+<a name="line272">272: </a>        Obj&lt;orientedArrowArray&gt; tmp = cone; cone = base; base = tmp;
+
+<a name="line274">274: </a>        cone-&gt;clear();
+<a name="line275">275: </a>        <font color="#4169E1">for</font>(typename orientedArrowArray::iterator b_iter = base-&gt;begin(); b_iter != base-&gt;end(); ++b_iter) {
+<a name="line276">276: </a>          const arrow_type&amp;                                     arrow = b_iter-&gt;first;
+<a name="line277">277: </a>          const Obj&lt;typename sieve_type::traits::coneSequence&gt;&amp; pCone = sieve-&gt;cone(arrow.source);
+<a name="line278">278: </a>          typename arrow_section_type::value_type               o     = orientation-&gt;restrictPoint(arrow)[0];
+
+<a name="line280">280: </a>          <font color="#4169E1">if</font> (b_iter-&gt;second &lt; 0) {
+<a name="line281">281: </a>            o = -(o+1);
+<a name="line282">282: </a>          }
+<a name="line283">283: </a>          <font color="#4169E1">if</font> (o &lt; 0) {
+<a name="line284">284: </a>            const int size = pCone-&gt;size();
+
+<a name="line286">286: </a>            <font color="#4169E1">if</font> (o == -size) {
+<a name="line287">287: </a>              <font color="#4169E1">for</font>(typename sieve_type::traits::coneSequence::reverse_iterator c_iter = pCone-&gt;rbegin(); c_iter != pCone-&gt;rend(); ++c_iter) {
+<a name="line288">288: </a>                <font color="#4169E1">if</font> (seen.find(*c_iter) == seen.end()) {
+<a name="line289">289: </a>                  seen.insert(*c_iter);
+<a name="line290">290: </a>                  cone-&gt;push_back(oriented_arrow_type(arrow_type(*c_iter, arrow.source), o));
+<a name="line291">291: </a>                  <font color="#4169E1">if</font> (i == height-1) nCone-&gt;push_back(*c_iter);
+<a name="line292">292: </a>                }
+<a name="line293">293: </a>              }
+<a name="line294">294: </a>            } <font color="#4169E1">else</font> {
+<a name="line295">295: </a>              const int numSkip = size + o;
+<a name="line296">296: </a>              int       count   = 0;
+
+<a name="line298">298: </a>              <font color="#4169E1">for</font>(typename sieve_type::traits::coneSequence::reverse_iterator c_iter = pCone-&gt;rbegin(); c_iter != pCone-&gt;rend(); ++c_iter, ++count) {
+<a name="line299">299: </a>                <font color="#4169E1">if</font> (count &lt; numSkip) <font color="#4169E1">continue</font>;
+<a name="line300">300: </a>                <font color="#4169E1">if</font> (seen.find(*c_iter) == seen.end()) {
+<a name="line301">301: </a>                  seen.insert(*c_iter);
+<a name="line302">302: </a>                  cone-&gt;push_back(oriented_arrow_type(arrow_type(*c_iter, arrow.source), o));
+<a name="line303">303: </a>                  <font color="#4169E1">if</font> (i == height-1) nCone-&gt;push_back(*c_iter);
+<a name="line304">304: </a>                }
+<a name="line305">305: </a>              }
+<a name="line306">306: </a>              count = 0;
+<a name="line307">307: </a>              <font color="#4169E1">for</font>(typename sieve_type::traits::coneSequence::reverse_iterator c_iter = pCone-&gt;rbegin(); c_iter != pCone-&gt;rend(); ++c_iter, ++count) {
+<a name="line308">308: </a>                <font color="#4169E1">if</font> (count &gt;= numSkip) <font color="#4169E1">break</font>;
+<a name="line309">309: </a>                <font color="#4169E1">if</font> (seen.find(*c_iter) == seen.end()) {
+<a name="line310">310: </a>                  seen.insert(*c_iter);
+<a name="line311">311: </a>                  cone-&gt;push_back(oriented_arrow_type(arrow_type(*c_iter, arrow.source), o));
+<a name="line312">312: </a>                  <font color="#4169E1">if</font> (i == height-1) nCone-&gt;push_back(*c_iter);
+<a name="line313">313: </a>                }
+<a name="line314">314: </a>              }
+<a name="line315">315: </a>            }
+<a name="line316">316: </a>          } <font color="#4169E1">else</font> {
+<a name="line317">317: </a>            <font color="#4169E1">if</font> (o == 1) {
+<a name="line318">318: </a>              <font color="#4169E1">for</font>(typename sieve_type::traits::coneSequence::iterator c_iter = pCone-&gt;begin(); c_iter != pCone-&gt;end(); ++c_iter) {
+<a name="line319">319: </a>                <font color="#4169E1">if</font> (seen.find(*c_iter) == seen.end()) {
+<a name="line320">320: </a>                  seen.insert(*c_iter);
+<a name="line321">321: </a>                  cone-&gt;push_back(oriented_arrow_type(arrow_type(*c_iter, arrow.source), o));
+<a name="line322">322: </a>                  <font color="#4169E1">if</font> (i == height-1) nCone-&gt;push_back(*c_iter);
+<a name="line323">323: </a>                }
+<a name="line324">324: </a>              }
+<a name="line325">325: </a>            } <font color="#4169E1">else</font> {
+<a name="line326">326: </a>              const int numSkip = o-1;
+<a name="line327">327: </a>              int       count   = 0;
+
+<a name="line329">329: </a>              <font color="#4169E1">for</font>(typename sieve_type::traits::coneSequence::iterator c_iter = pCone-&gt;begin(); c_iter != pCone-&gt;end(); ++c_iter, ++count) {
+<a name="line330">330: </a>                <font color="#4169E1">if</font> (count &lt; numSkip) <font color="#4169E1">continue</font>;
+<a name="line331">331: </a>                <font color="#4169E1">if</font> (seen.find(*c_iter) == seen.end()) {
+<a name="line332">332: </a>                  seen.insert(*c_iter);
+<a name="line333">333: </a>                  cone-&gt;push_back(oriented_arrow_type(arrow_type(*c_iter, arrow.source), o));
+<a name="line334">334: </a>                  <font color="#4169E1">if</font> (i == height-1) nCone-&gt;push_back(*c_iter);
+<a name="line335">335: </a>                }
+<a name="line336">336: </a>              }
+<a name="line337">337: </a>              count = 0;
+<a name="line338">338: </a>              <font color="#4169E1">for</font>(typename sieve_type::traits::coneSequence::iterator c_iter = pCone-&gt;begin(); c_iter != pCone-&gt;end(); ++c_iter, ++count) {
+<a name="line339">339: </a>                <font color="#4169E1">if</font> (count &gt;= numSkip) <font color="#4169E1">break</font>;
+<a name="line340">340: </a>                <font color="#4169E1">if</font> (seen.find(*c_iter) == seen.end()) {
+<a name="line341">341: </a>                  seen.insert(*c_iter);
+<a name="line342">342: </a>                  cone-&gt;push_back(oriented_arrow_type(arrow_type(*c_iter, arrow.source), o));
+<a name="line343">343: </a>                  <font color="#4169E1">if</font> (i == height-1) nCone-&gt;push_back(*c_iter);
+<a name="line344">344: </a>                }
+<a name="line345">345: </a>              }
+<a name="line346">346: </a>            }
+<a name="line347">347: </a>          }
+<a name="line348">348: </a>        }
+<a name="line349">349: </a>      }
+<a name="line350">350: </a>      <font color="#4169E1">return</font> nCone;
+<a name="line351">351: </a>    };
+<a name="line352">352: </a>    static Obj&lt;supportArray&gt; star(const Obj&lt;bundle_type&gt;&amp; bundle, const point_type&amp; p) {
+<a name="line353">353: </a>      <font color="#4169E1">typedef</font> MinimalArrow&lt;point_type, point_type&gt; arrow_type;
+<a name="line354">354: </a>      <font color="#4169E1">typedef</font> typename ALE::array&lt;arrow_type&gt;      arrowArray;
+<a name="line355">355: </a>      const Obj&lt;sieve_type&gt;&amp;         sieve       = bundle-&gt;getSieve();
+<a name="line356">356: </a>      const Obj&lt;arrow_section_type&gt;&amp; orientation = bundle-&gt;getArrowSection(<font color="#666666">"orientation"</font>);
+<a name="line357">357: </a>      const int                      height      = bundle-&gt;height();
+<a name="line358">358: </a>      Obj&lt;arrowArray&gt;                support     = new arrowArray();
+<a name="line359">359: </a>      Obj&lt;arrowArray&gt;                cap         = new arrowArray();
+<a name="line360">360: </a>      Obj&lt;supportArray&gt;              star        = new supportArray();
+<a name="line361">361: </a>      supportSet                     seen;
+
+<a name="line363">363: </a>      // Support is guarateed to be ordered correctly
+<a name="line364">364: </a>      const Obj&lt;typename sieve_type::traits::supportSequence&gt;&amp; initSupport = sieve-&gt;support(p);
+
+<a name="line366">366: </a>      star-&gt;push_back(p);
+<a name="line367">367: </a>      <font color="#4169E1">for</font>(typename sieve_type::traits::supportSequence::iterator s_iter = initSupport-&gt;begin(); s_iter != initSupport-&gt;end(); ++s_iter) {
+<a name="line368">368: </a>        support-&gt;push_back(arrow_type(p, *s_iter));
+<a name="line369">369: </a>        star-&gt;push_back(*s_iter);
+<a name="line370">370: </a>      }
+<a name="line371">371: </a>      <font color="#4169E1">for</font>(int i = 1; i &lt; height; ++i) {
+<a name="line372">372: </a>        Obj&lt;arrowArray&gt; tmp = support; support = cap; cap = tmp;
+
+<a name="line374">374: </a>        support-&gt;clear();
+<a name="line375">375: </a>        <font color="#4169E1">for</font>(typename arrowArray::iterator b_iter = cap-&gt;begin(); b_iter != cap-&gt;end(); ++b_iter) {
+<a name="line376">376: </a>          const Obj&lt;typename sieve_type::traits::supportSequence&gt;&amp; pSupport = sieve-&gt;support(b_iter-&gt;target);
+<a name="line377">377: </a>          const typename arrow_section_type::value_type            o        = orientation-&gt;restrictPoint(*b_iter)[0];
+
+<a name="line379">379: </a>          <font color="#4169E1">if</font> (o == -1) {
+<a name="line380">380: </a>            <font color="#4169E1">for</font>(typename sieve_type::traits::supportSequence::reverse_iterator s_iter = pSupport-&gt;rbegin(); s_iter != pSupport-&gt;rend(); ++s_iter) {
+<a name="line381">381: </a>              <font color="#4169E1">if</font> (seen.find(*s_iter) == seen.end()) {
+<a name="line382">382: </a>                seen.insert(*s_iter);
+<a name="line383">383: </a>                support-&gt;push_back(arrow_type(b_iter-&gt;target, *s_iter));
+<a name="line384">384: </a>                star-&gt;push_back(*s_iter);
+<a name="line385">385: </a>              }
+<a name="line386">386: </a>            }
+<a name="line387">387: </a>          } <font color="#4169E1">else</font> {
+<a name="line388">388: </a>            <font color="#4169E1">for</font>(typename sieve_type::traits::supportSequence::iterator s_iter = pSupport-&gt;begin(); s_iter != pSupport-&gt;end(); ++s_iter) {
+<a name="line389">389: </a>              <font color="#4169E1">if</font> (seen.find(*s_iter) == seen.end()) {
+<a name="line390">390: </a>                seen.insert(*s_iter);
+<a name="line391">391: </a>                support-&gt;push_back(arrow_type(b_iter-&gt;target, *s_iter));
+<a name="line392">392: </a>                star-&gt;push_back(*s_iter);
+<a name="line393">393: </a>              }
+<a name="line394">394: </a>            }
+<a name="line395">395: </a>          }
+<a name="line396">396: </a>        }
+<a name="line397">397: </a>      }
+<a name="line398">398: </a>      <font color="#4169E1">return</font> star;
+<a name="line399">399: </a>    };
+<a name="line400">400: </a>    static Obj&lt;supportArray&gt; nSupport(const Obj&lt;bundle_type&gt;&amp; bundle, const point_type&amp; p, const int n) {
+<a name="line401">401: </a>      <font color="#4169E1">typedef</font> MinimalArrow&lt;point_type, point_type&gt; arrow_type;
+<a name="line402">402: </a>      <font color="#4169E1">typedef</font> typename ALE::array&lt;arrow_type&gt;      arrowArray;
+<a name="line403">403: </a>      const Obj&lt;sieve_type&gt;&amp;         sieve       = bundle-&gt;getSieve();
+<a name="line404">404: </a>      const Obj&lt;arrow_section_type&gt;&amp; orientation = bundle-&gt;getArrowSection(<font color="#666666">"orientation"</font>);
+<a name="line405">405: </a>      const int                      depth       = std::min(n, bundle-&gt;depth());
+<a name="line406">406: </a>      Obj&lt;arrowArray&gt;                support     = new arrowArray();
+<a name="line407">407: </a>      Obj&lt;arrowArray&gt;                cap         = new arrowArray();
+<a name="line408">408: </a>      Obj&lt;coneArray&gt;                 nSupport    = new supportArray();
+<a name="line409">409: </a>      supportSet                     seen;
+
+<a name="line411">411: </a>      <font color="#4169E1">if</font> (depth == 0) {
+<a name="line412">412: </a>        nSupport-&gt;push_back(p);
+<a name="line413">413: </a>        <font color="#4169E1">return</font> nSupport;
+<a name="line414">414: </a>      }
+
+<a name="line416">416: </a>      // Cone is guarateed to be ordered correctly
+<a name="line417">417: </a>      const Obj&lt;typename sieve_type::traits::supportSequence&gt;&amp; initSupport = sieve-&gt;support(p);
+
+<a name="line419">419: </a>      <font color="#4169E1">if</font> (depth == 1) {
+<a name="line420">420: </a>        <font color="#4169E1">for</font>(typename sieve_type::traits::supportSequence::iterator s_iter = initSupport-&gt;begin(); s_iter != initSupport-&gt;end(); ++s_iter) {
+<a name="line421">421: </a>          nSupport-&gt;push_back(*s_iter);
+<a name="line422">422: </a>        }
+<a name="line423">423: </a>        <font color="#4169E1">return</font> nSupport;
+<a name="line424">424: </a>      } <font color="#4169E1">else</font> {
+<a name="line425">425: </a>        <font color="#4169E1">for</font>(typename sieve_type::traits::supportSequence::iterator s_iter = initSupport-&gt;begin(); s_iter != initSupport-&gt;end(); ++s_iter) {
+<a name="line426">426: </a>          support-&gt;push_back(arrow_type(*s_iter, p));
+<a name="line427">427: </a>        }
+<a name="line428">428: </a>      }
+<a name="line429">429: </a>      <font color="#4169E1">for</font>(int i = 1; i &lt; depth; ++i) {
+<a name="line430">430: </a>        Obj&lt;arrowArray&gt; tmp = support; support = cap; cap = tmp;
+
+<a name="line432">432: </a>        support-&gt;clear();
+<a name="line433">433: </a>        <font color="#4169E1">for</font>(typename arrowArray::iterator c_iter = cap-&gt;begin(); c_iter != cap-&gt;end(); ++c_iter) {
+<a name="line434">434: </a>          const Obj&lt;typename sieve_type::traits::supportSequence&gt;&amp; pSupport = sieve-&gt;support(c_iter-&gt;source);
+<a name="line435">435: </a>          const typename arrow_section_type::value_type            o        = orientation-&gt;restrictPoint(*c_iter)[0];
+
+<a name="line437">437: </a>          <font color="#4169E1">if</font> (o == -1) {
+<a name="line438">438: </a>            <font color="#4169E1">for</font>(typename sieve_type::traits::supportSequence::reverse_iterator s_iter = pSupport-&gt;rbegin(); s_iter != pSupport-&gt;rend(); ++s_iter) {
+<a name="line439">439: </a>              <font color="#4169E1">if</font> (seen.find(*s_iter) == seen.end()) {
+<a name="line440">440: </a>                seen.insert(*s_iter);
+<a name="line441">441: </a>                support-&gt;push_back(arrow_type(*s_iter, c_iter-&gt;source));
+<a name="line442">442: </a>                <font color="#4169E1">if</font> (i == depth-1) nSupport-&gt;push_back(*s_iter);
+<a name="line443">443: </a>              }
+<a name="line444">444: </a>            }
+<a name="line445">445: </a>          } <font color="#4169E1">else</font> {
+<a name="line446">446: </a>            <font color="#4169E1">for</font>(typename sieve_type::traits::supportSequence::iterator s_iter = pSupport-&gt;begin(); s_iter != pSupport-&gt;end(); ++s_iter) {
+<a name="line447">447: </a>              <font color="#4169E1">if</font> (seen.find(*s_iter) == seen.end()) {
+<a name="line448">448: </a>                seen.insert(*s_iter);
+<a name="line449">449: </a>                support-&gt;push_back(arrow_type(*s_iter, c_iter-&gt;source));
+<a name="line450">450: </a>                <font color="#4169E1">if</font> (i == depth-1) nSupport-&gt;push_back(*s_iter);
+<a name="line451">451: </a>              }
+<a name="line452">452: </a>            }
+<a name="line453">453: </a>          }
+<a name="line454">454: </a>        }
+<a name="line455">455: </a>      }
+<a name="line456">456: </a>      <font color="#4169E1">return</font> nSupport;
+<a name="line457">457: </a>    };
+<a name="line458">458: </a>    static Obj&lt;sieve_type&gt; Link(const Obj&lt;bundle_type&gt;&amp; bundle, const point_type&amp; p) {
+<a name="line459">459: </a>      const Obj&lt;sieve_type&gt;&amp;         link_sieve          = new sieve_type(bundle-&gt;comm(),  bundle-&gt;debug());
+<a name="line460">460: </a>      const Obj&lt;sieve_type&gt;&amp;         sieve               = bundle-&gt;getSieve();
+<a name="line461">461: </a>      const int                      depth               = bundle-&gt;depth(p);
+<a name="line462">462: </a>      const int                      interpolation_depth = bundle-&gt;height(p)+depth;
+<a name="line463">463: </a>      Obj&lt;coneArray&gt;                 nSupport            = new supportArray();
+<a name="line464">464: </a>      supportSet                     seen;
+<a name="line465">465: </a>      //in either <font color="#4169E1">case</font>, copy the closure of the cells surrounding the point to the new sieve
+<a name="line466">466: </a>      static Obj&lt;supportArray&gt; neighboring_cells = sieve-&gt;nSupport(sieve-&gt;nCone(p, depth), interpolation_depth);
+<a name="line467">467: </a>      static typename supportArray::iterator nc_iter = neighboring_cells-&gt;begin();
+<a name="line468">468: </a>      static typename supportArray::iterator nc_iter_end = neighboring_cells-&gt;end();
+<a name="line469">469: </a>      <font color="#4169E1">while</font> (nc_iter != nc_iter_end) {
+<a name="line470">470: </a>        addClosure(sieve, link_sieve, *nc_iter);
+<a name="line471">471: </a>        nc_iter++;
+<a name="line472">472: </a>      }
+<a name="line473">473: </a>      <font color="#4169E1">if</font> (interpolation_depth == 1) { //noninterpolated <font color="#4169E1">case</font>
+<a name="line474">474: </a>       //remove the point, allowing the copied closure to contract to a surface.
+
+<a name="line476">476: </a>       <font color="#4169E1">if</font> (depth != 0) {
+<a name="line477">477: </a>         static Obj&lt;coneArray&gt; point_cone = sieve-&gt;cone(p);
+<a name="line478">478: </a>         static typename coneArray::iterator pc_iter =  point_cone-&gt;begin();
+<a name="line479">479: </a>         static typename coneArray::iterator pc_iter_end = point_cone-&gt;end();
+<a name="line480">480: </a>         <font color="#4169E1">while</font> (pc_iter != pc_iter_end) {
+<a name="line481">481: </a>           link_sieve-&gt;removePoint(*pc_iter);
+<a name="line482">482: </a>           pc_iter++;
+<a name="line483">483: </a>         }
+<a name="line484">484: </a>       }
+<a name="line485">485: </a>       link_sieve-&gt;removePoint(p);
+
+<a name="line487">487: </a>      } <font color="#4169E1">else</font> { //interpolated <font color="#4169E1">case</font>: remove the point, its closure, and the support of that closure,
+
+<a name="line489">489: </a>        static Obj&lt;supportArray&gt; surrounding_support = sieve-&gt;Star(sieve-&gt;nCone(p, depth));
+<a name="line490">490: </a>        static typename supportArray::iterator ss_iter = surrounding_support-&gt;begin();
+<a name="line491">491: </a>        static typename supportArray::iterator ss_iter_end = surrounding_support-&gt;end();
+<a name="line492">492: </a>        <font color="#4169E1">while</font> (ss_iter != ss_iter_end) {
+<a name="line493">493: </a>          link_sieve-&gt;removePoint(*ss_iter);
+<a name="line494">494: </a>          ss_iter++;
+<a name="line495">495: </a>        }
+<a name="line496">496: </a>        link_sieve-&gt;removePoint(p);
+<a name="line497">497: </a>      }
+<a name="line498">498: </a>      link_sieve-&gt;stratify();
+<a name="line499">499: </a>      <font color="#4169E1">return</font> link_sieve;
+<a name="line500">500: </a>    };
+<a name="line501">501: </a>  };
+<a name="line502">502: </a>}
+
+<a name="line504">504: </a><font color="#A020F0">#endif</font>
+</pre>
+</body>
+
+</html>

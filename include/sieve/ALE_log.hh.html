@@ -1,0 +1,103 @@
+<center><a href="ALE_log.hh">Actual source code: ALE_log.hh</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="http://www.mcs.anl.gov/petsc/petsc-current/include/sieve/ALE_log.hh.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2013-10-15T17:09:13+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>petsc-3.4.3 2013-10-15</b></div>
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#ifndef included_ALE_ALE_log_hh</font>
+<a name="line2">  2: </a><strong><font color="#228B22">#define included_ALE_ALE_log_hh</font></strong>
+
+<a name="line4">  4: </a><font color="#A020F0">#include &lt;petscsys.h&gt;</font>
+
+<a name="line6">  6: </a>namespace ALE {
+<a name="line7">  7: </a>  int  getVerbosity();
+<a name="line8">  8: </a>  void setVerbosity(const int&amp; verbosity);
+
+<a name="line10"> 10: </a>  <font color="#4169E1">typedef</font> <A href="../../docs/manualpages/Sys/PetscClassId.html#PetscClassId">PetscClassId</A> LogCookie;
+<a name="line11"> 11: </a>  <font color="#4169E1">typedef</font> int         LogStage;
+<a name="line12"> 12: </a>  <font color="#4169E1">typedef</font> <A href="../../docs/manualpages/Profiling/PetscLogEvent.html#PetscLogEvent">PetscLogEvent</A>  LogEvent;
+
+<a name="line14"> 14: </a>  LogCookie LogCookieRegister(const char *name);
+
+<a name="line16"> 16: </a>  LogStage  LogStageRegister(const char *name);
+<a name="line17"> 17: </a>  void      LogStagePush(LogStage stage);
+<a name="line18"> 18: </a>  void      LogStagePop(LogStage stage);
+
+<a name="line20"> 20: </a>  LogEvent  LogEventRegister(LogCookie cookie, const char* event_name);
+<a name="line21"> 21: </a>  LogEvent  LogEventRegister(const char* event_name);
+<a name="line22"> 22: </a>  void      LogEventBegin(LogEvent e);
+<a name="line23"> 23: </a>  void      LogEventEnd(LogEvent e);
+
+
+
+<a name="line27"> 27: </a>} // namespace ALE
+
+<a name="line29"> 29: </a>//    Helper macros that push and pop log stages bracketing method invocations.
+<a name="line30"> 30: </a>// These depend on the __FUNCT__ macro being declared correctly -- as the qualified method name (e.g., PreSieve::cone).
+<a name="line31"> 31: </a>//    Every ALE_LOG_STAGE_BEGIN must be matched by a corresponding ALE_LOG_STAGE_END.
+<a name="line32"> 32: </a>// For proper logging, these macro calls must be placed outside of all code in a function, including variable declaration,
+<a name="line33"> 33: </a>// except <font color="#4169E1">return</font> value declaration and the actual <font color="#4169E1">return</font> statement. This might require some code rearrangement.
+<a name="line34"> 34: </a>// In particular, returns from inside the block bracketed by the macros will <font color="#4169E1">break</font> the stage stack.
+<a name="line35"> 35: </a>//    ALE_LOG_STAGE_START and ALE_LOG_STAGE_FINISH mirror the corresponding BEGIN and END macros, except that they <font color="#4169E1">do</font> not contain
+<a name="line36"> 36: </a>// opening and closing braces and can be used more freely throughout the code
+<a name="line37"> 37: </a>//    ALE_LOG_EVENT_START and ALE_LOG_EVENT_FINISH can likewise be used throughout the code to start and stop logging of an event
+<a name="line38"> 38: </a>// associate with the function __FUNCT__.  The difference between function stages and events is implementation-dependent
+<a name="line39"> 39: </a>// (currently PETSc logging).
+
+<a name="line41"> 41: </a><font color="#A020F0">#if (defined ALE_USE_LOGGING) &amp;&amp; (defined ALE_LOGGING_USE_STAGES)</font>
+
+<a name="line43"> 43: </a><strong><font color="#228B22">#define ALE_LOG_STAGE_START                                 \</font></strong>
+<a name="line44"> 44: </a><strong><font color="#228B22">  {                                                         \</font></strong>
+<a name="line45"> 45: </a><strong><font color="#228B22">    ALE::LogStage stage = ALE::LogStageRegister(__FUNCT__); \</font></strong>
+<a name="line46"> 46: </a><strong><font color="#228B22">    ALE::LogStagePush(stage);                               \</font></strong>
+<a name="line47"> 47: </a><strong><font color="#228B22">  }</font></strong>
+
+<a name="line49"> 49: </a><strong><font color="#228B22">#define ALE_LOG_STAGE_FINISH                                \</font></strong>
+<a name="line50"> 50: </a><strong><font color="#228B22">  {                                                         \</font></strong>
+<a name="line51"> 51: </a><strong><font color="#228B22">    ALE::LogStage stage = ALE::LogStageRegister(__FUNCT__); \</font></strong>
+<a name="line52"> 52: </a><strong><font color="#228B22">    ALE::LogStagePop(stage);                                \</font></strong>
+<a name="line53"> 53: </a><strong><font color="#228B22">  }</font></strong>
+
+<a name="line55"> 55: </a><strong><font color="#228B22">#define ALE_LOG_STAGE_BEGIN    ALE_LOG_STAGE_START  {</font></strong>
+<a name="line56"> 56: </a><strong><font color="#228B22">#define ALE_LOG_STAGE_END      } ALE_LOG_STAGE_FINISH</font></strong>
+
+<a name="line58"> 58: </a><font color="#A020F0">#else</font>
+
+<a name="line60"> 60: </a><strong><font color="#228B22">#define ALE_LOG_STAGE_START  {}</font></strong>
+<a name="line61"> 61: </a><strong><font color="#228B22">#define ALE_LOG_STAGE_FINISH {}</font></strong>
+<a name="line62"> 62: </a><strong><font color="#228B22">#define ALE_LOG_STAGE_BEGIN  {}</font></strong>
+<a name="line63"> 63: </a><strong><font color="#228B22">#define ALE_LOG_STAGE_END  {}</font></strong>
+
+<a name="line65"> 65: </a><font color="#A020F0">#endif</font>
+
+<a name="line67"> 67: </a><font color="#A020F0">#if (defined ALE_USE_LOGGING) &amp;&amp; (defined ALE_LOGGING_USE_EVENTS)</font>
+
+<a name="line69"> 69: </a><strong><font color="#228B22">#define ALE_LOG_EVENT_BEGIN                                 \</font></strong>
+<a name="line70"> 70: </a><strong><font color="#228B22">  {                                                         \</font></strong>
+<a name="line71"> 71: </a><strong><font color="#228B22">    ALE::LogEvent event = ALE::LogEventRegister(__FUNCT__); \</font></strong>
+<a name="line72"> 72: </a><strong><font color="#228B22">    ALE::LogEventBegin(event);                              \</font></strong>
+<a name="line73"> 73: </a><strong><font color="#228B22">  }</font></strong>
+
+<a name="line75"> 75: </a><strong><font color="#228B22">#define ALE_LOG_EVENT_END                                   \</font></strong>
+<a name="line76"> 76: </a><strong><font color="#228B22">  {                                                         \</font></strong>
+<a name="line77"> 77: </a><strong><font color="#228B22">    ALE::LogEvent event = ALE::LogEventRegister(__FUNCT__); \</font></strong>
+<a name="line78"> 78: </a><strong><font color="#228B22">    ALE::LogEventEnd(event);                                \</font></strong>
+<a name="line79"> 79: </a><strong><font color="#228B22">  }</font></strong>
+
+<a name="line81"> 81: </a><font color="#A020F0">#else</font>
+
+<a name="line83"> 83: </a><strong><font color="#228B22">#define ALE_LOG_EVENT_BEGIN  {}</font></strong>
+<a name="line84"> 84: </a><strong><font color="#228B22">#define ALE_LOG_EVENT_END    {}</font></strong>
+
+<a name="line86"> 86: </a><font color="#A020F0">#endif</font>
+
+<a name="line88"> 88: </a><font color="#A020F0">#endif</font>
+</pre>
+</body>
+
+</html>

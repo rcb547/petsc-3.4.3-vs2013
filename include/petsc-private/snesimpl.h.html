@@ -1,0 +1,252 @@
+<center><a href="petsc-snesimpl.h">Actual source code: petsc-snesimpl.h</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="http://www.mcs.anl.gov/petsc/petsc-current/include/petsc-private/snesimpl.h.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2013-10-15T17:05:08+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>petsc-3.4.3 2013-10-15</b></div>
+<pre width="80">
+<a name="line2">  2: </a><font color="#A020F0">#ifndef __SNESIMPL_H</font>
+
+<a name="line5">  5: </a><font color="#A020F0">#include &lt;petscsnes.h&gt;</font>
+<a name="line6">  6: </a><font color="#A020F0">#include &lt;petsc-private/petscimpl.h&gt;</font>
+
+<a name="line8">  8: </a><font color="#4169E1">typedef struct _SNESOps *SNESOps;</font>
+
+<a name="line10"> 10: </a><font color="#4169E1"><a name="_SNESOps"></a>struct _SNESOps </font>{
+<a name="line11"> 11: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*computeinitialguess)(<A href="../docs/manualpages/SNES/SNES.html#SNES">SNES</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>,void*);
+<a name="line12"> 12: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*computescaling)(<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>,void*);
+<a name="line13"> 13: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*update)(<A href="../docs/manualpages/SNES/SNES.html#SNES">SNES</A>, <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>);                     <font color="#B22222">/* General purpose function for update */</font>
+<a name="line14"> 14: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*converged)(<A href="../docs/manualpages/SNES/SNES.html#SNES">SNES</A>,<A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>,<A href="../docs/manualpages/SNES/SNESConvergedReason.html#SNESConvergedReason">SNESConvergedReason</A>*,void*);
+<a name="line15"> 15: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*convergeddestroy)(void*);
+<a name="line16"> 16: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*setup)(<A href="../docs/manualpages/SNES/SNES.html#SNES">SNES</A>);                                <font color="#B22222">/* routine to set up the nonlinear solver */</font>
+<a name="line17"> 17: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*solve)(<A href="../docs/manualpages/SNES/SNES.html#SNES">SNES</A>);                                <font color="#B22222">/* actual nonlinear solver */</font>
+<a name="line18"> 18: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*view)(<A href="../docs/manualpages/SNES/SNES.html#SNES">SNES</A>,<A href="../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A>);
+<a name="line19"> 19: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*setfromoptions)(<A href="../docs/manualpages/SNES/SNES.html#SNES">SNES</A>);                       <font color="#B22222">/* sets options from database */</font>
+<a name="line20"> 20: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*destroy)(<A href="../docs/manualpages/SNES/SNES.html#SNES">SNES</A>);
+<a name="line21"> 21: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*reset)(<A href="../docs/manualpages/SNES/SNES.html#SNES">SNES</A>);
+<a name="line22"> 22: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*usercompute)(<A href="../docs/manualpages/SNES/SNES.html#SNES">SNES</A>,void**);
+<a name="line23"> 23: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*userdestroy)(void**);
+<a name="line24"> 24: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*computevariablebounds)(<A href="../docs/manualpages/SNES/SNES.html#SNES">SNES</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>);        <font color="#B22222">/* user provided routine to set box constrained variable bounds */</font>
+<a name="line25"> 25: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*computepfunction)(<A href="../docs/manualpages/SNES/SNES.html#SNES">SNES</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>,void*);
+<a name="line26"> 26: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*computepjacobian)(<A href="../docs/manualpages/SNES/SNES.html#SNES">SNES</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>,<A href="../docs/manualpages/Mat/Mat.html#Mat">Mat</A>*,<A href="../docs/manualpages/Mat/Mat.html#Mat">Mat</A>*,<A href="../docs/manualpages/Mat/MatStructure.html#MatStructure">MatStructure</A>*,void*);
+<a name="line27"> 27: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*load)(<A href="../docs/manualpages/SNES/SNES.html#SNES">SNES</A>,<A href="../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A>);
+<a name="line28"> 28: </a>};
+
+<a name="line30"> 30: </a><font color="#B22222">/*</font>
+<a name="line31"> 31: </a><font color="#B22222">   Nonlinear solver context</font>
+<a name="line32"> 32: </a><font color="#B22222"> */</font>
+<a name="line33"> 33: </a><strong><font color="#228B22">#define MAXSNESMONITORS 5</font></strong>
+
+<a name="line35"> 35: </a><font color="#4169E1"><a name="_p_SNES"></a>struct _p_SNES </font>{
+<a name="line36"> 36: </a>  PETSCHEADER(<font color="#4169E1">struct _SNESOps</font>);
+<a name="line37"> 37: </a>  DM        dm;
+<a name="line38"> 38: </a>  <A href="../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A> dmAuto;             <font color="#B22222">/* <A href="../docs/manualpages/SNES/SNES.html#SNES">SNES</A> created currently used DM automatically */</font>
+<a name="line39"> 39: </a>  <A href="../docs/manualpages/SNES/SNES.html#SNES">SNES</A>      pc;
+<a name="line40"> 40: </a>  <A href="../docs/manualpages/PC/PCSide.html#PCSide">PCSide</A>    pcside;
+<a name="line41"> 41: </a>  <A href="../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A> usespc;
+
+<a name="line43"> 43: </a>  <font color="#B22222">/*  ------------------------ User-provided stuff -------------------------------*/</font>
+<a name="line44"> 44: </a>  void  *user;                   <font color="#B22222">/* user-defined context */</font>
+
+<a name="line46"> 46: </a>  <A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>  vec_rhs;                  <font color="#B22222">/* If non-null, solve F(x) = rhs */</font>
+<a name="line47"> 47: </a>  <A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>  vec_sol;                  <font color="#B22222">/* pointer to solution */</font>
+
+<a name="line49"> 49: </a>  <A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>  vec_func;                 <font color="#B22222">/* pointer to function */</font>
+
+<a name="line51"> 51: </a>  <A href="../docs/manualpages/Mat/Mat.html#Mat">Mat</A>  jacobian;                 <font color="#B22222">/* Jacobian matrix */</font>
+<a name="line52"> 52: </a>  <A href="../docs/manualpages/Mat/Mat.html#Mat">Mat</A>  jacobian_pre;             <font color="#B22222">/* preconditioner matrix */</font>
+<a name="line53"> 53: </a>  void *initialguessP;           <font color="#B22222">/* user-defined initial guess context */</font>
+<a name="line54"> 54: </a>  <A href="../docs/manualpages/KSP/KSP.html#KSP">KSP</A>  ksp;                      <font color="#B22222">/* linear solver context */</font>
+<a name="line55"> 55: </a>  <A href="../docs/manualpages/SNES/SNESLineSearch.html#SNESLineSearch">SNESLineSearch</A> linesearch;     <font color="#B22222">/* line search context */</font>
+<a name="line56"> 56: </a>  <A href="../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A> usesksp;
+<a name="line57"> 57: </a>  <A href="../docs/manualpages/Mat/MatStructure.html#MatStructure">MatStructure</A> matstruct;        <font color="#B22222">/* Used by Picard solver */</font>
+
+<a name="line59"> 59: </a>  <A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>  vec_sol_update;           <font color="#B22222">/* pointer to solution update */</font>
+
+<a name="line61"> 61: </a>  <A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>  scaling;                  <font color="#B22222">/* scaling vector */</font>
+<a name="line62"> 62: </a>  void *scaP;                    <font color="#B22222">/* scaling context */</font>
+
+<a name="line64"> 64: </a>  <A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A> precheck_picard_angle; <font color="#B22222">/* For use with <A href="../docs/manualpages/SNES/SNESLineSearchPreCheckPicard.html#SNESLineSearchPreCheckPicard">SNESLineSearchPreCheckPicard</A> */</font>
+
+<a name="line66"> 66: </a>  <font color="#B22222">/* ------------------------Time stepping hooks-----------------------------------*/</font>
+
+<a name="line68"> 68: </a>  <font color="#B22222">/* ---------------- PETSc-provided (or user-provided) stuff ---------------------*/</font>
+
+<a name="line70"> 70: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A>      (*monitor[MAXSNESMONITORS])(<A href="../docs/manualpages/SNES/SNES.html#SNES">SNES</A>,<A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>,void*); <font color="#B22222">/* monitor routine */</font>
+<a name="line71"> 71: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A>      (*monitordestroy[MAXSNESMONITORS])(void**);                 <font color="#B22222">/* monitor context destroy routine */</font>
+<a name="line72"> 72: </a>  void                *monitorcontext[MAXSNESMONITORS];                           <font color="#B22222">/* monitor context */</font>
+<a name="line73"> 73: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>            numbermonitors;                                             <font color="#B22222">/* number of monitors */</font>
+<a name="line74"> 74: </a>  void                *cnvP;                                                      <font color="#B22222">/* convergence context */</font>
+<a name="line75"> 75: </a>  <A href="../docs/manualpages/SNES/SNESConvergedReason.html#SNESConvergedReason">SNESConvergedReason</A> reason;
+<a name="line76"> 76: </a>  <A href="../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A>           errorifnotconverged;
+
+<a name="line78"> 78: </a>  <font color="#B22222">/* --- Routines and data that are unique to each particular solver --- */</font>
+
+<a name="line80"> 80: </a>  <A href="../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A>      setupcalled;                <font color="#B22222">/* true if setup has been called */</font>
+<a name="line81"> 81: </a>  void           *data;                      <font color="#B22222">/* implementation-specific data */</font>
+
+<a name="line83"> 83: </a>  <font color="#B22222">/* --------------------------  Parameters -------------------------------------- */</font>
+
+<a name="line85"> 85: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>    max_its;            <font color="#B22222">/* max number of iterations */</font>
+<a name="line86"> 86: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>    max_funcs;          <font color="#B22222">/* max number of function evals */</font>
+<a name="line87"> 87: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>    nfuncs;             <font color="#B22222">/* number of function evaluations */</font>
+<a name="line88"> 88: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>    iter;               <font color="#B22222">/* global iteration number */</font>
+<a name="line89"> 89: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>    linear_its;         <font color="#B22222">/* total number of linear solver iterations */</font>
+<a name="line90"> 90: </a>  <A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>   norm;               <font color="#B22222">/* residual norm of current iterate */</font>
+<a name="line91"> 91: </a>  <A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>   rtol;               <font color="#B22222">/* relative tolerance */</font>
+<a name="line92"> 92: </a>  <A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>   abstol;             <font color="#B22222">/* absolute tolerance */</font>
+<a name="line93"> 93: </a>  <A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>   stol;               <font color="#B22222">/* step length tolerance*/</font>
+<a name="line94"> 94: </a>  <A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>   deltatol;           <font color="#B22222">/* trust region convergence tolerance */</font>
+<a name="line95"> 95: </a>  <A href="../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A>   printreason;        <font color="#B22222">/* print reason for convergence/divergence after each solve */</font>
+<a name="line96"> 96: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>    lagpreconditioner;  <font color="#B22222">/* <A href="../docs/manualpages/SNES/SNESSetLagPreconditioner.html#SNESSetLagPreconditioner">SNESSetLagPreconditioner</A>() */</font>
+<a name="line97"> 97: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>    lagjacobian;        <font color="#B22222">/* <A href="../docs/manualpages/SNES/SNESSetLagJacobian.html#SNESSetLagJacobian">SNESSetLagJacobian</A>() */</font>
+<a name="line98"> 98: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>    gridsequence;       <font color="#B22222">/* number of grid sequence steps to take; defaults to zero */</font>
+
+<a name="line100">100: </a>  <A href="../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A>   tolerancesset;      <font color="#B22222">/* <A href="../docs/manualpages/SNES/SNESSetTolerances.html#SNESSetTolerances">SNESSetTolerances</A>() called and tolerances should persist through SNESCreate_XXX()*/</font>
+
+<a name="line102">102: </a>  <A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>   norm_init;          <font color="#B22222">/* the initial norm value */</font>
+<a name="line103">103: </a>  <A href="../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A>   norm_init_set;      <font color="#B22222">/* the initial norm has been set */</font>
+<a name="line104">104: </a>  <A href="../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A>   vec_func_init_set;  <font color="#B22222">/* the initial function has been set */</font>
+
+<a name="line106">106: </a>  <A href="../docs/manualpages/SNES/SNESNormType.html#SNESNormType">SNESNormType</A> normtype;          <font color="#B22222">/* Norm computation type for <A href="../docs/manualpages/SNES/SNES.html#SNES">SNES</A> instance */</font>
+
+<a name="line108">108: </a>  <font color="#B22222">/* ------------------------ Default work-area management ---------------------- */</font>
+
+<a name="line110">110: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>    nwork;
+<a name="line111">111: </a>  <A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>         *work;
+
+<a name="line113">113: </a>  <font color="#B22222">/* ------------------------- Miscellaneous Information ------------------------ */</font>
+
+<a name="line115">115: </a>  <A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>   *conv_hist;         <font color="#B22222">/* If !0, stores function norm (or</font>
+<a name="line116">116: </a><font color="#B22222">                                    gradient norm) at each iteration */</font>
+<a name="line117">117: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>    *conv_hist_its;     <font color="#B22222">/* linear iterations for each Newton step */</font>
+<a name="line118">118: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>    conv_hist_len;      <font color="#B22222">/* size of convergence history array */</font>
+<a name="line119">119: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>    conv_hist_max;      <font color="#B22222">/* actual amount of data in conv_history */</font>
+<a name="line120">120: </a>  <A href="../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A>   conv_hist_reset;    <font color="#B22222">/* reset counter for each new <A href="../docs/manualpages/SNES/SNES.html#SNES">SNES</A> solve */</font>
+<a name="line121">121: </a>  <A href="../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A>   conv_malloc;
+
+<a name="line123">123: </a>  <font color="#B22222">/* the next two are used for failures in the line search; they should be put elsewhere */</font>
+<a name="line124">124: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>    numFailures;        <font color="#B22222">/* number of unsuccessful step attempts */</font>
+<a name="line125">125: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>    maxFailures;        <font color="#B22222">/* maximum number of unsuccessful step attempts */</font>
+
+<a name="line127">127: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>    numLinearSolveFailures;
+<a name="line128">128: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>    maxLinearSolveFailures;
+
+<a name="line130">130: </a>  <A href="../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A>   domainerror;       <font color="#B22222">/* set with <A href="../docs/manualpages/SNES/SNESSetFunctionDomainError.html#SNESSetFunctionDomainError">SNESSetFunctionDomainError</A>() */</font>
+
+<a name="line132">132: </a>  <A href="../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A>   ksp_ewconv;        <font color="#B22222">/* flag indicating use of Eisenstat-Walker <A href="../docs/manualpages/KSP/KSP.html#KSP">KSP</A> convergence criteria */</font>
+<a name="line133">133: </a>  void        *kspconvctx;       <font color="#B22222">/* Eisenstat-Walker <A href="../docs/manualpages/KSP/KSP.html#KSP">KSP</A> convergence context */</font>
+
+<a name="line135">135: </a>  <A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>   ttol;           <font color="#B22222">/* used by default convergence test routine */</font>
+
+<a name="line137">137: </a>  <A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>         *vwork;            <font color="#B22222">/* more work vectors for Jacobian approx */</font>
+<a name="line138">138: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>    nvwork;
+
+<a name="line140">140: </a>  <A href="../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A>   mf;               <font color="#B22222">/* -snes_mf was used on this snes */</font>
+<a name="line141">141: </a>  <A href="../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A>   mf_operator;      <font color="#B22222">/* -snes_mf_operator was used on this snes */</font>
+<a name="line142">142: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>    mf_version;       <font color="#B22222">/* The version of snes_mf used */</font>
+
+<a name="line144">144: </a>  <A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>         xl,xu;             <font color="#B22222">/* upper and lower bounds for box constrained VI problems */</font>
+<a name="line145">145: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>    ntruebounds;       <font color="#B22222">/* number of non-infinite bounds set for VI box constraints */</font>
+<a name="line146">146: </a>  <A href="../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A>   usersetbounds;     <font color="#B22222">/* bounds have been set via <A href="../docs/manualpages/SNES/SNESVISetVariableBounds.html#SNESVISetVariableBounds">SNESVISetVariableBounds</A>(), rather than via computevariablebounds() callback. */</font>
+<a name="line147">147: </a>};
+
+<a name="line149">149: </a><font color="#4169E1">typedef struct _p_DMSNES *DMSNES;</font>
+<a name="line150">150: </a><font color="#4169E1">typedef struct _DMSNESOps *DMSNESOps;</font>
+<a name="line151">151: </a><font color="#4169E1"><a name="_DMSNESOps"></a>struct _DMSNESOps </font>{
+<a name="line152">152: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*computefunction)(<A href="../docs/manualpages/SNES/SNES.html#SNES">SNES</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>,void*);
+<a name="line153">153: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*computejacobian)(<A href="../docs/manualpages/SNES/SNES.html#SNES">SNES</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>,<A href="../docs/manualpages/Mat/Mat.html#Mat">Mat</A>*,<A href="../docs/manualpages/Mat/Mat.html#Mat">Mat</A>*,<A href="../docs/manualpages/Mat/MatStructure.html#MatStructure">MatStructure</A>*,void*);
+
+<a name="line155">155: </a>  <font color="#B22222">/* objective */</font>
+<a name="line156">156: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*computeobjective)(<A href="../docs/manualpages/SNES/SNES.html#SNES">SNES</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>*,void*);
+
+<a name="line158">158: </a>  <font color="#B22222">/* Picard iteration functions */</font>
+<a name="line159">159: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*computepfunction)(<A href="../docs/manualpages/SNES/SNES.html#SNES">SNES</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>,void*);
+<a name="line160">160: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*computepjacobian)(<A href="../docs/manualpages/SNES/SNES.html#SNES">SNES</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>,<A href="../docs/manualpages/Mat/Mat.html#Mat">Mat</A>*,<A href="../docs/manualpages/Mat/Mat.html#Mat">Mat</A>*,<A href="../docs/manualpages/Mat/MatStructure.html#MatStructure">MatStructure</A>*,void*);
+
+<a name="line162">162: </a>  <font color="#B22222">/* User-defined smoother */</font>
+<a name="line163">163: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*computegs)(<A href="../docs/manualpages/SNES/SNES.html#SNES">SNES</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>,void*);
+
+<a name="line165">165: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*destroy)(DMSNES);
+<a name="line166">166: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*duplicate)(DMSNES,DMSNES);
+<a name="line167">167: </a>};
+
+<a name="line169">169: </a><font color="#4169E1"><a name="_p_DMSNES"></a>struct _p_DMSNES </font>{
+<a name="line170">170: </a>  PETSCHEADER(<font color="#4169E1">struct _DMSNESOps</font>);
+<a name="line171">171: </a>  void *functionctx;
+<a name="line172">172: </a>  void *gsctx;
+<a name="line173">173: </a>  void *pctx;
+<a name="line174">174: </a>  void *jacobianctx;
+<a name="line175">175: </a>  void *objectivectx;
+
+<a name="line177">177: </a>  void *data;
+
+<a name="line179">179: </a>  <font color="#B22222">/* This is NOT reference counted. The DM on which this context was first created is cached here to implement one-way</font>
+<a name="line180">180: </a><font color="#B22222">   * copy-on-write. When <A href="../docs/manualpages/SNES/DMGetDMSNESWrite.html#DMGetDMSNESWrite">DMGetDMSNESWrite</A>() sees a request using a different DM, it makes a copy. Thus, if a user</font>
+<a name="line181">181: </a><font color="#B22222">   * only interacts directly with one level, e.g., using <A href="../docs/manualpages/SNES/SNESSetFunction.html#SNESSetFunction">SNESSetFunction</A>(), then SNESSetUp_FAS() is called to build</font>
+<a name="line182">182: </a><font color="#B22222">   * coarse levels, then the user changes the routine with another call to <A href="../docs/manualpages/SNES/SNESSetFunction.html#SNESSetFunction">SNESSetFunction</A>(), it automatically</font>
+<a name="line183">183: </a><font color="#B22222">   * propagates to all the levels. If instead, they get out a specific level and set the function on that level,</font>
+<a name="line184">184: </a><font color="#B22222">   * subsequent changes to the original level will no longer propagate to that level.</font>
+<a name="line185">185: </a><font color="#B22222">   */</font>
+<a name="line186">186: </a>  DM originaldm;
+<a name="line187">187: </a>};
+<a name="line188">188: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/SNES/DMGetDMSNES.html#DMGetDMSNES">DMGetDMSNES</A>(DM,DMSNES*)</font></strong>;
+<a name="line189">189: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> DMSNESView(DMSNES,<A href="../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A>)</font></strong>;
+<a name="line190">190: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> DMSNESLoad(DMSNES,<A href="../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A>)</font></strong>;
+<a name="line191">191: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/SNES/DMGetDMSNESWrite.html#DMGetDMSNESWrite">DMGetDMSNESWrite</A>(DM,DMSNES*)</font></strong>;
+<a name="line192">192: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/SNES/DMCopyDMSNES.html#DMCopyDMSNES">DMCopyDMSNES</A>(DM,DM)</font></strong>;
+
+
+<a name="line195">195: </a><font color="#B22222">/* Context for Eisenstat-Walker convergence criteria for <A href="../docs/manualpages/KSP/KSP.html#KSP">KSP</A> solvers */</font>
+<a name="line196">196: </a><font color="#4169E1">typedef</font> <font color="#4169E1">struct</font> {
+<a name="line197">197: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>  version;             <font color="#B22222">/* flag indicating version 1 or 2 of test */</font>
+<a name="line198">198: </a>  <A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A> rtol_0;              <font color="#B22222">/* initial rtol */</font>
+<a name="line199">199: </a>  <A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A> rtol_last;           <font color="#B22222">/* last rtol */</font>
+<a name="line200">200: </a>  <A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A> rtol_max;            <font color="#B22222">/* maximum rtol */</font>
+<a name="line201">201: </a>  <A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A> gamma;               <font color="#B22222">/* mult. factor for version 2 rtol computation */</font>
+<a name="line202">202: </a>  <A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A> alpha;               <font color="#B22222">/* power for version 2 rtol computation */</font>
+<a name="line203">203: </a>  <A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A> alpha2;              <font color="#B22222">/* power for safeguard */</font>
+<a name="line204">204: </a>  <A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A> threshold;           <font color="#B22222">/* threshold for imposing safeguard */</font>
+<a name="line205">205: </a>  <A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A> lresid_last;         <font color="#B22222">/* linear residual from last iteration */</font>
+<a name="line206">206: </a>  <A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A> norm_last;           <font color="#B22222">/* function norm from last iteration */</font>
+<a name="line207">207: </a>} SNESKSPEW;
+
+<a name="line211">211: </a><strong><font color="#4169E1"><a name="SNESLogConvergenceHistory"></a>PETSC_STATIC_INLINE <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> SNESLogConvergenceHistory(<A href="../docs/manualpages/SNES/SNES.html#SNES">SNES</A> snes,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A> res,<A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A> its)</font></strong>
+<a name="line212">212: </a>{
+
+<a name="line216">216: </a>  <A href="../docs/manualpages/Sys/PetscObjectAMSTakeAccess.html#PetscObjectAMSTakeAccess">PetscObjectAMSTakeAccess</A>((<A href="../docs/manualpages/Sys/PetscObject.html#PetscObject">PetscObject</A>)snes);
+<a name="line217">217: </a>  <font color="#4169E1">if</font> (snes-&gt;conv_hist &amp;&amp; snes-&gt;conv_hist_max &gt; snes-&gt;conv_hist_len) {
+<a name="line218">218: </a>    <font color="#4169E1">if</font> (snes-&gt;conv_hist)     snes-&gt;conv_hist[snes-&gt;conv_hist_len]     = res;
+<a name="line219">219: </a>    <font color="#4169E1">if</font> (snes-&gt;conv_hist_its) snes-&gt;conv_hist_its[snes-&gt;conv_hist_len] = its;
+<a name="line220">220: </a>    snes-&gt;conv_hist_len++;
+<a name="line221">221: </a>  }
+<a name="line222">222: </a>  <A href="../docs/manualpages/Sys/PetscObjectAMSGrantAccess.html#PetscObjectAMSGrantAccess">PetscObjectAMSGrantAccess</A>((<A href="../docs/manualpages/Sys/PetscObject.html#PetscObject">PetscObject</A>)snes);
+<a name="line223">223: </a>  <font color="#4169E1">return</font>(0);
+<a name="line224">224: </a>}
+
+<a name="line226">226: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> SNESVIProjectOntoBounds(<A href="../docs/manualpages/SNES/SNES.html#SNES">SNES</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>)</font></strong>;
+<a name="line227">227: </a><strong><font color="#4169E1">PETSC_INTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> SNESVICheckLocalMin_Private(<A href="../docs/manualpages/SNES/SNES.html#SNES">SNES</A>,<A href="../docs/manualpages/Mat/Mat.html#Mat">Mat</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>,<A href="../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A>*)</font></strong>;
+<a name="line228">228: </a><strong><font color="#4169E1">PETSC_INTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> SNESReset_VI(<A href="../docs/manualpages/SNES/SNES.html#SNES">SNES</A>)</font></strong>;
+<a name="line229">229: </a><strong><font color="#4169E1">PETSC_INTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> SNESDestroy_VI(<A href="../docs/manualpages/SNES/SNES.html#SNES">SNES</A>)</font></strong>;
+<a name="line230">230: </a><strong><font color="#4169E1">PETSC_INTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> SNESView_VI(<A href="../docs/manualpages/SNES/SNES.html#SNES">SNES</A>,<A href="../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A>)</font></strong>;
+<a name="line231">231: </a><strong><font color="#4169E1">PETSC_INTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> SNESSetFromOptions_VI(<A href="../docs/manualpages/SNES/SNES.html#SNES">SNES</A>)</font></strong>;
+<a name="line232">232: </a><strong><font color="#4169E1">PETSC_INTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> SNESSetUp_VI(<A href="../docs/manualpages/SNES/SNES.html#SNES">SNES</A>)</font></strong>;
+<a name="line233">233: </a><strong><font color="#4169E1">PETSC_EXTERN_TYPEDEF typedef <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*SNESVIComputeVariableBoundsFunction)(<A href="../docs/manualpages/SNES/SNES.html#SNES">SNES</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>)</font></strong>;
+<a name="line234">234: </a><strong><font color="#4169E1">PETSC_INTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> SNESVISetComputeVariableBounds_VI(<A href="../docs/manualpages/SNES/SNES.html#SNES">SNES</A>,SNESVIComputeVariableBoundsFunction)</font></strong>;
+<a name="line235">235: </a><strong><font color="#4169E1">PETSC_INTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> SNESVISetVariableBounds_VI(<A href="../docs/manualpages/SNES/SNES.html#SNES">SNES</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>)</font></strong>;
+<a name="line236">236: </a><strong><font color="#4169E1">PETSC_INTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> SNESConvergedDefault_VI(<A href="../docs/manualpages/SNES/SNES.html#SNES">SNES</A>,<A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>,<A href="../docs/manualpages/SNES/SNESConvergedReason.html#SNESConvergedReason">SNESConvergedReason</A>*,void*)</font></strong>;
+
+<a name="line238">238: </a><strong><font color="#4169E1"><A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> SNESScaleStep_Private(<A href="../docs/manualpages/SNES/SNES.html#SNES">SNES</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>*,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>*,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>*,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>*)</font></strong>;
+
+<a name="line240">240: </a>PETSC_EXTERN <A href="../docs/manualpages/Profiling/PetscLogEvent.html#PetscLogEvent">PetscLogEvent</A> SNES_Solve, SNES_LineSearch, SNES_FunctionEval, SNES_JacobianEval, SNES_GSEval, SNES_NPCSolve;
+
+<a name="line242">242: </a><font color="#A020F0">#endif</font>
+</pre>
+</body>
+
+</html>

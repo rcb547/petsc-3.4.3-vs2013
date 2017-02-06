@@ -1,0 +1,224 @@
+<center><a href="petsc-tsimpl.h">Actual source code: petsc-tsimpl.h</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="http://www.mcs.anl.gov/petsc/petsc-current/include/petsc-private/tsimpl.h.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2013-10-15T17:07:46+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>petsc-3.4.3 2013-10-15</b></div>
+<pre width="80">
+<a name="line2">  2: </a><font color="#A020F0">#ifndef __TSIMPL_H</font>
+
+<a name="line5">  5: </a><font color="#A020F0">#include &lt;petscts.h&gt;</font>
+<a name="line6">  6: </a><font color="#A020F0">#include &lt;petsc-private/petscimpl.h&gt;</font>
+
+<a name="line8">  8: </a><font color="#B22222">/*</font>
+<a name="line9">  9: </a><font color="#B22222">    Timesteping context.</font>
+<a name="line10"> 10: </a><font color="#B22222">      General DAE: F(t,U,U_t) = 0, required Jacobian is G'(U) where G(U) = F(t,U,U0+a*U)</font>
+<a name="line11"> 11: </a><font color="#B22222">      General ODE: U_t = F(t,U) &lt;-- the right-hand-side function</font>
+<a name="line12"> 12: </a><font color="#B22222">      Linear  ODE: U_t = A(t) U &lt;-- the right-hand-side matrix</font>
+<a name="line13"> 13: </a><font color="#B22222">      Linear (no time) ODE: U_t = A U &lt;-- the right-hand-side matrix</font>
+<a name="line14"> 14: </a><font color="#B22222">*/</font>
+
+<a name="line16"> 16: </a><font color="#B22222">/*</font>
+<a name="line17"> 17: </a><font color="#B22222">     Maximum number of monitors you can run with a single <A href="../docs/manualpages/TS/TS.html#TS">TS</A></font>
+<a name="line18"> 18: </a><font color="#B22222">*/</font>
+<a name="line19"> 19: </a><strong><font color="#228B22">#define MAXTSMONITORS 5</font></strong>
+
+<a name="line21"> 21: </a><font color="#4169E1">typedef struct _TSOps *TSOps;</font>
+
+<a name="line23"> 23: </a><font color="#4169E1"><a name="_TSOps"></a>struct _TSOps </font>{
+<a name="line24"> 24: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*snesfunction)(<A href="../docs/manualpages/SNES/SNES.html#SNES">SNES</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>,<A href="../docs/manualpages/TS/TS.html#TS">TS</A>);
+<a name="line25"> 25: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*snesjacobian)(<A href="../docs/manualpages/SNES/SNES.html#SNES">SNES</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>,<A href="../docs/manualpages/Mat/Mat.html#Mat">Mat</A>*,<A href="../docs/manualpages/Mat/Mat.html#Mat">Mat</A>*,<A href="../docs/manualpages/Mat/MatStructure.html#MatStructure">MatStructure</A>*,<A href="../docs/manualpages/TS/TS.html#TS">TS</A>);
+<a name="line26"> 26: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*setup)(<A href="../docs/manualpages/TS/TS.html#TS">TS</A>);
+<a name="line27"> 27: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*step)(<A href="../docs/manualpages/TS/TS.html#TS">TS</A>);
+<a name="line28"> 28: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*solve)(<A href="../docs/manualpages/TS/TS.html#TS">TS</A>);
+<a name="line29"> 29: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*interpolate)(<A href="../docs/manualpages/TS/TS.html#TS">TS</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>);
+<a name="line30"> 30: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*evaluatestep)(<A href="../docs/manualpages/TS/TS.html#TS">TS</A>,<A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>,<A href="../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A>*);
+<a name="line31"> 31: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*setfromoptions)(<A href="../docs/manualpages/TS/TS.html#TS">TS</A>);
+<a name="line32"> 32: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*destroy)(<A href="../docs/manualpages/TS/TS.html#TS">TS</A>);
+<a name="line33"> 33: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*view)(<A href="../docs/manualpages/TS/TS.html#TS">TS</A>,<A href="../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A>);
+<a name="line34"> 34: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*reset)(<A href="../docs/manualpages/TS/TS.html#TS">TS</A>);
+<a name="line35"> 35: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*linearstability)(<A href="../docs/manualpages/TS/TS.html#TS">TS</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>*,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>*);
+<a name="line36"> 36: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*load)(<A href="../docs/manualpages/TS/TS.html#TS">TS</A>,<A href="../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A>);
+<a name="line37"> 37: </a>};
+
+<a name="line39"> 39: </a><font color="#4169E1"><a name="_p_TS"></a>struct _p_TS </font>{
+<a name="line40"> 40: </a>  PETSCHEADER(<font color="#4169E1">struct _TSOps</font>);
+<a name="line41"> 41: </a>  DM            dm;
+<a name="line42"> 42: </a>  <A href="../docs/manualpages/TS/TSProblemType.html#TSProblemType">TSProblemType</A> problem_type;
+<a name="line43"> 43: </a>  <A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>           vec_sol;
+<a name="line44"> 44: </a>  <A href="../docs/manualpages/TS/TSAdapt.html#TSAdapt">TSAdapt</A>       adapt;
+
+<a name="line46"> 46: </a>  <font color="#B22222">/* ---------------- User (or PETSc) Provided stuff ---------------------*/</font>
+<a name="line47"> 47: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*monitor[MAXTSMONITORS])(<A href="../docs/manualpages/TS/TS.html#TS">TS</A>,<A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>,void*); <font color="#B22222">/* returns control to user after */</font>
+<a name="line48"> 48: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*monitordestroy[MAXTSMONITORS])(void**);
+<a name="line49"> 49: </a>  void *monitorcontext[MAXTSMONITORS];                 <font color="#B22222">/* residual calculation, allows user */</font>
+<a name="line50"> 50: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>  numbermonitors;                                 <font color="#B22222">/* to, for instance, print residual norm, etc. */</font>
+
+<a name="line52"> 52: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*prestep)(<A href="../docs/manualpages/TS/TS.html#TS">TS</A>);
+<a name="line53"> 53: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*prestage)(<A href="../docs/manualpages/TS/TS.html#TS">TS</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>);
+<a name="line54"> 54: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*poststep)(<A href="../docs/manualpages/TS/TS.html#TS">TS</A>);
+
+<a name="line56"> 56: </a>  <font color="#B22222">/* ---------------------- IMEX support ---------------------------------*/</font>
+<a name="line57"> 57: </a>  <font color="#B22222">/* These extra slots are only used when the user provides both Implicit and RHS */</font>
+<a name="line58"> 58: </a>  <A href="../docs/manualpages/Mat/Mat.html#Mat">Mat</A> Arhs;     <font color="#B22222">/* Right hand side matrix */</font>
+<a name="line59"> 59: </a>  <A href="../docs/manualpages/Mat/Mat.html#Mat">Mat</A> Brhs;     <font color="#B22222">/* Right hand side preconditioning matrix */</font>
+<a name="line60"> 60: </a>  <A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A> Frhs;     <font color="#B22222">/* Right hand side function value */</font>
+
+<a name="line62"> 62: </a>  <font color="#B22222">/* This is a general caching scheme to avoid recomputing the Jacobian at a place that has been previously been evaluated.</font>
+<a name="line63"> 63: </a><font color="#B22222">   * The present use case is that <A href="../docs/manualpages/TS/TSComputeRHSFunctionLinear.html#TSComputeRHSFunctionLinear">TSComputeRHSFunctionLinear</A>() evaluates the Jacobian once and we don't want it to be immeditely re-evaluated.</font>
+<a name="line64"> 64: </a><font color="#B22222">   */</font>
+<a name="line65"> 65: </a>  <font color="#4169E1">struct</font> {
+<a name="line66"> 66: </a>    <A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A> time;             <font color="#B22222">/* The time at which the matrices were last evaluated */</font>
+<a name="line67"> 67: </a>    <A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A> X;                      <font color="#B22222">/* Solution vector at which the Jacobian was last evaluated */</font>
+<a name="line68"> 68: </a>    <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A> Xstate;            <font color="#B22222">/* State of the solution vector */</font>
+<a name="line69"> 69: </a>    <A href="../docs/manualpages/Mat/MatStructure.html#MatStructure">MatStructure</A> mstructure;    <font color="#B22222">/* The structure returned */</font>
+<a name="line70"> 70: </a>    <font color="#B22222">/* Flag to unshift Jacobian before calling the IJacobian or RHSJacobian functions.  This is useful</font>
+<a name="line71"> 71: </a><font color="#B22222">     * if the user would like to reuse (part of) the Jacobian from the last evaluation. */</font>
+<a name="line72"> 72: </a>    <A href="../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A> reuse;
+<a name="line73"> 73: </a>    <A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A> scale,shift;
+<a name="line74"> 74: </a>  } rhsjacobian;
+
+<a name="line76"> 76: </a>  <font color="#4169E1">struct</font> {
+<a name="line77"> 77: </a>    <A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A> shift;            <font color="#B22222">/* The derivative of the lhs wrt to Xdot */</font>
+<a name="line78"> 78: </a>  } ijacobian;
+
+<a name="line80"> 80: </a>  <font color="#B22222">/* ---------------------Nonlinear Iteration------------------------------*/</font>
+<a name="line81"> 81: </a>  <A href="../docs/manualpages/SNES/SNES.html#SNES">SNES</A>  snes;
+
+<a name="line83"> 83: </a>  <font color="#B22222">/* --- Data that is unique to each particular solver --- */</font>
+<a name="line84"> 84: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A> setupcalled;             <font color="#B22222">/* true if setup has been called */</font>
+<a name="line85"> 85: </a>  void     *data;                   <font color="#B22222">/* implementationspecific data */</font>
+<a name="line86"> 86: </a>  void     *user;                   <font color="#B22222">/* user context */</font>
+
+<a name="line88"> 88: </a>  <font color="#B22222">/* ------------------  Parameters -------------------------------------- */</font>
+<a name="line89"> 89: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>  max_steps;              <font color="#B22222">/* max number of steps */</font>
+<a name="line90"> 90: </a>  <A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A> max_time;               <font color="#B22222">/* max time allowed */</font>
+<a name="line91"> 91: </a>  <A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A> time_step;              <font color="#B22222">/* current/completed time increment */</font>
+<a name="line92"> 92: </a>  <A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A> time_step_prev;         <font color="#B22222">/* previous time step  */</font>
+
+<a name="line94"> 94: </a>  <font color="#B22222">/*</font>
+<a name="line95"> 95: </a><font color="#B22222">     these are temporary to support increasing the time step if nonlinear solver convergence remains good</font>
+<a name="line96"> 96: </a><font color="#B22222">     and time_step was previously cut due to failed nonlinear solver</font>
+<a name="line97"> 97: </a><font color="#B22222">  */</font>
+<a name="line98"> 98: </a>  <A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A> time_step_orig;            <font color="#B22222">/* original time step requested by user */</font>
+<a name="line99"> 99: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>  time_steps_since_decrease; <font color="#B22222">/* number of timesteps since timestep was decreased due to lack of convergence */</font>
+<a name="line100">100: </a>  <font color="#B22222">/* ----------------------------------------------------------------------------------------------------------------*/</font>
+
+<a name="line102">102: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>  steps;                  <font color="#B22222">/* steps taken so far */</font>
+<a name="line103">103: </a>  <A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A> ptime;                  <font color="#B22222">/* time at the start of the current step (stage time is internal if it exists) */</font>
+<a name="line104">104: </a>  <A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A> solvetime;              <font color="#B22222">/* time at the conclusion of <A href="../docs/manualpages/TS/TSSolve.html#TSSolve">TSSolve</A>() */</font>
+<a name="line105">105: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>  ksp_its;                <font color="#B22222">/* total number of linear solver iterations */</font>
+<a name="line106">106: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>  snes_its;               <font color="#B22222">/* total number of nonlinear solver iterations */</font>
+
+<a name="line108">108: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A> num_snes_failures;
+<a name="line109">109: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A> max_snes_failures;
+<a name="line110">110: </a>  <A href="../docs/manualpages/TS/TSConvergedReason.html#TSConvergedReason">TSConvergedReason</A> reason;
+<a name="line111">111: </a>  <A href="../docs/manualpages/TS/TSEquationType.html#TSEquationType">TSEquationType</A> equation_type;
+<a name="line112">112: </a>  <A href="../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A> errorifstepfailed;
+<a name="line113">113: </a>  <A href="../docs/manualpages/TS/TSExactFinalTimeOption.html#TSExactFinalTimeOption">TSExactFinalTimeOption</A>  exact_final_time;
+<a name="line114">114: </a>  <A href="../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A> retain_stages;
+<a name="line115">115: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A> reject,max_reject;
+
+<a name="line117">117: </a>  <A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A> atol,rtol;          <font color="#B22222">/* Relative and absolute tolerance for local truncation error */</font>
+<a name="line118">118: </a>  <A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>       vatol,vrtol;        <font color="#B22222">/* Relative and absolute tolerance in vector form */</font>
+<a name="line119">119: </a>  <A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A> cfltime,cfltime_local;
+
+<a name="line121">121: </a>  <font color="#B22222">/* ------------------- Default work-area management ------------------ */</font>
+<a name="line122">122: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A> nwork;
+<a name="line123">123: </a>  <A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>      *work;
+<a name="line124">124: </a>};
+
+<a name="line126">126: </a><font color="#4169E1"><a name="_TSAdaptOps"></a>struct _TSAdaptOps </font>{
+<a name="line127">127: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*choose)(<A href="../docs/manualpages/TS/TSAdapt.html#TSAdapt">TSAdapt</A>,<A href="../docs/manualpages/TS/TS.html#TS">TS</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>,<A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>*,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>*,<A href="../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A>*,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>*);
+<a name="line128">128: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*checkstage)(<A href="../docs/manualpages/TS/TSAdapt.html#TSAdapt">TSAdapt</A>,<A href="../docs/manualpages/TS/TS.html#TS">TS</A>,<A href="../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A>*);
+<a name="line129">129: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*destroy)(<A href="../docs/manualpages/TS/TSAdapt.html#TSAdapt">TSAdapt</A>);
+<a name="line130">130: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*view)(<A href="../docs/manualpages/TS/TSAdapt.html#TSAdapt">TSAdapt</A>,<A href="../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A>);
+<a name="line131">131: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*setfromoptions)(<A href="../docs/manualpages/TS/TSAdapt.html#TSAdapt">TSAdapt</A>);
+<a name="line132">132: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*load)(<A href="../docs/manualpages/TS/TSAdapt.html#TSAdapt">TSAdapt</A>,<A href="../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A>);
+<a name="line133">133: </a>};
+
+<a name="line135">135: </a><font color="#4169E1"><a name="_p_TSAdapt"></a>struct _p_TSAdapt </font>{
+<a name="line136">136: </a>  PETSCHEADER(<font color="#4169E1">struct _TSAdaptOps</font>);
+<a name="line137">137: </a>  void *data;
+<a name="line138">138: </a>  <font color="#4169E1">struct</font> {
+<a name="line139">139: </a>    <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>   n;                <font color="#B22222">/* number of candidate schemes, including the one currently in use */</font>
+<a name="line140">140: </a>    <A href="../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A>  inuse_set;        <font color="#B22222">/* the current scheme has been set */</font>
+<a name="line141">141: </a>    const char *name[16];        <font color="#B22222">/* name of the scheme */</font>
+<a name="line142">142: </a>    <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>   order[16];        <font color="#B22222">/* classical order of each scheme */</font>
+<a name="line143">143: </a>    <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>   stageorder[16];   <font color="#B22222">/* stage order of each scheme */</font>
+<a name="line144">144: </a>    <A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>  ccfl[16];         <font color="#B22222">/* stability limit relative to explicit Euler */</font>
+<a name="line145">145: </a>    <A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>  cost[16];         <font color="#B22222">/* relative measure of the amount of work required for each scheme */</font>
+<a name="line146">146: </a>  } candidates;
+<a name="line147">147: </a>  <A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>   dt_min,dt_max;
+<a name="line148">148: </a>  <A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>   scale_solve_failed; <font color="#B22222">/* Scale step by this factor if solver (linear or nonlinear) fails. */</font>
+<a name="line149">149: </a>  <A href="../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A> monitor;
+<a name="line150">150: </a>};
+
+<a name="line152">152: </a><font color="#4169E1">typedef struct _p_DMTS *DMTS;</font>
+<a name="line153">153: </a><font color="#4169E1">typedef struct _DMTSOps *DMTSOps;</font>
+<a name="line154">154: </a><font color="#4169E1"><a name="_DMTSOps"></a>struct _DMTSOps </font>{
+<a name="line155">155: </a>  TSRHSFunction rhsfunction;
+<a name="line156">156: </a>  TSRHSJacobian rhsjacobian;
+
+<a name="line158">158: </a>  TSIFunction ifunction;
+<a name="line159">159: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*ifunctionview)(void*,<A href="../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A>);
+<a name="line160">160: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*ifunctionload)(void**,<A href="../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A>);
+
+<a name="line162">162: </a>  TSIJacobian ijacobian;
+<a name="line163">163: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*ijacobianview)(void*,<A href="../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A>);
+<a name="line164">164: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*ijacobianload)(void**,<A href="../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A>);
+
+<a name="line166">166: </a>  TSSolutionFunction solution;
+<a name="line167">167: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*forcing)(<A href="../docs/manualpages/TS/TS.html#TS">TS</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>,void*);
+
+<a name="line169">169: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*destroy)(DMTS);
+<a name="line170">170: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*duplicate)(DMTS,DMTS);
+<a name="line171">171: </a>};
+
+<a name="line173">173: </a><font color="#4169E1"><a name="_p_DMTS"></a>struct _p_DMTS </font>{
+<a name="line174">174: </a>  PETSCHEADER(<font color="#4169E1">struct _DMTSOps</font>);
+<a name="line175">175: </a>  void *rhsfunctionctx;
+<a name="line176">176: </a>  void *rhsjacobianctx;
+
+<a name="line178">178: </a>  void *ifunctionctx;
+<a name="line179">179: </a>  void *ijacobianctx;
+
+<a name="line181">181: </a>  void *solutionctx;
+<a name="line182">182: </a>  void *forcingctx;
+
+<a name="line184">184: </a>  void *data;
+
+<a name="line186">186: </a>  <font color="#B22222">/* This is NOT reference counted. The DM on which this context was first created is cached here to implement one-way</font>
+<a name="line187">187: </a><font color="#B22222">   * copy-on-write. When <A href="../docs/manualpages/TS/DMGetDMTSWrite.html#DMGetDMTSWrite">DMGetDMTSWrite</A>() sees a request using a different DM, it makes a copy. Thus, if a user</font>
+<a name="line188">188: </a><font color="#B22222">   * only interacts directly with one level, e.g., using <A href="../docs/manualpages/TS/TSSetIFunction.html#TSSetIFunction">TSSetIFunction</A>(), then coarse levels of a multilevel item</font>
+<a name="line189">189: </a><font color="#B22222">   * integrator are built, then the user changes the routine with another call to <A href="../docs/manualpages/TS/TSSetIFunction.html#TSSetIFunction">TSSetIFunction</A>(), it automatically</font>
+<a name="line190">190: </a><font color="#B22222">   * propagates to all the levels. If instead, they get out a specific level and set the function on that level,</font>
+<a name="line191">191: </a><font color="#B22222">   * subsequent changes to the original level will no longer propagate to that level.</font>
+<a name="line192">192: </a><font color="#B22222">   */</font>
+<a name="line193">193: </a>  DM originaldm;
+<a name="line194">194: </a>};
+
+<a name="line196">196: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/TS/DMGetDMTS.html#DMGetDMTS">DMGetDMTS</A>(DM,DMTS*)</font></strong>;
+<a name="line197">197: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/TS/DMGetDMTSWrite.html#DMGetDMTSWrite">DMGetDMTSWrite</A>(DM,DMTS*)</font></strong>;
+<a name="line198">198: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/TS/DMCopyDMTS.html#DMCopyDMTS">DMCopyDMTS</A>(DM,DM)</font></strong>;
+<a name="line199">199: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> DMTSView(DMTS,<A href="../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A>)</font></strong>;
+<a name="line200">200: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> DMTSLoad(DMTS,<A href="../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A>)</font></strong>;
+
+
+<a name="line203">203: </a>PETSC_EXTERN <A href="../docs/manualpages/Profiling/PetscLogEvent.html#PetscLogEvent">PetscLogEvent</A> TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEval;
+
+<a name="line205">205: </a><font color="#4169E1">typedef</font> <font color="#4169E1">enum</font> {TS_STEP_INCOMPLETE, <font color="#B22222">/* vec_sol, ptime, etc point to beginning of step */</font>
+<a name="line206">206: </a>              TS_STEP_PENDING,    <font color="#B22222">/* vec_sol advanced, but step has not been accepted yet */</font>
+<a name="line207">207: </a>              TS_STEP_COMPLETE    <font color="#B22222">/* step accepted and ptime, steps, etc have been advanced */</font>
+<a name="line208">208: </a>} TSStepStatus;
+
+<a name="line210">210: </a><font color="#A020F0">#endif</font>
+</pre>
+</body>
+
+</html>

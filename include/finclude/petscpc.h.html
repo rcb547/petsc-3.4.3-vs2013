@@ -1,0 +1,135 @@
+<center><a href="petscpc.h">Actual source code: petscpc.h</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="http://www.mcs.anl.gov/petsc/petsc-current/include/finclude/petscpc.h.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2013-10-15T17:08:22+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>petsc-3.4.3 2013-10-15</b></div>
+<pre width="80"><a name="line1">  1: </a>!
+<a name="line2">  2: </a>!
+<a name="line3">  3: </a>!  Include file <font color="#4169E1">for</font> Fortran use of the <A href="../../docs/manualpages/PC/PC.html#PC">PC</A> (preconditioner) package in PETSc
+<a name="line4">  4: </a>!
+<a name="line5"> 5: </a> #include <A href="../../include/finclude/petscpcdef.h.html">finclude/petscpcdef.h</A>
+<a name="line6">  6: </a>!
+<a name="line7">  7: </a>!  <A href="../../docs/manualpages/PC/PCSide.html#PCSide">PCSide</A>
+<a name="line8">  8: </a>!
+<a name="line9">  9: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PC_LEFT
+<a name="line10"> 10: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PC_RIGHT
+<a name="line11"> 11: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PC_SYMMETRIC
+<a name="line12"> 12: </a>      parameter (PC_LEFT=0,PC_RIGHT=1,PC_SYMMETRIC=2)
+
+<a name="line14"> 14: </a>!
+<a name="line15"> 15: </a>! <A href="../../docs/manualpages/PC/PCASMType.html#PCASMType">PCASMType</A>
+<a name="line16"> 16: </a>!
+<a name="line17"> 17: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PC_ASM_BASIC
+<a name="line18"> 18: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PC_ASM_RESTRICT
+<a name="line19"> 19: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PC_ASM_INTERPOLATE
+<a name="line20"> 20: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PC_ASM_NONE
+
+<a name="line22"> 22: </a>      parameter (PC_ASM_BASIC = 3,PC_ASM_RESTRICT = 1)
+<a name="line23"> 23: </a>      parameter (PC_ASM_INTERPOLATE = 2,PC_ASM_NONE = 0)
+<a name="line24"> 24: </a>!
+<a name="line25"> 25: </a>! <A href="../../docs/manualpages/PC/PCCompositeType.html#PCCompositeType">PCCompositeType</A>
+<a name="line26"> 26: </a>!
+<a name="line27"> 27: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PC_COMPOSITE_ADDITIVE
+<a name="line28"> 28: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PC_COMPOSITE_MULTIPLICATIVE
+<a name="line29"> 29: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PC_COMPOSITE_SYM_MULTIPLICATIVE
+<a name="line30"> 30: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PC_COMPOSITE_SPECIAL
+<a name="line31"> 31: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PC_COMPOSITE_SCHUR
+<a name="line32"> 32: </a>      parameter (PC_COMPOSITE_ADDITIVE=0,PC_COMPOSITE_MULTIPLICATIVE=1)
+<a name="line33"> 33: </a>      parameter (PC_COMPOSITE_SYM_MULTIPLICATIVE=2)
+<a name="line34"> 34: </a>      parameter (PC_COMPOSITE_SPECIAL=3,PC_COMPOSITE_SCHUR=4)
+<a name="line35"> 35: </a>!
+<a name="line36"> 36: </a>! <A href="../../docs/manualpages/PC/PCRichardsonConvergedReason.html#PCRichardsonConvergedReason">PCRichardsonConvergedReason</A>
+<a name="line37"> 37: </a>!
+<a name="line38"> 38: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PCRICHARDSON_CONVERGED_RTOL
+<a name="line39"> 39: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PCRICHARDSON_CONVERGED_ATOL
+<a name="line40"> 40: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PCRICHARDSON_CONVERGED_ITS
+<a name="line41"> 41: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PCRICHARDSON_DIVERGED_DTOL
+<a name="line42"> 42: </a>      parameter (PCRICHARDSON_CONVERGED_RTOL = 2)
+<a name="line43"> 43: </a>      parameter (PCRICHARDSON_CONVERGED_ATOL = 3)
+<a name="line44"> 44: </a>      parameter (PCRICHARDSON_CONVERGED_ITS  = 4)
+<a name="line45"> 45: </a>      parameter (PCRICHARDSON_DIVERGED_DTOL = -4)
+<a name="line46"> 46: </a>!
+<a name="line47"> 47: </a>! <A href="../../docs/manualpages/PC/PCFieldSplitSchurPreType.html#PCFieldSplitSchurPreType">PCFieldSplitSchurPreType</A>
+<a name="line48"> 48: </a>!
+<a name="line49"> 49: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PC_FIELDSPLIT_SCHUR_PRE_SELF
+<a name="line50"> 50: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PC_FIELDSPLIT_SCHUR_PRE_A11
+<a name="line51"> 51: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PC_FIELDSPLIT_SCHUR_PRE_USER
+<a name="line52"> 52: </a>      parameter (PC_FIELDSPLIT_SCHUR_PRE_SELF=0)
+<a name="line53"> 53: </a>      parameter (PC_FIELDSPLIT_SCHUR_PRE_A11=1)
+<a name="line54"> 54: </a>      parameter (PC_FIELDSPLIT_SCHUR_PRE_USER=2)
+<a name="line55"> 55: </a>!
+<a name="line56"> 56: </a>! <A href="../../docs/manualpages/PC/PCPARMSGlobalType.html#PCPARMSGlobalType">PCPARMSGlobalType</A>
+<a name="line57"> 57: </a>!
+<a name="line58"> 58: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PC_PARMS_GLOBAL_RAS
+<a name="line59"> 59: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PC_PARMS_GLOBAL_SCHUR
+<a name="line60"> 60: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PC_PARMS_GLOBAL_BJ
+<a name="line61"> 61: </a>      parameter (PC_PARMS_GLOBAL_RAS=0)
+<a name="line62"> 62: </a>      parameter (PC_PARMS_GLOBAL_SCHUR=1)
+<a name="line63"> 63: </a>      parameter (PC_PARMS_GLOBAL_BJ=2)
+<a name="line64"> 64: </a>!
+<a name="line65"> 65: </a>! <A href="../../docs/manualpages/PC/PCPARMSLocalType.html#PCPARMSLocalType">PCPARMSLocalType</A>
+<a name="line66"> 66: </a>!
+<a name="line67"> 67: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PC_PARMS_LOCAL_ILU0
+<a name="line68"> 68: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PC_PARMS_LOCAL_ILUK
+<a name="line69"> 69: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PC_PARMS_LOCAL_ILUT
+<a name="line70"> 70: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PC_PARMS_LOCAL_ARMS
+<a name="line71"> 71: </a>      parameter (PC_PARMS_LOCAL_ILU0=0)
+<a name="line72"> 72: </a>      parameter (PC_PARMS_LOCAL_ILUK=1)
+<a name="line73"> 73: </a>      parameter (PC_PARMS_LOCAL_ILUT=2)
+<a name="line74"> 74: </a>      parameter (PC_PARMS_LOCAL_ARMS=3)
+<a name="line75"> 75: </a>!
+<a name="line76"> 76: </a>! <A href="../../docs/manualpages/PC/PCFieldSplitSchurFactType.html#PCFieldSplitSchurFactType">PCFieldSplitSchurFactType</A>
+<a name="line77"> 77: </a>!
+<a name="line78"> 78: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PC_FIELDSPLIT_SCHUR_FACT_DIAG
+<a name="line79"> 79: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PC_FIELDSPLIT_SCHUR_FACT_LOWER
+<a name="line80"> 80: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PC_FIELDSPLIT_SCHUR_FACT_UPPER
+<a name="line81"> 81: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PC_FIELDSPLIT_SCHUR_FACT_FULL
+<a name="line82"> 82: </a>      parameter (PC_FIELDSPLIT_SCHUR_FACT_DIAG=0)
+<a name="line83"> 83: </a>      parameter (PC_FIELDSPLIT_SCHUR_FACT_LOWER=1)
+<a name="line84"> 84: </a>      parameter (PC_FIELDSPLIT_SCHUR_FACT_UPPER=2)
+<a name="line85"> 85: </a>      parameter (PC_FIELDSPLIT_SCHUR_FACT_FULL=3)
+
+<a name="line87"> 87: </a>!
+<a name="line88"> 88: </a>! CoarseProblemType
+<a name="line89"> 89: </a>!
+<a name="line90"> 90: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> SEQUENTIAL_BDDC
+<a name="line91"> 91: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> REPLICATED_BDDC
+<a name="line92"> 92: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PARALLEL_BDDC
+<a name="line93"> 93: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> MULTILEVEL_BDDC
+<a name="line94"> 94: </a>      parameter (SEQUENTIAL_BDDC=0)
+<a name="line95"> 95: </a>      parameter (REPLICATED_BDDC=1)
+<a name="line96"> 96: </a>      parameter (PARALLEL_BDDC=2)
+<a name="line97"> 97: </a>      parameter (MULTILEVEL_BDDC=3)
+
+<a name="line99"> 99: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PC_MG_MULTIPLICATIVE
+<a name="line100">100: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PC_MG_ADDITIVE
+<a name="line101">101: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PC_MG_FULL
+<a name="line102">102: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PC_MG_KASKADE
+<a name="line103">103: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PC_MG_CASCADE
+<a name="line104">104: </a>      parameter (PC_MG_MULTIPLICATIVE=0,PC_MG_ADDITIVE=1)
+<a name="line105">105: </a>      parameter (PC_MG_FULL=2,PC_MG_KASKADE=3)
+<a name="line106">106: </a>      parameter (PC_MG_CASCADE=3)
+
+<a name="line108">108: </a>! <A href="../../docs/manualpages/PC/PCMGCycleType.html#PCMGCycleType">PCMGCycleType</A>
+<a name="line109">109: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PC_MG_CYCLE_V
+<a name="line110">110: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PC_MG_CYCLE_W
+<a name="line111">111: </a>      parameter (PC_MG_CYCLE_V = 1,PC_MG_CYCLE_W = 2)
+
+<a name="line113">113: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PC_EXOTIC_FACE
+<a name="line114">114: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PC_EXOTIC_WIREBASKET
+<a name="line115">115: </a>      parameter (PC_EXOTIC_FACE=0,PC_EXOTIC_WIREBASKET=1)
+
+<a name="line117">117: </a>      external  PCMGRESIDUAL_DEFAULT
+<a name="line118">118: </a>!
+<a name="line119">119: </a>!  End of Fortran include file <font color="#4169E1">for</font> the <A href="../../docs/manualpages/PC/PC.html#PC">PC</A> package in PETSc
+
+</pre>
+</body>
+
+</html>

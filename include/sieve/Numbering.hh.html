@@ -1,0 +1,787 @@
+<center><a href="Numbering.hh">Actual source code: Numbering.hh</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="http://www.mcs.anl.gov/petsc/petsc-current/include/sieve/Numbering.hh.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2013-10-15T17:09:09+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>petsc-3.4.3 2013-10-15</b></div>
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#ifndef included_ALE_Numbering_hh</font>
+<a name="line2">  2: </a><strong><font color="#228B22">#define included_ALE_Numbering_hh</font></strong>
+
+<a name="line4">  4: </a><font color="#A020F0">#ifndef  included_ALE_ParallelMapping_hh</font>
+<a name="line5">  5: </a><font color="#A020F0">#include &lt;sieve/ParallelMapping.hh&gt;</font>
+<a name="line6">  6: </a><font color="#A020F0">#endif</font>
+
+
+<a name="line9">  9: </a>namespace ALE {
+<a name="line10"> 10: </a>    // We have a dichotomy between \emph{types}, describing the structure of objects,
+<a name="line11"> 11: </a>    //   and \emph{concepts}, describing the role these objects play in the algorithm.
+<a name="line12"> 12: </a>    //   Below we identify concepts with potential implementing types.
+<a name="line13"> 13: </a>    //
+<a name="line14"> 14: </a>    //   Concept           Type
+<a name="line15"> 15: </a>    //   -------           ----
+<a name="line16"> 16: </a>    //   Overlap           Sifter
+<a name="line17"> 17: </a>    //   Atlas             ConstantSection, UniformSection
+<a name="line18"> 18: </a>    //   Numbering         UniformSection
+<a name="line19"> 19: </a>    //   GlobalOrder       UniformSection
+<a name="line20"> 20: </a>    //
+<a name="line21"> 21: </a>    // We will use factory types to create objects which satisfy a given concept.
+<a name="line22"> 22: </a>  template&lt;typename Point_, typename Value_ = int, typename Alloc_ = malloc_allocator&lt;Point_&gt; &gt;
+<a name="line23"> 23: </a>  class Numbering : public UniformSection&lt;Point_, Value_, 1, Alloc_&gt; {
+<a name="line24"> 24: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line25"> 25: </a>    <font color="#4169E1">typedef</font> UniformSection&lt;Point_, Value_, 1, Alloc_&gt; base_type;
+<a name="line26"> 26: </a>    <font color="#4169E1">typedef</font> typename base_type::point_type point_type;
+<a name="line27"> 27: </a>    <font color="#4169E1">typedef</font> typename base_type::value_type value_type;
+<a name="line28"> 28: </a>    <font color="#4169E1">typedef</font> typename base_type::atlas_type atlas_type;
+<a name="line29"> 29: </a><strong><font color="#FF0000">  protected:</font></strong>
+<a name="line30"> 30: </a>    int                       _localSize;
+<a name="line31"> 31: </a>    int                      *_offsets;
+<a name="line32"> 32: </a><strong><font color="#FF0000">    std:</font></strong>:map&lt;int, point_type&gt; _invOrder;
+<a name="line33"> 33: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line34"> 34: </a>    Numbering(<A href="../../docs/manualpages/Sys/MPI_Comm.html#MPI_Comm">MPI_Comm</A> comm, const int debug = 0) : UniformSection&lt;Point_, Value_, 1, Alloc_&gt;(comm, debug), _localSize(0) {
+<a name="line35"> 35: </a>      this-&gt;_offsets    = new int[this-&gt;commSize()+1];
+<a name="line36"> 36: </a>      this-&gt;_offsets[0] = 0;
+<a name="line37"> 37: </a>    };
+<a name="line38"> 38: </a>    virtual ~Numbering() {
+<a name="line39"> 39: </a>      delete [] this-&gt;_offsets;
+<a name="line40"> 40: </a>    };
+<a name="line41"> 41: </a><strong><font color="#FF0000">  public:</font></strong> // Sizes
+<a name="line42"> 42: </a>    int        getLocalSize() const {<font color="#4169E1">return</font> this-&gt;_localSize;};
+<a name="line43"> 43: </a>    void       setLocalSize(const int size) {this-&gt;_localSize = size;};
+<a name="line44"> 44: </a>    int        getGlobalSize() const {<font color="#4169E1">return</font> this-&gt;_offsets[this-&gt;commSize()];};
+<a name="line45"> 45: </a>    int        getGlobalOffset(const int p) const {<font color="#4169E1">return</font> this-&gt;_offsets[p];};
+<a name="line46"> 46: </a>    const int *getGlobalOffsets() const {<font color="#4169E1">return</font> this-&gt;_offsets;};
+<a name="line47"> 47: </a>    void       setGlobalOffsets(const int offsets[]) {
+<a name="line48"> 48: </a>      <font color="#4169E1">for</font>(int p = 0; p &lt;= this-&gt;commSize(); ++p) {
+<a name="line49"> 49: </a>        this-&gt;_offsets[p] = offsets[p];
+<a name="line50"> 50: </a>      }
+<a name="line51"> 51: </a>    };
+<a name="line52"> 52: </a><strong><font color="#FF0000">  public:</font></strong> // Indices
+<a name="line53"> 53: </a>    virtual int getIndex(const point_type&amp; point) {
+<a name="line54"> 54: </a>      const value_type&amp; idx = this-&gt;restrictPoint(point)[0];
+<a name="line55"> 55: </a>      <font color="#4169E1">if</font> (idx &gt;= 0) {
+<a name="line56"> 56: </a>        <font color="#4169E1">return</font> idx;
+<a name="line57"> 57: </a>      }
+<a name="line58"> 58: </a>      <font color="#4169E1">return</font> -(idx+1);
+<a name="line59"> 59: </a>    };
+<a name="line60"> 60: </a>    virtual void setIndex(const point_type&amp; point, const int index) {this-&gt;updatePoint(point, &amp;index);};
+<a name="line61"> 61: </a>    virtual bool isLocal(const point_type&amp; point) {<font color="#4169E1">return</font> this-&gt;restrictPoint(point)[0] &gt;= 0;};
+<a name="line62"> 62: </a>    virtual bool isRemote(const point_type&amp; point) {<font color="#4169E1">return</font> this-&gt;restrictPoint(point)[0] &lt; 0;};
+<a name="line63"> 63: </a>    point_type getPoint(const int&amp; index) {<font color="#4169E1">return</font> this-&gt;_invOrder[index];};
+<a name="line64"> 64: </a>    void setPoint(const int&amp; index, const point_type&amp; point) {this-&gt;_invOrder[index] = point;};
+<a name="line65"> 65: </a>  };
+<a name="line66"> 66: </a>  template&lt;typename Point_, typename Value_ = ALE::Point&gt;
+<a name="line67"> 67: </a>  class GlobalOrder : public UniformSection&lt;Point_, Value_&gt; {
+<a name="line68"> 68: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line69"> 69: </a>    <font color="#4169E1">typedef</font> UniformSection&lt;Point_, Value_&gt; base_type;
+<a name="line70"> 70: </a>    <font color="#4169E1">typedef</font> typename base_type::point_type point_type;
+<a name="line71"> 71: </a>    <font color="#4169E1">typedef</font> typename base_type::value_type value_type;
+<a name="line72"> 72: </a>    <font color="#4169E1">typedef</font> typename base_type::atlas_type atlas_type;
+<a name="line73"> 73: </a><strong><font color="#FF0000">  protected:</font></strong>
+<a name="line74"> 74: </a>    int  _localSize;
+<a name="line75"> 75: </a>    int *_offsets;
+<a name="line76"> 76: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line77"> 77: </a>    GlobalOrder(<A href="../../docs/manualpages/Sys/MPI_Comm.html#MPI_Comm">MPI_Comm</A> comm, const int debug = 0) : UniformSection&lt;Point_, Value_&gt;(comm, debug), _localSize(0) {
+<a name="line78"> 78: </a>      this-&gt;_offsets    = new int[this-&gt;commSize()+1];
+<a name="line79"> 79: </a>      this-&gt;_offsets[0] = 0;
+<a name="line80"> 80: </a>    };
+<a name="line81"> 81: </a>    ~GlobalOrder() {
+<a name="line82"> 82: </a>      delete [] this-&gt;_offsets;
+<a name="line83"> 83: </a>    };
+<a name="line84"> 84: </a><strong><font color="#FF0000">  public:</font></strong> // Sizes
+<a name="line85"> 85: </a>    int        getLocalSize() const {<font color="#4169E1">return</font> this-&gt;_localSize;};
+<a name="line86"> 86: </a>    void       setLocalSize(const int size) {this-&gt;_localSize = size;};
+<a name="line87"> 87: </a>    int        getGlobalSize() const {<font color="#4169E1">return</font> this-&gt;_offsets[this-&gt;commSize()];};
+<a name="line88"> 88: </a>    int        getGlobalOffset(const int p) const {<font color="#4169E1">return</font> this-&gt;_offsets[p];};
+<a name="line89"> 89: </a>    const int *getGlobalOffsets() const {<font color="#4169E1">return</font> this-&gt;_offsets;};
+<a name="line90"> 90: </a>    void       setGlobalOffsets(const int offsets[]) {
+<a name="line91"> 91: </a>      <font color="#4169E1">for</font>(int p = 0; p &lt;= this-&gt;commSize(); ++p) {
+<a name="line92"> 92: </a>        this-&gt;_offsets[p] = offsets[p];
+<a name="line93"> 93: </a>      }
+<a name="line94"> 94: </a>    };
+<a name="line95"> 95: </a><strong><font color="#FF0000">  public:</font></strong> // Indices
+<a name="line96"> 96: </a>    virtual int getIndex(const point_type&amp; p) {
+<a name="line97"> 97: </a>      const int idx = this-&gt;restrictPoint(p)[0].prefix;
+<a name="line98"> 98: </a>      <font color="#4169E1">if</font> (idx &gt;= 0) {
+<a name="line99"> 99: </a>        <font color="#4169E1">return</font> idx;
+<a name="line100">100: </a>      }
+<a name="line101">101: </a>      <font color="#4169E1">return</font> -(idx+1);
+<a name="line102">102: </a>    };
+<a name="line103">103: </a>    virtual void setIndex(const point_type&amp; p, const int index) {
+<a name="line104">104: </a>      const value_type idx(index, this-&gt;restrictPoint(p)[0].index);
+<a name="line105">105: </a>      this-&gt;updatePoint(p, &amp;idx);
+<a name="line106">106: </a>    };
+<a name="line107">107: </a>    virtual bool isLocal(const point_type&amp; p) {<font color="#4169E1">return</font> this-&gt;restrictPoint(p)[0].prefix &gt;= 0;};
+<a name="line108">108: </a>    virtual bool isRemote(const point_type&amp; p) {<font color="#4169E1">return</font> this-&gt;restrictPoint(p)[0].prefix &lt; 0;};
+<a name="line109">109: </a>  };
+<a name="line110">110: </a>  template&lt;typename Bundle_, typename Value_ = int, typename Alloc_ = typename Bundle_::alloc_type&gt;
+<a name="line111">111: </a>  class NumberingFactory : public ALE::ParallelObject {
+<a name="line112">112: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line113">113: </a>    <font color="#4169E1">typedef</font> Bundle_                                         bundle_type;
+<a name="line114">114: </a>    <font color="#4169E1">typedef</font> Alloc_                                          alloc_type;
+<a name="line115">115: </a>    <font color="#4169E1">typedef</font> Value_                                          value_type;
+<a name="line116">116: </a>    <font color="#4169E1">typedef</font> typename bundle_type::sieve_type                sieve_type;
+<a name="line117">117: </a>    <font color="#4169E1">typedef</font> typename bundle_type::label_type                label_type;
+<a name="line118">118: </a>    <font color="#4169E1">typedef</font> typename bundle_type::point_type                point_type;
+<a name="line119">119: </a>    <font color="#4169E1">typedef</font> typename bundle_type::rank_type                 rank_type;
+<a name="line120">120: </a>    <font color="#4169E1">typedef</font> typename bundle_type::send_overlap_type         send_overlap_type;
+<a name="line121">121: </a>    <font color="#4169E1">typedef</font> typename bundle_type::recv_overlap_type         recv_overlap_type;
+<a name="line122">122: </a>    <font color="#4169E1">typedef</font> Numbering&lt;point_type, value_type, alloc_type&gt;   numbering_type;
+<a name="line123">123: </a>    <font color="#4169E1">typedef</font> typename alloc_type::template rebind&lt;value_type&gt;::other                              value_alloc_type;
+<a name="line124">124: </a>    <font color="#4169E1">typedef</font> std::map&lt;bundle_type*, std::map&lt;std::string, std::map&lt;int, Obj&lt;numbering_type&gt; &gt; &gt; &gt; numberings_type;
+<a name="line125">125: </a>    <font color="#4169E1">typedef</font> GlobalOrder&lt;point_type&gt;                         order_type;
+<a name="line126">126: </a>    <font color="#4169E1">typedef</font> typename order_type::value_type                 oValue_type;
+<a name="line127">127: </a>    <font color="#4169E1">typedef</font> typename alloc_type::template rebind&lt;oValue_type&gt;::other         oValue_alloc_type;
+<a name="line128">128: </a>    <font color="#4169E1">typedef</font> std::map&lt;bundle_type*, std::map&lt;std::string, Obj&lt;order_type&gt; &gt; &gt; orders_type;
+<a name="line129">129: </a><strong><font color="#FF0000">  protected:</font></strong>
+<a name="line130">130: </a>    numberings_type   _localNumberings;
+<a name="line131">131: </a>    numberings_type   _numberings;
+<a name="line132">132: </a>    orders_type       _localOrders;
+<a name="line133">133: </a>    orders_type       _orders;
+<a name="line134">134: </a>    orders_type       _ordersBC;
+<a name="line135">135: </a>    const value_type  _unknownNumber;
+<a name="line136">136: </a>    const oValue_type _unknownOrder;
+<a name="line137">137: </a><strong><font color="#FF0000">  protected:</font></strong>
+<a name="line138">138: </a>    NumberingFactory(<A href="../../docs/manualpages/Sys/MPI_Comm.html#MPI_Comm">MPI_Comm</A> comm, const int debug = 0) : ALE::ParallelObject(comm, debug), _unknownNumber(-1), _unknownOrder(-1, 0) {};
+<a name="line139">139: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line140">140: </a>    ~NumberingFactory() {};
+<a name="line141">141: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line142">142: </a>    static const Obj&lt;NumberingFactory&gt;&amp; singleton(<A href="../../docs/manualpages/Sys/MPI_Comm.html#MPI_Comm">MPI_Comm</A> comm, const int debug, bool cleanup = false) {
+<a name="line143">143: </a>      static Obj&lt;NumberingFactory&gt; *_singleton = NULL;
+
+<a name="line145">145: </a>      <font color="#4169E1">if</font> (cleanup) {
+<a name="line146">146: </a>        <font color="#4169E1">if</font> (debug) {std::cout &lt;&lt; <font color="#666666">"Destroying NumberingFactory"</font> &lt;&lt; std::endl;}
+<a name="line147">147: </a>        <font color="#4169E1">if</font> (_singleton) {delete _singleton;}
+<a name="line148">148: </a>        _singleton = NULL;
+<a name="line149">149: </a>      } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (_singleton == NULL) {
+<a name="line150">150: </a>        <font color="#4169E1">if</font> (debug) {std::cout &lt;&lt; <font color="#666666">"Creating new NumberingFactory"</font> &lt;&lt; std::endl;}
+<a name="line151">151: </a>        _singleton  = new Obj&lt;NumberingFactory&gt;();
+<a name="line152">152: </a>        *_singleton = new NumberingFactory(comm, debug);
+<a name="line153">153: </a>      }
+<a name="line154">154: </a>      <font color="#4169E1">return</font> *_singleton;
+<a name="line155">155: </a>    };
+<a name="line156">156: </a>    void clear() {
+<a name="line157">157: </a>      this-&gt;_localNumberings.clear();
+<a name="line158">158: </a>      this-&gt;_numberings.clear();
+<a name="line159">159: </a>      this-&gt;_localOrders.clear();
+<a name="line160">160: </a>      this-&gt;_orders.clear();
+<a name="line161">161: </a>      this-&gt;_ordersBC.clear();
+<a name="line162">162: </a>    };
+<a name="line163">163: </a><strong><font color="#FF0000">  public:</font></strong> // Dof ordering
+<a name="line164">164: </a>    template&lt;typename Section_&gt;
+<a name="line165">165: </a>    void orderPointNew(const Obj&lt;Section_&gt;&amp; section, const Obj&lt;sieve_type&gt;&amp; sieve, const typename Section_::point_type&amp; point, value_type&amp; offset, value_type&amp; bcOffset, const Obj&lt;send_overlap_type&gt;&amp; sendOverlap = NULL) {
+<a name="line166">166: </a>      const typename Section_::chart_type&amp; chart = section-&gt;getChart();
+<a name="line167">167: </a>      int&amp;                                 idx   = section-&gt;getIndex(point);
+
+<a name="line169">169: </a>      // If the point does not exist in the chart, throw an error
+<a name="line170">170: </a>      <font color="#4169E1">if</font> (chart.count(point) == 0) {
+<a name="line171">171: </a>        throw ALE::Exception(<font color="#666666">"Unknown point in ordering"</font>);
+<a name="line172">172: </a>      }
+<a name="line173">173: </a>      // If the point has not been ordered
+<a name="line174">174: </a>      <font color="#4169E1">if</font> (idx == -1) {
+<a name="line175">175: </a>        // Recurse to its cover
+<a name="line176">176: </a>        const Obj&lt;typename sieve_type::coneSequence&gt;&amp; cone = sieve-&gt;cone(point);
+<a name="line177">177: </a>        typename sieve_type::coneSequence::iterator   end  = cone-&gt;end();
+
+<a name="line179">179: </a>        <font color="#4169E1">for</font>(typename sieve_type::coneSequence::iterator c_iter = cone-&gt;begin(); c_iter != end; ++c_iter) {
+<a name="line180">180: </a>          <font color="#4169E1">if</font> (this-&gt;_debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"    Recursing to "</font> &lt;&lt; *c_iter &lt;&lt; std::endl;}
+<a name="line181">181: </a>          this-&gt;orderPoint(section, sieve, *c_iter, offset, bcOffset, sendOverlap);
+<a name="line182">182: </a>        }
+<a name="line183">183: </a>        const int dim  = section-&gt;getFiberDimension(point);
+<a name="line184">184: </a>        const int cDim = section-&gt;getConstraintDimension(point);
+<a name="line185">185: </a>        const int fDim = dim - cDim;
+
+<a name="line187">187: </a>        // If the point has constrained variables
+<a name="line188">188: </a>        <font color="#4169E1">if</font> (cDim) {
+<a name="line189">189: </a>          <font color="#4169E1">if</font> (this-&gt;_debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"  Ordering boundary point "</font> &lt;&lt; point &lt;&lt; <font color="#666666">" at "</font> &lt;&lt; bcOffset &lt;&lt; std::endl;}
+<a name="line190">190: </a>          section-&gt;setIndexBC(point, bcOffset);
+<a name="line191">191: </a>          bcOffset += cDim;
+<a name="line192">192: </a>        }
+<a name="line193">193: </a>        // If the point has free variables
+<a name="line194">194: </a>        <font color="#4169E1">if</font> (fDim) {
+<a name="line195">195: </a>          bool number = true;
+
+<a name="line197">197: </a>          // Maybe use template specialization here
+<a name="line198">198: </a>          <font color="#4169E1">if</font> (!sendOverlap.isNull() &amp;&amp; sendOverlap-&gt;capContains(point)) {
+<a name="line199">199: </a>            const Obj&lt;typename send_overlap_type::supportSequence&gt;&amp; ranks = sendOverlap-&gt;support(point);
+
+<a name="line201">201: </a>            <font color="#4169E1">for</font>(typename send_overlap_type::supportSequence::iterator r_iter = ranks-&gt;begin(); r_iter != ranks-&gt;end(); ++r_iter) {
+<a name="line202">202: </a>              <font color="#4169E1">if</font> (this-&gt;commRank() &gt; *r_iter) {
+<a name="line203">203: </a>                number = false;
+<a name="line204">204: </a>                <font color="#4169E1">break</font>;
+<a name="line205">205: </a>              }
+<a name="line206">206: </a>            }
+<a name="line207">207: </a>          }
+<a name="line208">208: </a>          <font color="#4169E1">if</font> (number) {
+<a name="line209">209: </a>            <font color="#4169E1">if</font> (this-&gt;_debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"  Ordering point "</font> &lt;&lt; point &lt;&lt; <font color="#666666">" at "</font> &lt;&lt; offset &lt;&lt; std::endl;}
+<a name="line210">210: </a>            section-&gt;setIndex(point, offset);
+<a name="line211">211: </a>            offset += dim;
+<a name="line212">212: </a>          } <font color="#4169E1">else</font> {
+<a name="line213">213: </a>            <font color="#4169E1">if</font> (this-&gt;_debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"  Ignoring ghost point "</font> &lt;&lt; point &lt;&lt; std::endl;}
+<a name="line214">214: </a>          }
+<a name="line215">215: </a>        }
+<a name="line216">216: </a>      }
+<a name="line217">217: </a>    }
+<a name="line218">218: </a>    template&lt;typename Section_&gt;
+<a name="line219">219: </a>    void orderPoint(const Obj&lt;Section_&gt;&amp; section, const Obj&lt;sieve_type&gt;&amp; sieve, const typename Section_::point_type&amp; point, value_type&amp; offset, value_type&amp; bcOffset, const Obj&lt;send_overlap_type&gt;&amp; sendOverlap = NULL) {
+<a name="line220">220: </a>      const Obj&lt;typename Section_::atlas_type&gt;&amp;     atlas = section-&gt;getAtlas();
+<a name="line221">221: </a>      const Obj&lt;typename sieve_type::coneSequence&gt;&amp; cone = sieve-&gt;cone(point);
+<a name="line222">222: </a>      typename sieve_type::coneSequence::iterator   end  = cone-&gt;end();
+<a name="line223">223: </a>      typename Section_::index_type                 idx  = section-&gt;getAtlas()-&gt;restrictPoint(point)[0];
+<a name="line224">224: </a>      const value_type&amp;                             dim  = idx.prefix;
+<a name="line225">225: </a>      const typename Section_::index_type           defaultIdx(0, -1);
+
+<a name="line227">227: </a>      <font color="#4169E1">if</font> (atlas-&gt;getChart().count(point) == 0) {
+<a name="line228">228: </a>        idx = defaultIdx;
+<a name="line229">229: </a>      }
+<a name="line230">230: </a>      <font color="#4169E1">if</font> (idx.index == -1) {
+<a name="line231">231: </a>        <font color="#4169E1">for</font>(typename sieve_type::coneSequence::iterator c_iter = cone-&gt;begin(); c_iter != end; ++c_iter) {
+<a name="line232">232: </a>          <font color="#4169E1">if</font> (this-&gt;_debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"    Recursing to "</font> &lt;&lt; *c_iter &lt;&lt; std::endl;}
+<a name="line233">233: </a>          this-&gt;orderPoint(section, sieve, *c_iter, offset, bcOffset, sendOverlap);
+<a name="line234">234: </a>        }
+<a name="line235">235: </a>        <font color="#4169E1">if</font> (dim &gt; 0) {
+<a name="line236">236: </a>          bool number = true;
+
+<a name="line238">238: </a>          // Maybe use template specialization here
+<a name="line239">239: </a>          <font color="#4169E1">if</font> (!sendOverlap.isNull() &amp;&amp; sendOverlap-&gt;capContains(point)) {
+<a name="line240">240: </a>            const Obj&lt;typename send_overlap_type::supportSequence&gt;&amp; ranks = sendOverlap-&gt;support(point);
+
+<a name="line242">242: </a>            <font color="#4169E1">for</font>(typename send_overlap_type::supportSequence::iterator r_iter = ranks-&gt;begin(); r_iter != ranks-&gt;end(); ++r_iter) {
+<a name="line243">243: </a>              <font color="#4169E1">if</font> (this-&gt;commRank() &gt; *r_iter) {
+<a name="line244">244: </a>                number = false;
+<a name="line245">245: </a>                <font color="#4169E1">break</font>;
+<a name="line246">246: </a>              }
+<a name="line247">247: </a>            }
+<a name="line248">248: </a>          }
+<a name="line249">249: </a>          <font color="#4169E1">if</font> (number) {
+<a name="line250">250: </a>            <font color="#4169E1">if</font> (this-&gt;_debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"  Ordering point "</font> &lt;&lt; point &lt;&lt; <font color="#666666">" at "</font> &lt;&lt; offset &lt;&lt; std::endl;}
+<a name="line251">251: </a>            idx.index = offset;
+<a name="line252">252: </a>            atlas-&gt;updatePoint(point, &amp;idx);
+<a name="line253">253: </a>            offset += dim;
+<a name="line254">254: </a>          } <font color="#4169E1">else</font> {
+<a name="line255">255: </a>            <font color="#4169E1">if</font> (this-&gt;_debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"  Ignoring ghost point "</font> &lt;&lt; point &lt;&lt; std::endl;}
+<a name="line256">256: </a>          }
+<a name="line257">257: </a>        } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (dim &lt; 0) {
+<a name="line258">258: </a>          <font color="#4169E1">if</font> (this-&gt;_debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"  Ordering boundary point "</font> &lt;&lt; point &lt;&lt; <font color="#666666">" at "</font> &lt;&lt; bcOffset &lt;&lt; std::endl;}
+<a name="line259">259: </a>          idx.index = bcOffset;
+<a name="line260">260: </a>          atlas-&gt;updatePoint(point, &amp;idx);
+<a name="line261">261: </a>          bcOffset += dim;
+<a name="line262">262: </a>        }
+<a name="line263">263: </a>      }
+<a name="line264">264: </a>    }
+<a name="line265">265: </a>    template&lt;typename Section_&gt;
+<a name="line266">266: </a>    void orderPatch(const Obj&lt;Section_&gt;&amp; section, const Obj&lt;sieve_type&gt;&amp; sieve, const Obj&lt;send_overlap_type&gt;&amp; sendOverlap = NULL, const value_type offset = 0, const value_type bcOffset = -2) {
+<a name="line267">267: </a>      const typename Section_::chart_type&amp; chart = section-&gt;getChart();
+<a name="line268">268: </a>      int off   = offset;
+<a name="line269">269: </a>      int bcOff = bcOffset;
+
+<a name="line271">271: </a>      <font color="#4169E1">if</font> (this-&gt;_debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"Ordering patch"</font> &lt;&lt; std::endl;}
+<a name="line272">272: </a>      <font color="#4169E1">for</font>(typename Section_::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
+<a name="line273">273: </a>        <font color="#4169E1">if</font> (this-&gt;_debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"Ordering closure of point "</font> &lt;&lt; *p_iter &lt;&lt; std::endl;}
+<a name="line274">274: </a>        this-&gt;orderPoint(section, sieve, *p_iter, off, bcOff, sendOverlap);
+<a name="line275">275: </a>      }
+<a name="line276">276: </a>      <font color="#4169E1">for</font>(typename Section_::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
+<a name="line277">277: </a>        const int&amp; idx  = section-&gt;getIndex(*p_iter);
+
+<a name="line279">279: </a>        <font color="#4169E1">if</font> (idx &lt; 0) {
+<a name="line280">280: </a>          <font color="#4169E1">if</font> (this-&gt;_debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"Correcting boundary offset of point "</font> &lt;&lt; *p_iter &lt;&lt; std::endl;}
+<a name="line281">281: </a>          section-&gt;setIndex(*p_iter, off - (idx + 2));
+<a name="line282">282: </a>        }
+<a name="line283">283: </a>      }
+<a name="line284">284: </a>    }
+<a name="line285">285: </a><strong><font color="#FF0000">  public:</font></strong> // Numbering
+<a name="line286">286: </a>    // Number all local points
+<a name="line287">287: </a>    //   points in the overlap are only numbered by the owner with the lowest rank
+<a name="line288">288: </a>    template&lt;typename Iterator_&gt;
+<a name="line289">289: </a>    void constructLocalNumbering(const Obj&lt;numbering_type&gt;&amp; numbering, const Obj&lt;send_overlap_type&gt;&amp; sendOverlap, const Iterator_&amp; pointsBegin, const Iterator_&amp; pointsEnd) {
+<a name="line290">290: </a>      const int debug = sendOverlap-&gt;debug();
+<a name="line291">291: </a>      int localSize = 0;
+
+<a name="line293">293: </a>      <font color="#4169E1">if</font> (debug) {std::cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;numbering-&gt;commRank()&lt;&lt;<font color="#666666">"] Constructing local numbering"</font> &lt;&lt; std::endl;}
+<a name="line294">294: </a>      <font color="#4169E1">for</font>(Iterator_ l_iter = pointsBegin; l_iter != pointsEnd; ++l_iter) {
+<a name="line295">295: </a>        numbering-&gt;setFiberDimension(*l_iter, 1);
+<a name="line296">296: </a>      }
+<a name="line297">297: </a>      <font color="#4169E1">for</font>(Iterator_ l_iter = pointsBegin; l_iter != pointsEnd; ++l_iter) {
+<a name="line298">298: </a>        value_type val;
+
+<a name="line300">300: </a>        <font color="#4169E1">if</font> (debug) {std::cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;numbering-&gt;commRank()&lt;&lt;<font color="#666666">"]   Checking point "</font> &lt;&lt; *l_iter &lt;&lt; std::endl;}
+<a name="line301">301: </a>        <font color="#4169E1">if</font> (sendOverlap-&gt;capContains(*l_iter)) {
+<a name="line302">302: </a>          const Obj&lt;typename send_overlap_type::supportSequence&gt;&amp; sendRanks = sendOverlap-&gt;support(*l_iter);
+<a name="line303">303: </a>          int minRank = sendOverlap-&gt;commSize();
+
+<a name="line305">305: </a>          <font color="#4169E1">for</font>(typename send_overlap_type::supportSequence::iterator p_iter = sendRanks-&gt;begin(); p_iter != sendRanks-&gt;end(); ++p_iter) {
+<a name="line306">306: </a>            <font color="#4169E1">if</font> (*p_iter &lt; minRank) minRank = *p_iter;
+<a name="line307">307: </a>          }
+<a name="line308">308: </a>          <font color="#4169E1">if</font> (minRank &lt; sendOverlap-&gt;commRank()) {
+<a name="line309">309: </a>            <font color="#4169E1">if</font> (debug) {std::cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;numbering-&gt;commRank()&lt;&lt;<font color="#666666">"]     remote point, on proc "</font> &lt;&lt; minRank &lt;&lt; std::endl;}
+<a name="line310">310: </a>            val = this-&gt;_unknownNumber;
+<a name="line311">311: </a>          } <font color="#4169E1">else</font> {
+<a name="line312">312: </a>            <font color="#4169E1">if</font> (debug) {std::cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;numbering-&gt;commRank()&lt;&lt;<font color="#666666">"]     local point"</font> &lt;&lt; std::endl;}
+<a name="line313">313: </a>            val = localSize++;
+<a name="line314">314: </a>          }
+<a name="line315">315: </a>        } <font color="#4169E1">else</font> {
+<a name="line316">316: </a>          <font color="#4169E1">if</font> (debug) {std::cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;numbering-&gt;commRank()&lt;&lt;<font color="#666666">"]     local point"</font> &lt;&lt; std::endl;}
+<a name="line317">317: </a>          val = localSize++;
+<a name="line318">318: </a>        }
+<a name="line319">319: </a>        <font color="#4169E1">if</font> (debug) {std::cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;numbering-&gt;commRank()&lt;&lt;<font color="#666666">"]     has number "</font> &lt;&lt; val &lt;&lt; std::endl;}
+<a name="line320">320: </a>        numbering-&gt;updatePoint(*l_iter, &amp;val);
+<a name="line321">321: </a>      }
+<a name="line322">322: </a>      <font color="#4169E1">if</font> (debug) {std::cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;numbering-&gt;commRank()&lt;&lt;<font color="#666666">"]   local points"</font> &lt;&lt; std::endl;}
+<a name="line323">323: </a>      numbering-&gt;setLocalSize(localSize);
+<a name="line324">324: </a>    }
+<a name="line325">325: </a>    // Order all local points
+<a name="line326">326: </a>    //   points in the overlap are only ordered by the owner with the lowest rank
+<a name="line327">327: </a>    template&lt;typename Iterator_, typename Section_&gt;
+<a name="line328">328: </a>    void constructLocalOrder(const Obj&lt;order_type&gt;&amp; order, const Obj&lt;send_overlap_type&gt;&amp; sendOverlap, const Iterator_&amp; pointsBegin, const Iterator_&amp; pointsEnd, const Obj&lt;Section_&gt;&amp; section, const int space = -1, const bool withBC = false, const Obj&lt;label_type&gt;&amp; label = NULL) {
+<a name="line329">329: </a>      const int debug = sendOverlap-&gt;debug();
+<a name="line330">330: </a>      int localSize = 0;
+
+<a name="line332">332: </a>      <font color="#4169E1">if</font> (debug) {std::cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;order-&gt;commRank()&lt;&lt;<font color="#666666">"] Constructing local ordering"</font> &lt;&lt; std::endl;}
+<a name="line333">333: </a>      <font color="#4169E1">for</font>(Iterator_ l_iter = pointsBegin; l_iter != pointsEnd; ++l_iter) {
+<a name="line334">334: </a>        order-&gt;setFiberDimension(*l_iter, 1);
+<a name="line335">335: </a>      }
+<a name="line336">336: </a>      <font color="#4169E1">for</font>(Iterator_ l_iter = pointsBegin; l_iter != pointsEnd; ++l_iter) {
+<a name="line337">337: </a>        oValue_type val;
+
+<a name="line339">339: </a>        <font color="#4169E1">if</font> (debug) {std::cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;order-&gt;commRank()&lt;&lt;<font color="#666666">"]   Checking point "</font> &lt;&lt; *l_iter &lt;&lt; std::endl;}
+<a name="line340">340: </a>        <font color="#4169E1">if</font> (sendOverlap-&gt;capContains(*l_iter)) {
+<a name="line341">341: </a>          const Obj&lt;typename send_overlap_type::supportSequence&gt;&amp; sendPatches = sendOverlap-&gt;support(*l_iter);
+<a name="line342">342: </a>          int minRank = sendOverlap-&gt;commSize();
+
+<a name="line344">344: </a>          <font color="#4169E1">for</font>(typename send_overlap_type::supportSequence::iterator p_iter = sendPatches-&gt;begin(); p_iter != sendPatches-&gt;end(); ++p_iter) {
+<a name="line345">345: </a>            <font color="#4169E1">if</font> (*p_iter &lt; minRank) minRank = *p_iter;
+<a name="line346">346: </a>          }
+<a name="line347">347: </a>          bool remotePoint = (minRank &lt; sendOverlap-&gt;commRank()) || (!label.isNull() &amp;&amp; (label-&gt;cone(*l_iter)-&gt;size() &gt; 0));
+
+<a name="line349">349: </a>          <font color="#4169E1">if</font> (remotePoint) {
+<a name="line350">350: </a>            <font color="#4169E1">if</font> (debug) {std::cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;order-&gt;commRank()&lt;&lt;<font color="#666666">"]     remote point, on proc "</font> &lt;&lt; minRank &lt;&lt; std::endl;}
+<a name="line351">351: </a>            val = this-&gt;_unknownOrder;
+<a name="line352">352: </a>          } <font color="#4169E1">else</font> {
+<a name="line353">353: </a>            <font color="#4169E1">if</font> (debug) {std::cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;order-&gt;commRank()&lt;&lt;<font color="#666666">"]     local point"</font> &lt;&lt; std::endl;}
+<a name="line354">354: </a>            val.prefix = localSize;
+<a name="line355">355: </a>            <font color="#4169E1">if</font> (withBC) {
+<a name="line356">356: </a>              val.index  = space &lt; 0 ? section-&gt;getFiberDimension(*l_iter) : section-&gt;getFiberDimension(*l_iter, space);
+<a name="line357">357: </a>            } <font color="#4169E1">else</font> {
+<a name="line358">358: </a>              val.index  = space &lt; 0 ? section-&gt;getConstrainedFiberDimension(*l_iter) : section-&gt;getConstrainedFiberDimension(*l_iter, space);
+<a name="line359">359: </a>            }
+<a name="line360">360: </a>          }
+<a name="line361">361: </a>        } <font color="#4169E1">else</font> {
+<a name="line362">362: </a>          <font color="#4169E1">if</font> (debug) {std::cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;order-&gt;commRank()&lt;&lt;<font color="#666666">"]     local point"</font> &lt;&lt; std::endl;}
+<a name="line363">363: </a>          val.prefix = localSize;
+<a name="line364">364: </a>          <font color="#4169E1">if</font> (withBC) {
+<a name="line365">365: </a>            val.index  = space &lt; 0 ? section-&gt;getFiberDimension(*l_iter) : section-&gt;getFiberDimension(*l_iter, space);
+<a name="line366">366: </a>          } <font color="#4169E1">else</font> {
+<a name="line367">367: </a>            val.index  = space &lt; 0 ? section-&gt;getConstrainedFiberDimension(*l_iter) : section-&gt;getConstrainedFiberDimension(*l_iter, space);
+<a name="line368">368: </a>          }
+<a name="line369">369: </a>        }
+<a name="line370">370: </a>        <font color="#4169E1">if</font> (debug) {std::cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;order-&gt;commRank()&lt;&lt;<font color="#666666">"]     has offset "</font> &lt;&lt; val.prefix &lt;&lt; <font color="#666666">" and size "</font> &lt;&lt; val.index &lt;&lt; std::endl;}
+<a name="line371">371: </a>        localSize += val.index;
+<a name="line372">372: </a>        order-&gt;updatePoint(*l_iter, &amp;val);
+<a name="line373">373: </a>      }
+<a name="line374">374: </a>      <font color="#4169E1">if</font> (debug) {std::cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;order-&gt;commRank()&lt;&lt;<font color="#666666">"]   local size"</font> &lt;&lt; localSize &lt;&lt; std::endl;}
+<a name="line375">375: </a>      order-&gt;setLocalSize(localSize);
+<a name="line376">376: </a>    }
+<a name="line377">377: </a>    // Calculate process offsets
+<a name="line378">378: </a>    template&lt;typename Numbering&gt;
+<a name="line379">379: </a>    void calculateOffsets(const Obj&lt;Numbering&gt;&amp; numbering) {
+<a name="line380">380: </a>      int  localSize = numbering-&gt;getLocalSize();
+<a name="line381">381: </a>      int *offsets   = new int[numbering-&gt;commSize()+1];
+
+<a name="line383">383: </a>      offsets[0] = 0;
+<a name="line384">384: </a>      <A href="http://www.mcs.anl.gov/mpi/www/www3/MPI_Allgather.html#MPI_Allgather">MPI_Allgather</A>(&amp;localSize, 1, MPI_INT, &amp;(offsets[1]), 1, MPI_INT, numbering-&gt;comm());
+<a name="line385">385: </a>      <font color="#4169E1">for</font>(int p = 2; p &lt;= numbering-&gt;commSize(); p++) {
+<a name="line386">386: </a>        offsets[p] += offsets[p-1];
+<a name="line387">387: </a>      }
+<a name="line388">388: </a>      numbering-&gt;setGlobalOffsets(offsets);
+<a name="line389">389: </a>      delete [] offsets;
+<a name="line390">390: </a>    }
+<a name="line391">391: </a>    // Update local offsets based upon process offsets
+<a name="line392">392: </a>    template&lt;typename Numbering, typename Iterator&gt;
+<a name="line393">393: </a>    void updateOrder(const Obj&lt;Numbering&gt;&amp; numbering, const Iterator&amp; pointsBegin, const Iterator&amp; pointsEnd) {
+<a name="line394">394: </a>      const typename Numbering::value_type val = numbering-&gt;getGlobalOffset(numbering-&gt;commRank());
+
+<a name="line396">396: </a>      <font color="#4169E1">for</font>(Iterator l_iter = pointsBegin; l_iter != pointsEnd; ++l_iter) {
+<a name="line397">397: </a>        <font color="#4169E1">if</font> (numbering-&gt;isLocal(*l_iter)) {
+<a name="line398">398: </a>          numbering-&gt;updateAddPoint(*l_iter, &amp;val);
+<a name="line399">399: </a>        }
+<a name="line400">400: </a>      }
+<a name="line401">401: </a>    }
+<a name="line402">402: </a>    // Communicate numbers in the overlap
+<a name="line403">403: </a>    void completeNumbering(const Obj&lt;numbering_type&gt;&amp; numbering, const Obj&lt;send_overlap_type&gt;&amp; sendOverlap, const Obj&lt;recv_overlap_type&gt;&amp; recvOverlap, bool allowDuplicates = false) {
+<a name="line404">404: </a><font color="#A020F0">#if 1</font>
+<a name="line405">405: </a>      <font color="#4169E1">typedef</font> ALE::UniformSection&lt;ALE::Pair&lt;int, typename send_overlap_type::source_type&gt;, typename numbering_type::value_type&gt; OverlapSection;
+<a name="line406">406: </a>      <font color="#4169E1">typedef</font> typename OverlapSection::point_type overlap_point_type;
+<a name="line407">407: </a>      Obj&lt;OverlapSection&gt; overlapSection = new OverlapSection(numbering-&gt;comm(), numbering-&gt;debug());
+<a name="line408">408: </a>      const int debug = sendOverlap-&gt;debug();
+
+<a name="line410">410: </a>      <font color="#4169E1">if</font> (debug) {std::cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;numbering-&gt;commRank()&lt;&lt;<font color="#666666">"] Completing numbering"</font> &lt;&lt; std::endl;}
+<a name="line411">411: </a><strong><font color="#FF0000">      ALE:</font></strong>:Pullback::SimpleCopy::copy(sendOverlap, recvOverlap, numbering, overlapSection);
+<a name="line412">412: </a>      <font color="#4169E1">if</font> (debug) {overlapSection-&gt;view(<font color="#666666">"Overlap Section"</font>);}
+<a name="line413">413: </a>      const typename recv_overlap_type::capSequence::iterator rBegin = recvOverlap-&gt;capBegin();
+<a name="line414">414: </a>      const typename recv_overlap_type::capSequence::iterator rEnd   = recvOverlap-&gt;capEnd();
+
+<a name="line416">416: </a>      <font color="#4169E1">for</font>(typename recv_overlap_type::capSequence::iterator r_iter = rBegin; r_iter != rEnd; ++r_iter) {
+<a name="line417">417: </a>        const int                                             rank    = *r_iter;
+<a name="line418">418: </a>        const typename recv_overlap_type::supportSequence::iterator pBegin  = recvOverlap-&gt;supportBegin(*r_iter);
+<a name="line419">419: </a>        const typename recv_overlap_type::supportSequence::iterator pEnd    = recvOverlap-&gt;supportEnd(*r_iter);
+
+<a name="line421">421: </a>        <font color="#4169E1">for</font>(typename recv_overlap_type::supportSequence::iterator p_iter = pBegin; p_iter != pEnd; ++p_iter) {
+<a name="line422">422: </a>          const point_type&amp; localPoint  = *p_iter;
+<a name="line423">423: </a>          const point_type&amp; remotePoint = p_iter.color();
+<a name="line424">424: </a>          const overlap_point_type                   oPoint = overlap_point_type(rank, remotePoint);
+<a name="line425">425: </a>          const int                                  fDim   = overlapSection-&gt;getFiberDimension(oPoint);
+<a name="line426">426: </a>          const typename numbering_type::value_type *values = overlapSection-&gt;restrictPoint(oPoint);
+
+<a name="line428">428: </a>          <font color="#4169E1">for</font>(int i = 0; i &lt; fDim; ++i) {
+<a name="line429">429: </a>            <font color="#4169E1">if</font> (debug) {std::cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;numbering-&gt;commRank()&lt;&lt;<font color="#666666">"]     local point "</font> &lt;&lt; localPoint &lt;&lt; <font color="#666666">" remote point "</font> &lt;&lt; remotePoint &lt;&lt; <font color="#666666">" number "</font> &lt;&lt; values[i] &lt;&lt; std::endl;}
+<a name="line430">430: </a>            <font color="#4169E1">if</font> (values[i] &gt;= 0) {
+<a name="line431">431: </a>              <font color="#4169E1">if</font> (numbering-&gt;isLocal(localPoint) &amp;&amp; !allowDuplicates) {
+<a name="line432">432: </a>                ostringstream msg;
+<a name="line433">433: </a>                msg &lt;&lt; <font color="#666666">"["</font>&lt;&lt;numbering-&gt;commRank()&lt;&lt;<font color="#666666">"]Multiple indices for local point "</font> &lt;&lt; localPoint &lt;&lt; <font color="#666666">" remote point "</font> &lt;&lt; remotePoint &lt;&lt; <font color="#666666">" from "</font> &lt;&lt; rank &lt;&lt; <font color="#666666">" with index "</font> &lt;&lt; values[i];
+<a name="line434">434: </a>                throw ALE::Exception(msg.str().c_str());
+<a name="line435">435: </a>              }
+<a name="line436">436: </a>              <font color="#4169E1">if</font> (!numbering-&gt;hasPoint(localPoint)) {
+<a name="line437">437: </a>                ostringstream msg;
+<a name="line438">438: </a>                msg &lt;&lt; <font color="#666666">"["</font>&lt;&lt;numbering-&gt;commRank()&lt;&lt;<font color="#666666">"]Unexpected local point "</font> &lt;&lt; localPoint &lt;&lt; <font color="#666666">" remote point "</font> &lt;&lt; remotePoint &lt;&lt; <font color="#666666">" from "</font> &lt;&lt; rank &lt;&lt; <font color="#666666">" with index "</font> &lt;&lt; values[i];
+<a name="line439">439: </a>                throw ALE::Exception(msg.str().c_str());
+<a name="line440">440: </a>              }
+<a name="line441">441: </a>              int val = -(values[i]+1);
+<a name="line442">442: </a>              numbering-&gt;updatePoint(localPoint, &amp;val);
+<a name="line443">443: </a>            }
+<a name="line444">444: </a>          }
+<a name="line445">445: </a>        }
+<a name="line446">446: </a>      }
+<a name="line447">447: </a><font color="#A020F0">#else</font>
+<a name="line448">448: </a>      <font color="#4169E1">typedef</font> Field&lt;send_overlap_type, int, Section&lt;point_type, value_type, value_alloc_type&gt; &gt; send_section_type;
+<a name="line449">449: </a>      <font color="#4169E1">typedef</font> Field&lt;recv_overlap_type, int, Section&lt;point_type, value_type, value_alloc_type&gt; &gt; recv_section_type;
+<a name="line450">450: </a>      <font color="#4169E1">typedef</font> typename ALE::DiscreteSieve&lt;point_type, alloc_type&gt;                   dsieve_type;
+<a name="line451">451: </a>      <font color="#4169E1">typedef</font> typename ALE::Topology&lt;int, dsieve_type, alloc_type&gt;                  dtopology_type;
+<a name="line452">452: </a>      <font color="#4169E1">typedef</font> typename ALE::New::SectionCompletion&lt;dtopology_type, int, alloc_type&gt; completion;
+<a name="line453">453: </a>      const Obj&lt;send_section_type&gt; sendSection = new send_section_type(numbering-&gt;comm(), this-&gt;debug());
+<a name="line454">454: </a>      const Obj&lt;recv_section_type&gt; recvSection = new recv_section_type(numbering-&gt;comm(), sendSection-&gt;getTag(), this-&gt;debug());
+<a name="line455">455: </a>      const int debug = sendOverlap-&gt;debug();
+
+<a name="line457">457: </a>      <font color="#4169E1">if</font> (debug) {std::cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;numbering-&gt;commRank()&lt;&lt;<font color="#666666">"] Completing numbering"</font> &lt;&lt; std::endl;}
+<a name="line458">458: </a><strong><font color="#FF0000">      completion:</font></strong>:completeSection(sendOverlap, recvOverlap, numbering-&gt;getAtlas(), numbering, sendSection, recvSection);
+<a name="line459">459: </a>      const Obj&lt;typename recv_overlap_type::baseSequence&gt; rPoints = recvOverlap-&gt;base();
+
+<a name="line461">461: </a>      <font color="#4169E1">for</font>(typename recv_overlap_type::baseSequence::iterator p_iter = rPoints-&gt;begin(); p_iter != rPoints-&gt;end(); ++p_iter) {
+<a name="line462">462: </a>        const Obj&lt;typename recv_overlap_type::coneSequence&gt;&amp; ranks      = recvOverlap-&gt;cone(*p_iter);
+<a name="line463">463: </a>        const typename recv_overlap_type::target_type&amp;       localPoint = *p_iter;
+
+<a name="line465">465: </a>        <font color="#4169E1">for</font>(typename recv_overlap_type::coneSequence::iterator r_iter = ranks-&gt;begin(); r_iter != ranks-&gt;end(); ++r_iter) {
+<a name="line466">466: </a>          const typename recv_overlap_type::target_type&amp;       remotePoint = r_iter.color();
+<a name="line467">467: </a>          const int                                            rank        = *r_iter;
+<a name="line468">468: </a>          const Obj&lt;typename recv_section_type::section_type&gt;&amp; section     = recvSection-&gt;getSection(rank);
+<a name="line469">469: </a>          const typename recv_section_type::value_type        *values      = section-&gt;restrictPoint(remotePoint);
+
+<a name="line471">471: </a>          <font color="#4169E1">if</font> (section-&gt;getFiberDimension(remotePoint) == 0) <font color="#4169E1">continue</font>;
+<a name="line472">472: </a>          <font color="#4169E1">if</font> (debug) {std::cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;numbering-&gt;commRank()&lt;&lt;<font color="#666666">"]     local point "</font> &lt;&lt; localPoint &lt;&lt; <font color="#666666">" remote point "</font> &lt;&lt; remotePoint &lt;&lt; <font color="#666666">" number "</font> &lt;&lt; values[0] &lt;&lt; std::endl;}
+<a name="line473">473: </a>          <font color="#4169E1">if</font> (values[0] &gt;= 0) {
+<a name="line474">474: </a>            <font color="#4169E1">if</font> (debug) {std::cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;numbering-&gt;commRank()&lt;&lt;<font color="#666666">"] local point "</font> &lt;&lt; localPoint &lt;&lt; <font color="#666666">" dim "</font> &lt;&lt; numbering-&gt;getAtlas()-&gt;getFiberDimension(localPoint) &lt;&lt; std::endl;}
+<a name="line475">475: </a>            <font color="#4169E1">if</font> (numbering-&gt;isLocal(localPoint) &amp;&amp; !allowDuplicates) {
+<a name="line476">476: </a>              ostringstream msg;
+<a name="line477">477: </a>              msg &lt;&lt; <font color="#666666">"["</font>&lt;&lt;numbering-&gt;commRank()&lt;&lt;<font color="#666666">"]Multiple indices for local point "</font> &lt;&lt; localPoint &lt;&lt; <font color="#666666">" remote point "</font> &lt;&lt; remotePoint &lt;&lt; <font color="#666666">" from "</font> &lt;&lt; rank &lt;&lt; <font color="#666666">" with index "</font> &lt;&lt; values[0];
+<a name="line478">478: </a>              throw ALE::Exception(msg.str().c_str());
+<a name="line479">479: </a>            }
+<a name="line480">480: </a>            <font color="#4169E1">if</font> (numbering-&gt;getAtlas()-&gt;getFiberDimension(localPoint) == 0) {
+<a name="line481">481: </a>              ostringstream msg;
+<a name="line482">482: </a>              msg &lt;&lt; <font color="#666666">"["</font>&lt;&lt;numbering-&gt;commRank()&lt;&lt;<font color="#666666">"]Unexpected local point "</font> &lt;&lt; localPoint &lt;&lt; <font color="#666666">" remote point "</font> &lt;&lt; remotePoint &lt;&lt; <font color="#666666">" from "</font> &lt;&lt; rank &lt;&lt; <font color="#666666">" with index "</font> &lt;&lt; values[0];
+<a name="line483">483: </a>              throw ALE::Exception(msg.str().c_str());
+<a name="line484">484: </a>            }
+<a name="line485">485: </a>            int val = -(values[0]+1);
+<a name="line486">486: </a>            numbering-&gt;updatePoint(localPoint, &amp;val);
+<a name="line487">487: </a>          }
+<a name="line488">488: </a>        }
+<a name="line489">489: </a>      }
+<a name="line490">490: </a><font color="#A020F0">#endif</font>
+<a name="line491">491: </a>    }
+<a name="line492">492: </a>    // Communicate (size,offset)s in the overlap
+<a name="line493">493: </a>    void completeOrder(const Obj&lt;order_type&gt;&amp; order, const Obj&lt;send_overlap_type&gt;&amp; sendOverlap, const Obj&lt;recv_overlap_type&gt;&amp; recvOverlap, bool allowDuplicates = false) {
+<a name="line494">494: </a><font color="#A020F0">#if 1</font>
+<a name="line495">495: </a>      <font color="#4169E1">typedef</font> ALE::UniformSection&lt;ALE::Pair&lt;int, typename send_overlap_type::source_type&gt;, typename order_type::value_type&gt; OverlapSection;
+<a name="line496">496: </a>      <font color="#4169E1">typedef</font> typename OverlapSection::point_type overlap_point_type;
+<a name="line497">497: </a>      Obj&lt;OverlapSection&gt; overlapSection = new OverlapSection(order-&gt;comm(), order-&gt;debug());
+<a name="line498">498: </a>      const int debug = sendOverlap-&gt;debug();
+
+<a name="line500">500: </a>      <font color="#4169E1">if</font> (debug) {std::cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;order-&gt;commRank()&lt;&lt;<font color="#666666">"] Completing ordering"</font> &lt;&lt; std::endl;}
+<a name="line501">501: </a><strong><font color="#FF0000">      ALE:</font></strong>:Pullback::SimpleCopy::copy(sendOverlap, recvOverlap, order, overlapSection);
+<a name="line502">502: </a>      <font color="#4169E1">if</font> (debug) {overlapSection-&gt;view(<font color="#666666">"Overlap Section"</font>);}
+<a name="line503">503: </a>      const typename recv_overlap_type::capSequence::iterator rBegin = recvOverlap-&gt;capBegin();
+<a name="line504">504: </a>      const typename recv_overlap_type::capSequence::iterator rEnd   = recvOverlap-&gt;capEnd();
+
+<a name="line506">506: </a>      <font color="#4169E1">for</font>(typename recv_overlap_type::capSequence::iterator r_iter = rBegin; r_iter != rEnd; ++r_iter) {
+<a name="line507">507: </a>        const int                                             rank    = *r_iter;
+<a name="line508">508: </a>        const typename recv_overlap_type::supportSequence::iterator pBegin  = recvOverlap-&gt;supportBegin(*r_iter);
+<a name="line509">509: </a>        const typename recv_overlap_type::supportSequence::iterator pEnd    = recvOverlap-&gt;supportEnd(*r_iter);
+
+<a name="line511">511: </a>        <font color="#4169E1">for</font>(typename recv_overlap_type::supportSequence::iterator p_iter = pBegin; p_iter != pEnd; ++p_iter) {
+<a name="line512">512: </a>          const point_type&amp; localPoint  = *p_iter;
+<a name="line513">513: </a>          const point_type&amp; remotePoint = p_iter.color();
+<a name="line514">514: </a>          const overlap_point_type               oPoint = overlap_point_type(rank, remotePoint);
+<a name="line515">515: </a>          const int                              fDim   = overlapSection-&gt;getFiberDimension(oPoint);
+<a name="line516">516: </a>          const typename order_type::value_type *values = overlapSection-&gt;restrictPoint(oPoint);
+
+<a name="line518">518: </a>          <font color="#4169E1">for</font>(int i = 0; i &lt; fDim; ++i) {
+<a name="line519">519: </a>            <font color="#4169E1">if</font> (debug) {std::cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;order-&gt;commRank()&lt;&lt;<font color="#666666">"]     local point "</font> &lt;&lt; localPoint &lt;&lt; <font color="#666666">" remote point "</font> &lt;&lt; remotePoint&lt;&lt;<font color="#666666">"("</font>&lt;&lt;rank&lt;&lt;<font color="#666666">")"</font> &lt;&lt; <font color="#666666">" offset "</font> &lt;&lt; values[i].prefix &lt;&lt; <font color="#666666">" and size "</font> &lt;&lt; values[i].index &lt;&lt; std::endl;}
+<a name="line520">520: </a>            <font color="#4169E1">if</font> (values[i].index == 0) <font color="#4169E1">continue</font>;
+<a name="line521">521: </a>            <font color="#4169E1">if</font> (values[i].prefix &gt;= 0) {
+<a name="line522">522: </a>              <font color="#4169E1">if</font> (order-&gt;isLocal(localPoint)) {
+<a name="line523">523: </a>                <font color="#4169E1">if</font> (!allowDuplicates) {
+<a name="line524">524: </a>                  ostringstream msg;
+<a name="line525">525: </a>                  msg &lt;&lt; <font color="#666666">"["</font>&lt;&lt;order-&gt;commRank()&lt;&lt;<font color="#666666">"]Multiple indices for local point "</font> &lt;&lt; localPoint &lt;&lt; <font color="#666666">" remote point "</font> &lt;&lt; remotePoint &lt;&lt; <font color="#666666">" from "</font> &lt;&lt; rank &lt;&lt; <font color="#666666">" with index "</font> &lt;&lt; values[i];
+<a name="line526">526: </a>                  throw ALE::Exception(msg.str().c_str());
+<a name="line527">527: </a>                }
+<a name="line528">528: </a>                <font color="#4169E1">continue</font>;
+<a name="line529">529: </a>              }
+<a name="line530">530: </a>              const oValue_type val(-(values[i].prefix+1), values[i].index);
+<a name="line531">531: </a>              order-&gt;updatePoint(localPoint, &amp;val);
+<a name="line532">532: </a>            } <font color="#4169E1">else</font> {
+<a name="line533">533: </a>              <font color="#4169E1">if</font> (order-&gt;isLocal(localPoint)) <font color="#4169E1">continue</font>;
+<a name="line534">534: </a>              order-&gt;updatePoint(localPoint, &amp;values[i]);
+<a name="line535">535: </a>            }
+<a name="line536">536: </a>          }
+<a name="line537">537: </a>        }
+<a name="line538">538: </a>      }
+<a name="line539">539: </a><font color="#A020F0">#else</font>
+<a name="line540">540: </a>      <font color="#4169E1">typedef</font> Field&lt;send_overlap_type, int, Section&lt;point_type, oValue_type, oValue_alloc_type&gt; &gt; send_section_type;
+<a name="line541">541: </a>      <font color="#4169E1">typedef</font> Field&lt;recv_overlap_type, int, Section&lt;point_type, oValue_type, oValue_alloc_type&gt; &gt; recv_section_type;
+<a name="line542">542: </a>      <font color="#4169E1">typedef</font> ConstantSection&lt;point_type, int, alloc_type&gt;                          constant_sizer;
+<a name="line543">543: </a>      <font color="#4169E1">typedef</font> typename ALE::DiscreteSieve&lt;point_type, alloc_type&gt;                   dsieve_type;
+<a name="line544">544: </a>      <font color="#4169E1">typedef</font> typename ALE::Topology&lt;int, dsieve_type, alloc_type&gt;                  dtopology_type;
+<a name="line545">545: </a>      <font color="#4169E1">typedef</font> typename ALE::New::SectionCompletion&lt;dtopology_type, int, alloc_type&gt; completion;
+<a name="line546">546: </a>      const Obj&lt;send_section_type&gt; sendSection = new send_section_type(order-&gt;comm(), this-&gt;debug());
+<a name="line547">547: </a>      const Obj&lt;recv_section_type&gt; recvSection = new recv_section_type(order-&gt;comm(), sendSection-&gt;getTag(), this-&gt;debug());
+<a name="line548">548: </a>      const int debug = sendOverlap-&gt;debug();
+
+<a name="line550">550: </a>      <font color="#4169E1">if</font> (debug) {std::cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;order-&gt;commRank()&lt;&lt;<font color="#666666">"] Completing ordering"</font> &lt;&lt; std::endl;}
+<a name="line551">551: </a><strong><font color="#FF0000">      completion:</font></strong>:completeSection(sendOverlap, recvOverlap, order-&gt;getAtlas(), order, sendSection, recvSection);
+<a name="line552">552: </a>      Obj&lt;typename recv_overlap_type::baseSequence&gt; recvPoints = recvOverlap-&gt;base();
+
+<a name="line554">554: </a>      <font color="#4169E1">for</font>(typename recv_overlap_type::baseSequence::iterator p_iter = recvPoints-&gt;begin(); p_iter != recvPoints-&gt;end(); ++p_iter) {
+<a name="line555">555: </a>        <font color="#4169E1">if</font> (!order-&gt;hasPoint(*p_iter)) {
+<a name="line556">556: </a>          order-&gt;setFiberDimension(*p_iter, 1);
+<a name="line557">557: </a>          order-&gt;updatePoint(*p_iter, &amp;this-&gt;_unknownOrder);
+<a name="line558">558: </a>        }
+<a name="line559">559: </a>      }
+<a name="line560">560: </a>      <font color="#4169E1">for</font>(typename recv_overlap_type::baseSequence::iterator p_iter = recvPoints-&gt;begin(); p_iter != recvPoints-&gt;end(); ++p_iter) {
+<a name="line561">561: </a>        const Obj&lt;typename recv_overlap_type::coneSequence&gt;&amp; ranks      = recvOverlap-&gt;cone(*p_iter);
+<a name="line562">562: </a>        const typename recv_overlap_type::target_type&amp;       localPoint = *p_iter;
+
+<a name="line564">564: </a>        <font color="#4169E1">for</font>(typename recv_overlap_type::coneSequence::iterator r_iter = ranks-&gt;begin(); r_iter != ranks-&gt;end(); ++r_iter) {
+<a name="line565">565: </a>          const typename recv_overlap_type::target_type&amp;       remotePoint = r_iter.color();
+<a name="line566">566: </a>          const int                                            rank        = *r_iter;
+<a name="line567">567: </a>          const Obj&lt;typename recv_section_type::section_type&gt;&amp; section     = recvSection-&gt;getSection(rank);
+<a name="line568">568: </a>          const typename recv_section_type::value_type        *values      = section-&gt;restrictPoint(remotePoint);
+
+<a name="line570">570: </a>          <font color="#4169E1">if</font> (section-&gt;getFiberDimension(remotePoint) == 0) <font color="#4169E1">continue</font>;
+<a name="line571">571: </a>          <font color="#4169E1">if</font> (debug) {std::cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;order-&gt;commRank()&lt;&lt;<font color="#666666">"]     local point "</font> &lt;&lt; localPoint &lt;&lt; <font color="#666666">" remote point "</font> &lt;&lt; remotePoint&lt;&lt;<font color="#666666">"("</font>&lt;&lt;rank&lt;&lt;<font color="#666666">")"</font> &lt;&lt; <font color="#666666">" offset "</font> &lt;&lt; values[0].prefix &lt;&lt; <font color="#666666">" and size "</font> &lt;&lt; values[0].index &lt;&lt; std::endl;}
+<a name="line572">572: </a>          <font color="#4169E1">if</font> (values[0].index == 0) <font color="#4169E1">continue</font>;
+<a name="line573">573: </a>          <font color="#4169E1">if</font> (values[0].prefix &gt;= 0) {
+<a name="line574">574: </a>            <font color="#4169E1">if</font> (order-&gt;isLocal(localPoint)) {
+<a name="line575">575: </a>              <font color="#4169E1">if</font> (!allowDuplicates) {
+<a name="line576">576: </a>                ostringstream msg;
+<a name="line577">577: </a>                msg &lt;&lt; <font color="#666666">"["</font>&lt;&lt;order-&gt;commRank()&lt;&lt;<font color="#666666">"]Multiple indices for local point "</font> &lt;&lt; localPoint &lt;&lt; <font color="#666666">" remote point "</font> &lt;&lt; remotePoint &lt;&lt; <font color="#666666">" from "</font> &lt;&lt; rank &lt;&lt; <font color="#666666">" with index "</font> &lt;&lt; values[0];
+<a name="line578">578: </a>                throw ALE::Exception(msg.str().c_str());
+<a name="line579">579: </a>              }
+<a name="line580">580: </a>              <font color="#4169E1">continue</font>;
+<a name="line581">581: </a>            }
+<a name="line582">582: </a>            const oValue_type val(-(values[0].prefix+1), values[0].index);
+<a name="line583">583: </a>            order-&gt;updatePoint(localPoint, &amp;val);
+<a name="line584">584: </a>          } <font color="#4169E1">else</font> {
+<a name="line585">585: </a>            <font color="#4169E1">if</font> (order-&gt;isLocal(localPoint)) <font color="#4169E1">continue</font>;
+<a name="line586">586: </a>            order-&gt;updatePoint(localPoint, values);
+<a name="line587">587: </a>          }
+<a name="line588">588: </a>        }
+<a name="line589">589: </a>      }
+<a name="line590">590: </a><font color="#A020F0">#endif</font>
+<a name="line591">591: </a>    }
+<a name="line592">592: </a>    // Construct a full global numbering
+<a name="line593">593: </a>    template&lt;typename Iterator&gt;
+<a name="line594">594: </a>    void constructNumbering(const Obj&lt;numbering_type&gt;&amp; numbering, const Obj&lt;send_overlap_type&gt;&amp; sendOverlap, const Obj&lt;recv_overlap_type&gt;&amp; recvOverlap, const Iterator&amp; pointsBegin, const Iterator&amp; pointsEnd) {
+<a name="line595">595: </a>      this-&gt;constructLocalNumbering(numbering, sendOverlap, pointsBegin, pointsEnd);
+<a name="line596">596: </a>      this-&gt;calculateOffsets(numbering);
+<a name="line597">597: </a>      this-&gt;updateOrder(numbering, pointsBegin, pointsEnd);
+<a name="line598">598: </a>      this-&gt;completeNumbering(numbering, sendOverlap, recvOverlap);
+<a name="line599">599: </a>    }
+<a name="line600">600: </a>    // Construct a full global order
+<a name="line601">601: </a>    template&lt;typename Iterator, typename Section&gt;
+<a name="line602">602: </a>    void constructOrder(const Obj&lt;order_type&gt;&amp; order, const Obj&lt;send_overlap_type&gt;&amp; sendOverlap, const Obj&lt;recv_overlap_type&gt;&amp; recvOverlap, const Iterator&amp; pointsBegin, const Iterator&amp; pointsEnd, const Obj&lt;Section&gt;&amp; section, const int space = -1, const Obj&lt;label_type&gt;&amp; label = NULL) {
+<a name="line603">603: </a>      this-&gt;constructLocalOrder(order, sendOverlap, pointsBegin, pointsEnd, section, space, false, label);
+<a name="line604">604: </a>      this-&gt;calculateOffsets(order);
+<a name="line605">605: </a>      this-&gt;updateOrder(order, pointsBegin, pointsEnd);
+<a name="line606">606: </a>      this-&gt;completeOrder(order, sendOverlap, recvOverlap);
+<a name="line607">607: </a>    }
+<a name="line608">608: </a>    template&lt;typename Iterator, typename Section&gt;
+<a name="line609">609: </a>    void constructOrderBC(const Obj&lt;order_type&gt;&amp; order, const Obj&lt;send_overlap_type&gt;&amp; sendOverlap, const Obj&lt;recv_overlap_type&gt;&amp; recvOverlap, const Iterator&amp; pointsBegin, const Iterator&amp; pointsEnd, const Obj&lt;Section&gt;&amp; section, const int space = -1, const Obj&lt;label_type&gt;&amp; label = NULL) {
+<a name="line610">610: </a>      this-&gt;constructLocalOrder(order, sendOverlap, pointsBegin, pointsEnd, section, space, true, label);
+<a name="line611">611: </a>      this-&gt;calculateOffsets(order);
+<a name="line612">612: </a>      this-&gt;updateOrder(order, pointsBegin, pointsEnd);
+<a name="line613">613: </a>      this-&gt;completeOrder(order, sendOverlap, recvOverlap);
+<a name="line614">614: </a>    }
+<a name="line615">615: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line616">616: </a>    // Construct the inverse map from numbers to points
+<a name="line617">617: </a>    //   If we really need this, then we should consider using a label
+<a name="line618">618: </a>    void constructInverseOrder(const Obj&lt;numbering_type&gt;&amp; numbering) {
+<a name="line619">619: </a>      const typename numbering_type::chart_type&amp; chart = numbering-&gt;getChart();
+
+<a name="line621">621: </a>      <font color="#4169E1">for</font>(typename numbering_type::chart_type::iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
+<a name="line622">622: </a>        numbering-&gt;setPoint(numbering-&gt;getIndex(*p_iter), *p_iter);
+<a name="line623">623: </a>      }
+<a name="line624">624: </a>    }
+<a name="line625">625: </a><strong><font color="#FF0000">  public:</font></strong> // Real interface
+<a name="line626">626: </a>    template&lt;typename ABundle_&gt;
+<a name="line627">627: </a>    const Obj&lt;numbering_type&gt;&amp; getLocalNumbering(const Obj&lt;ABundle_&gt;&amp; bundle, const int depth) {
+<a name="line628">628: </a>      <font color="#4169E1">if</font> ((this-&gt;_localNumberings.find(bundle.ptr()) == this-&gt;_localNumberings.end()) ||
+<a name="line629">629: </a>          (this-&gt;_localNumberings[bundle.ptr()].find(<font color="#666666">"depth"</font>) == this-&gt;_localNumberings[bundle.ptr()].end()) ||
+<a name="line630">630: </a>          (this-&gt;_localNumberings[bundle.ptr()][<font color="#666666">"depth"</font>].find(depth) == this-&gt;_localNumberings[bundle.ptr()][<font color="#666666">"depth"</font>].end())) {
+<a name="line631">631: </a>        Obj&lt;numbering_type&gt;    numbering   = new numbering_type(bundle-&gt;comm(), bundle-&gt;debug());
+<a name="line632">632: </a>        Obj&lt;send_overlap_type&gt; sendOverlap = new send_overlap_type(bundle-&gt;comm(), bundle-&gt;debug());
+
+<a name="line634">634: </a>        this-&gt;constructLocalNumbering(numbering, sendOverlap, bundle-&gt;depthStratum(depth)-&gt;begin(), bundle-&gt;depthStratum(depth)-&gt;end());
+<a name="line635">635: </a>        <font color="#4169E1">if</font> (this-&gt;_debug) {std::cout &lt;&lt; <font color="#666666">"Creating new local numbering: ptr "</font> &lt;&lt; bundle.ptr() &lt;&lt; <font color="#666666">" depth "</font> &lt;&lt; depth &lt;&lt; std::endl;}
+<a name="line636">636: </a>        this-&gt;_localNumberings[bundle.ptr()][<font color="#666666">"depth"</font>][depth] = numbering;
+<a name="line637">637: </a>      } <font color="#4169E1">else</font> {
+<a name="line638">638: </a>        <font color="#4169E1">if</font> (this-&gt;_debug) {std::cout &lt;&lt; <font color="#666666">"Using old local numbering: ptr "</font> &lt;&lt; bundle.ptr() &lt;&lt; <font color="#666666">" depth "</font> &lt;&lt; depth &lt;&lt; std::endl;}
+<a name="line639">639: </a>      }
+<a name="line640">640: </a>      <font color="#4169E1">return</font> this-&gt;_localNumberings[bundle.ptr()][<font color="#666666">"depth"</font>][depth];
+<a name="line641">641: </a>    }
+<a name="line642">642: </a>    template&lt;typename ABundle_&gt;
+<a name="line643">643: </a>    const Obj&lt;numbering_type&gt;&amp; getNumbering(const Obj&lt;ABundle_&gt;&amp; bundle, const int depth) {
+<a name="line644">644: </a>      <font color="#4169E1">if</font> ((this-&gt;_numberings.find(bundle.ptr()) == this-&gt;_numberings.end()) ||
+<a name="line645">645: </a>          (this-&gt;_numberings[bundle.ptr()].find(<font color="#666666">"depth"</font>) == this-&gt;_numberings[bundle.ptr()].end()) ||
+<a name="line646">646: </a>          (this-&gt;_numberings[bundle.ptr()][<font color="#666666">"depth"</font>].find(depth) == this-&gt;_numberings[bundle.ptr()][<font color="#666666">"depth"</font>].end())) {
+<a name="line647">647: </a>        bundle-&gt;constructOverlap();
+<a name="line648">648: </a>        Obj&lt;numbering_type&gt;    numbering   = new numbering_type(bundle-&gt;comm(), bundle-&gt;debug());
+<a name="line649">649: </a>        Obj&lt;send_overlap_type&gt; sendOverlap = bundle-&gt;getSendOverlap();
+<a name="line650">650: </a>        Obj&lt;recv_overlap_type&gt; recvOverlap = bundle-&gt;getRecvOverlap();
+
+<a name="line652">652: </a>        <font color="#4169E1">if</font> (this-&gt;_debug) {std::cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;bundle-&gt;commRank()&lt;&lt;<font color="#666666">"]Creating new numbering: fixed depth value "</font> &lt;&lt; depth &lt;&lt; std::endl;}
+<a name="line653">653: </a>        <font color="#4169E1">if</font> (depth == -1) {
+<a name="line654">654: </a>          this-&gt;constructNumbering(numbering, sendOverlap, recvOverlap, bundle-&gt;getSieve()-&gt;getChart().begin(), bundle-&gt;getSieve()-&gt;getChart().end());
+<a name="line655">655: </a>        } <font color="#4169E1">else</font> {
+<a name="line656">656: </a>          this-&gt;constructNumbering(numbering, sendOverlap, recvOverlap, bundle-&gt;depthStratum(depth)-&gt;begin(), bundle-&gt;depthStratum(depth)-&gt;end());
+<a name="line657">657: </a>        }
+<a name="line658">658: </a>        this-&gt;_numberings[bundle.ptr()][<font color="#666666">"depth"</font>][depth] = numbering;
+<a name="line659">659: </a>      } <font color="#4169E1">else</font> {
+<a name="line660">660: </a>        <font color="#4169E1">if</font> (this-&gt;_debug) {std::cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;bundle-&gt;commRank()&lt;&lt;<font color="#666666">"]Using old numbering: fixed depth value "</font> &lt;&lt; depth &lt;&lt; std::endl;}
+<a name="line661">661: </a>      }
+<a name="line662">662: </a>      <font color="#4169E1">return</font> this-&gt;_numberings[bundle.ptr()][<font color="#666666">"depth"</font>][depth];
+<a name="line663">663: </a>    }
+<a name="line664">664: </a>    template&lt;typename ABundle_&gt;
+<a name="line665">665: </a>    const Obj&lt;numbering_type&gt;&amp; getNumbering(const Obj&lt;ABundle_&gt;&amp; bundle, const std::string&amp; labelname, const int value) {
+<a name="line666">666: </a>      <font color="#4169E1">if</font> ((this-&gt;_numberings.find(bundle.ptr()) == this-&gt;_numberings.end()) ||
+<a name="line667">667: </a>          (this-&gt;_numberings[bundle.ptr()].find(labelname) == this-&gt;_numberings[bundle.ptr()].end()) ||
+<a name="line668">668: </a>          (this-&gt;_numberings[bundle.ptr()][labelname].find(value) == this-&gt;_numberings[bundle.ptr()][labelname].end())) {
+<a name="line669">669: </a>        bundle-&gt;constructOverlap();
+<a name="line670">670: </a>        Obj&lt;numbering_type&gt;    numbering   = new numbering_type(bundle-&gt;comm(), bundle-&gt;debug());
+<a name="line671">671: </a>        Obj&lt;send_overlap_type&gt; sendOverlap = bundle-&gt;getSendOverlap();
+<a name="line672">672: </a>        Obj&lt;recv_overlap_type&gt; recvOverlap = bundle-&gt;getRecvOverlap();
+
+<a name="line674">674: </a>        <font color="#4169E1">if</font> (this-&gt;_debug) {std::cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;bundle-&gt;commRank()&lt;&lt;<font color="#666666">"]Creating new numbering: "</font> &lt;&lt; labelname &lt;&lt; <font color="#666666">" value "</font> &lt;&lt; value &lt;&lt; std::endl;}
+<a name="line675">675: </a>        this-&gt;constructNumbering(numbering, sendOverlap, recvOverlap, bundle-&gt;getLabelStratum(labelname, value)-&gt;begin(), bundle-&gt;getLabelStratum(labelname, value)-&gt;end());
+<a name="line676">676: </a>        this-&gt;_numberings[bundle.ptr()][labelname][value] = numbering;
+<a name="line677">677: </a>      } <font color="#4169E1">else</font> {
+<a name="line678">678: </a>        <font color="#4169E1">if</font> (this-&gt;_debug) {std::cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;bundle-&gt;commRank()&lt;&lt;<font color="#666666">"]Using old numbering: "</font> &lt;&lt; labelname &lt;&lt; <font color="#666666">" value "</font> &lt;&lt; value &lt;&lt; std::endl;}
+<a name="line679">679: </a>      }
+<a name="line680">680: </a>      <font color="#4169E1">return</font> this-&gt;_numberings[bundle.ptr()][labelname][value];
+<a name="line681">681: </a>    }
+<a name="line682">682: </a>    template&lt;typename ABundle_, typename Section_&gt;
+<a name="line683">683: </a>    const Obj&lt;order_type&gt;&amp; getLocalOrder(const Obj&lt;ABundle_&gt;&amp; bundle, const std::string&amp; name, const Obj&lt;Section_&gt;&amp; section, const int space = -1, const Obj&lt;label_type&gt;&amp; label = NULL) {
+<a name="line684">684: </a>      <font color="#4169E1">if</font> ((this-&gt;_localOrders.find(bundle.ptr()) == this-&gt;_localOrders.end()) ||
+<a name="line685">685: </a>          (this-&gt;_localOrders[bundle.ptr()].find(name) == this-&gt;_localOrders[bundle.ptr()].end())) {
+<a name="line686">686: </a>        Obj&lt;order_type&gt;        order       = new order_type(bundle-&gt;comm(), bundle-&gt;debug());
+<a name="line687">687: </a>        Obj&lt;send_overlap_type&gt; sendOverlap = bundle-&gt;getSendOverlap();
+<a name="line688">688: </a>        Obj&lt;recv_overlap_type&gt; recvOverlap = bundle-&gt;getRecvOverlap();
+
+<a name="line690">690: </a>        <font color="#4169E1">if</font> (this-&gt;_debug) {std::cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;bundle-&gt;commRank()&lt;&lt;<font color="#666666">"]Creating new local order: "</font> &lt;&lt; name &lt;&lt; std::endl;}
+<a name="line691">691: </a>        this-&gt;constructLocalOrder(order, sendOverlap, section-&gt;getChart().begin(), section-&gt;getChart().end(), section, space, false, label);
+<a name="line692">692: </a>        this-&gt;_localOrders[bundle.ptr()][name] = order;
+<a name="line693">693: </a>      } <font color="#4169E1">else</font> {
+<a name="line694">694: </a>        <font color="#4169E1">if</font> (this-&gt;_debug) {std::cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;bundle-&gt;commRank()&lt;&lt;<font color="#666666">"]Using old local order: "</font> &lt;&lt; name &lt;&lt; std::endl;}
+<a name="line695">695: </a>      }
+<a name="line696">696: </a>      <font color="#4169E1">return</font> this-&gt;_localOrders[bundle.ptr()][name];
+<a name="line697">697: </a>    }
+<a name="line698">698: </a>    template&lt;typename ABundle_, typename Section_&gt;
+<a name="line699">699: </a>    const Obj&lt;order_type&gt;&amp; getGlobalOrder(const Obj&lt;ABundle_&gt;&amp; bundle, const std::string&amp; name, const Obj&lt;Section_&gt;&amp; section, const int space = -1, const Obj&lt;label_type&gt;&amp; label = NULL) {
+<a name="line700">700: </a>      <font color="#4169E1">if</font> ((this-&gt;_orders.find(bundle.ptr()) == this-&gt;_orders.end()) ||
+<a name="line701">701: </a>          (this-&gt;_orders[bundle.ptr()].find(name) == this-&gt;_orders[bundle.ptr()].end())) {
+<a name="line702">702: </a>        bundle-&gt;constructOverlap();
+<a name="line703">703: </a>        Obj&lt;order_type&gt;        order       = new order_type(bundle-&gt;comm(), bundle-&gt;debug());
+<a name="line704">704: </a>        Obj&lt;send_overlap_type&gt; sendOverlap = bundle-&gt;getSendOverlap();
+<a name="line705">705: </a>        Obj&lt;recv_overlap_type&gt; recvOverlap = bundle-&gt;getRecvOverlap();
+
+<a name="line707">707: </a>        <font color="#4169E1">if</font> (this-&gt;_debug) {std::cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;bundle-&gt;commRank()&lt;&lt;<font color="#666666">"]Creating new global order: "</font> &lt;&lt; name &lt;&lt; std::endl;}
+<a name="line708">708: </a>        this-&gt;constructOrder(order, sendOverlap, recvOverlap, section-&gt;getChart().begin(), section-&gt;getChart().end(), section, space, label);
+<a name="line709">709: </a>        this-&gt;_orders[bundle.ptr()][name] = order;
+<a name="line710">710: </a>      } <font color="#4169E1">else</font> {
+<a name="line711">711: </a>        <font color="#4169E1">if</font> (this-&gt;_debug) {std::cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;bundle-&gt;commRank()&lt;&lt;<font color="#666666">"]Using old global order: "</font> &lt;&lt; name &lt;&lt; std::endl;}
+<a name="line712">712: </a>      }
+<a name="line713">713: </a>      <font color="#4169E1">return</font> this-&gt;_orders[bundle.ptr()][name];
+<a name="line714">714: </a>    }
+<a name="line715">715: </a>    template&lt;typename ABundle_, typename Iterator_, typename Section_&gt;
+<a name="line716">716: </a>    const Obj&lt;order_type&gt;&amp; getGlobalOrder(const Obj&lt;ABundle_&gt;&amp; bundle, const std::string&amp; name, const Iterator_&amp; pointsBegin, const Iterator_&amp; pointsEnd, const Obj&lt;Section_&gt;&amp; section, const int space = -1, const Obj&lt;label_type&gt;&amp; label = NULL) {
+<a name="line717">717: </a>      <font color="#4169E1">if</font> ((this-&gt;_orders.find(bundle.ptr()) == this-&gt;_orders.end()) ||
+<a name="line718">718: </a>          (this-&gt;_orders[bundle.ptr()].find(name) == this-&gt;_orders[bundle.ptr()].end())) {
+<a name="line719">719: </a>        bundle-&gt;constructOverlap();
+<a name="line720">720: </a>        Obj&lt;order_type&gt;        order       = new order_type(bundle-&gt;comm(), bundle-&gt;debug());
+<a name="line721">721: </a>        Obj&lt;send_overlap_type&gt; sendOverlap = bundle-&gt;getSendOverlap();
+<a name="line722">722: </a>        Obj&lt;recv_overlap_type&gt; recvOverlap = bundle-&gt;getRecvOverlap();
+
+<a name="line724">724: </a>        <font color="#4169E1">if</font> (this-&gt;_debug) {std::cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;bundle-&gt;commRank()&lt;&lt;<font color="#666666">"]Creating new global order: "</font> &lt;&lt; name &lt;&lt; std::endl;}
+<a name="line725">725: </a>        this-&gt;constructOrder(order, sendOverlap, recvOverlap, pointsBegin, pointsEnd, section, space, label);
+<a name="line726">726: </a>        this-&gt;_orders[bundle.ptr()][name] = order;
+<a name="line727">727: </a>      } <font color="#4169E1">else</font> {
+<a name="line728">728: </a>        <font color="#4169E1">if</font> (this-&gt;_debug) {std::cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;bundle-&gt;commRank()&lt;&lt;<font color="#666666">"]Using old global order: "</font> &lt;&lt; name &lt;&lt; std::endl;}
+<a name="line729">729: </a>      }
+<a name="line730">730: </a>      <font color="#4169E1">return</font> this-&gt;_orders[bundle.ptr()][name];
+<a name="line731">731: </a>    }
+<a name="line732">732: </a>    template&lt;typename ABundle_, typename Section_&gt;
+<a name="line733">733: </a>    const Obj&lt;order_type&gt;&amp; getGlobalOrderWithBC(const Obj&lt;ABundle_&gt;&amp; bundle, const std::string&amp; name, const Obj&lt;Section_&gt;&amp; section, const int space = -1, const Obj&lt;label_type&gt;&amp; label = NULL) {
+<a name="line734">734: </a>      <font color="#4169E1">if</font> ((this-&gt;_orders.find(bundle.ptr()) == this-&gt;_orders.end()) ||
+<a name="line735">735: </a>          (this-&gt;_orders[bundle.ptr()].find(name) == this-&gt;_orders[bundle.ptr()].end())) {
+<a name="line736">736: </a>        bundle-&gt;constructOverlap();
+<a name="line737">737: </a>        Obj&lt;order_type&gt;        order       = new order_type(bundle-&gt;comm(), bundle-&gt;debug());
+<a name="line738">738: </a>        Obj&lt;send_overlap_type&gt; sendOverlap = bundle-&gt;getSendOverlap();
+<a name="line739">739: </a>        Obj&lt;recv_overlap_type&gt; recvOverlap = bundle-&gt;getRecvOverlap();
+
+<a name="line741">741: </a>        <font color="#4169E1">if</font> (this-&gt;_debug) {std::cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;bundle-&gt;commRank()&lt;&lt;<font color="#666666">"]Creating new global order: "</font> &lt;&lt; name &lt;&lt; std::endl;}
+<a name="line742">742: </a>        this-&gt;constructOrderBC(order, sendOverlap, recvOverlap, section-&gt;getChart().begin(), section-&gt;getChart().end(), section, space, label);
+<a name="line743">743: </a>        this-&gt;_orders[bundle.ptr()][name] = order;
+<a name="line744">744: </a>      } <font color="#4169E1">else</font> {
+<a name="line745">745: </a>        <font color="#4169E1">if</font> (this-&gt;_debug) {std::cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;bundle-&gt;commRank()&lt;&lt;<font color="#666666">"]Using old global order: "</font> &lt;&lt; name &lt;&lt; std::endl;}
+<a name="line746">746: </a>      }
+<a name="line747">747: </a>      <font color="#4169E1">return</font> this-&gt;_orders[bundle.ptr()][name];
+<a name="line748">748: </a>    }
+<a name="line749">749: </a>    template&lt;typename ABundle_, typename Iterator_, typename Section_&gt;
+<a name="line750">750: </a>    const Obj&lt;order_type&gt;&amp; getGlobalOrderWithBC(const Obj&lt;ABundle_&gt;&amp; bundle, const std::string&amp; name, const Iterator_&amp; pointsBegin, const Iterator_&amp; pointsEnd, const Obj&lt;Section_&gt;&amp; section, const int space = -1, const Obj&lt;label_type&gt;&amp; label = NULL) {
+<a name="line751">751: </a>      <font color="#4169E1">if</font> ((this-&gt;_ordersBC.find(bundle.ptr()) == this-&gt;_ordersBC.end()) ||
+<a name="line752">752: </a>          (this-&gt;_ordersBC[bundle.ptr()].find(name) == this-&gt;_ordersBC[bundle.ptr()].end())) {
+<a name="line753">753: </a>        bundle-&gt;constructOverlap();
+<a name="line754">754: </a>        Obj&lt;order_type&gt;        order       = new order_type(bundle-&gt;comm(), bundle-&gt;debug());
+<a name="line755">755: </a>        Obj&lt;send_overlap_type&gt; sendOverlap = bundle-&gt;getSendOverlap();
+<a name="line756">756: </a>        Obj&lt;recv_overlap_type&gt; recvOverlap = bundle-&gt;getRecvOverlap();
+
+<a name="line758">758: </a>        <font color="#4169E1">if</font> (this-&gt;_debug) {std::cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;bundle-&gt;commRank()&lt;&lt;<font color="#666666">"]Creating new global order: "</font> &lt;&lt; name &lt;&lt; std::endl;}
+<a name="line759">759: </a>        this-&gt;constructOrderBC(order, sendOverlap, recvOverlap, pointsBegin, pointsEnd, section, space, label);
+<a name="line760">760: </a>        this-&gt;_orders[bundle.ptr()][name] = order;
+<a name="line761">761: </a>      } <font color="#4169E1">else</font> {
+<a name="line762">762: </a>        <font color="#4169E1">if</font> (this-&gt;_debug) {std::cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;bundle-&gt;commRank()&lt;&lt;<font color="#666666">"]Using old global order: "</font> &lt;&lt; name &lt;&lt; std::endl;}
+<a name="line763">763: </a>      }
+<a name="line764">764: </a>      <font color="#4169E1">return</font> this-&gt;_orders[bundle.ptr()][name];
+<a name="line765">765: </a>    }
+<a name="line766">766: </a>    template&lt;typename ABundle_&gt;
+<a name="line767">767: </a>    void setGlobalOrder(const Obj&lt;ABundle_&gt;&amp; bundle, const std::string&amp; name, const Obj&lt;order_type&gt;&amp; order) {
+<a name="line768">768: </a>      this-&gt;_orders[bundle.ptr()][name] = order;
+<a name="line769">769: </a>    }
+<a name="line770">770: </a>  };
+<a name="line771">771: </a>}
+<a name="line772">772: </a><font color="#A020F0">#endif</font>
+</pre>
+</body>
+
+</html>

@@ -1,0 +1,232 @@
+<center><a href="petsctime.h">Actual source code: petsctime.h</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="http://www.mcs.anl.gov/petsc/petsc-current/include/petsctime.h.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2013-10-15T16:55:32+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>petsc-3.4.3 2013-10-15</b></div>
+<pre width="80"><a name="line1">  1: </a><font color="#B22222">/*</font>
+<a name="line2">  2: </a><font color="#B22222">       Low cost access to system time. This, in general, should not</font>
+<a name="line3">  3: </a><font color="#B22222">     be included in user programs.</font>
+<a name="line4">  4: </a><font color="#B22222">*/</font>
+
+<a name="line8">  8: </a><font color="#A020F0">#include &lt;petscsys.h&gt;</font>
+
+<a name="line10"> 10: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Sys/PetscGetCPUTime.html#PetscGetCPUTime">PetscGetCPUTime</A>(PetscLogDouble*)</font></strong>;
+
+<a name="line12"> 12: </a><font color="#B22222">/* Global counters */</font>
+<a name="line13"> 13: </a>PETSC_EXTERN PetscLogDouble petsc_BaseTime;
+
+<a name="line15"> 15: </a><font color="#B22222">/*MC</font>
+<a name="line16"> 16: </a><font color="#B22222">   <A href="../docs/manualpages/Sys/PetscTime.html#PetscTime">PetscTime</A> - Returns the current time of day in seconds.</font>
+
+<a name="line18"> 18: </a><font color="#B22222">   Synopsis:</font>
+<a name="line19"> 19: </a><font color="#B22222">    #include "petsctime.h"</font>
+<a name="line20"> 20: </a><font color="#B22222">   <A href="../docs/manualpages/Sys/PetscTime.html#PetscTime">PetscTime</A>(PetscLogDouble *v)</font>
+
+<a name="line22"> 22: </a><font color="#B22222">   Not Collective</font>
+
+<a name="line24"> 24: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line25"> 25: </a><font color="#B22222">.  v - time counter</font>
+
+
+<a name="line28"> 28: </a><font color="#B22222">   Usage:</font>
+<a name="line29"> 29: </a><font color="#B22222">     PetscLogDouble v;</font>
+<a name="line30"> 30: </a><font color="#B22222">     <A href="../docs/manualpages/Sys/PetscTime.html#PetscTime">PetscTime</A>(&amp;v);</font>
+<a name="line31"> 31: </a><font color="#B22222">     .... perform some calculation ...</font>
+<a name="line32"> 32: </a><font color="#B22222">     printf("Time for operation %g\n",v);</font>
+
+<a name="line34"> 34: </a><font color="#B22222">   Level: developer</font>
+
+<a name="line36"> 36: </a><font color="#B22222">   Notes:</font>
+<a name="line37"> 37: </a><font color="#B22222">   Since the PETSc libraries incorporate timing of phases and operations,</font>
+<a name="line38"> 38: </a><font color="#B22222">   we do not recomment every using <A href="../docs/manualpages/Sys/PetscTime.html#PetscTime">PetscTime</A>()</font>
+<a name="line39"> 39: </a><font color="#B22222">   The options database command  -log_summary activate</font>
+<a name="line40"> 40: </a><font color="#B22222">   PETSc library timing. See the &lt;A href="../../docs/manual.pdf"&gt;Users Manual&lt;/A&gt; for more details.</font>
+
+<a name="line42"> 42: </a><font color="#B22222">.seealso:  <A href="../docs/manualpages/Sys/PetscTimeSubtract.html#PetscTimeSubtract">PetscTimeSubtract</A>(), <A href="../docs/manualpages/Sys/PetscTimeAdd.html#PetscTimeAdd">PetscTimeAdd</A>(), <A href="../docs/manualpages/Profiling/PetscLogStageRegister.html#PetscLogStageRegister">PetscLogStageRegister</A>(), <A href="../docs/manualpages/Profiling/PetscLogEventRegister.html#PetscLogEventRegister">PetscLogEventRegister</A>(), <A href="../docs/manualpages/Profiling/PetscLogEventBegin.html#PetscLogEventBegin">PetscLogEventBegin</A>(), <A href="../docs/manualpages/Profiling/PetscLogEventEnd.html#PetscLogEventEnd">PetscLogEventEnd</A>()</font>
+
+<a name="line44"> 44: </a><font color="#B22222">.keywords:  Petsc, time</font>
+<a name="line45"> 45: </a><font color="#B22222">M*/</font>
+
+<a name="line47"> 47: </a><font color="#B22222">/*MC</font>
+<a name="line48"> 48: </a><font color="#B22222">   <A href="../docs/manualpages/Sys/PetscTimeSubtract.html#PetscTimeSubtract">PetscTimeSubtract</A> - Subtracts the current time of day (in seconds) from</font>
+<a name="line49"> 49: </a><font color="#B22222">   the value v.</font>
+
+<a name="line51"> 51: </a><font color="#B22222">   Synopsis:</font>
+<a name="line52"> 52: </a><font color="#B22222">    #include "petsctime.h"</font>
+<a name="line53"> 53: </a><font color="#B22222">   <A href="../docs/manualpages/Sys/PetscTimeSubtract.html#PetscTimeSubtract">PetscTimeSubtract</A>(&amp;PetscLogDouble *v)</font>
+
+<a name="line55"> 55: </a><font color="#B22222">   Not Collective</font>
+
+<a name="line57"> 57: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line58"> 58: </a><font color="#B22222">.  v - time counter</font>
+
+<a name="line60"> 60: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line61"> 61: </a><font color="#B22222">.  v - time counter (v = v - current time)</font>
+
+<a name="line63"> 63: </a><font color="#B22222">   Level: developer</font>
+
+<a name="line65"> 65: </a><font color="#B22222">   Notes:</font>
+<a name="line66"> 66: </a><font color="#B22222">   Since the PETSc libraries incorporate timing of phases and operations,</font>
+<a name="line67"> 67: </a><font color="#B22222">   we do not every recommend using <A href="../docs/manualpages/Sys/PetscTimeSubtract.html#PetscTimeSubtract">PetscTimeSubtract</A>()</font>
+<a name="line68"> 68: </a><font color="#B22222">   The options database command  -log_summary activates</font>
+<a name="line69"> 69: </a><font color="#B22222">   PETSc library timing.  See the &lt;A href="../../docs/manual.pdf"&gt;Users Manual&lt;/A&gt; for more details, also</font>
+<a name="line70"> 70: </a><font color="#B22222">   see <A href="../docs/manualpages/Profiling/PetscLogStageRegister.html#PetscLogStageRegister">PetscLogStageRegister</A>(), <A href="../docs/manualpages/Profiling/PetscLogEventRegister.html#PetscLogEventRegister">PetscLogEventRegister</A>(), <A href="../docs/manualpages/Profiling/PetscLogEventBegin.html#PetscLogEventBegin">PetscLogEventBegin</A>(), <A href="../docs/manualpages/Profiling/PetscLogEventEnd.html#PetscLogEventEnd">PetscLogEventEnd</A>() for how to register</font>
+<a name="line71"> 71: </a><font color="#B22222">   stages and events in application codes. </font>
+
+<a name="line73"> 73: </a><font color="#B22222">.seealso:  <A href="../docs/manualpages/Sys/PetscTime.html#PetscTime">PetscTime</A>(), <A href="../docs/manualpages/Sys/PetscTimeAdd.html#PetscTimeAdd">PetscTimeAdd</A>(), <A href="../docs/manualpages/Profiling/PetscLogStageRegister.html#PetscLogStageRegister">PetscLogStageRegister</A>(), <A href="../docs/manualpages/Profiling/PetscLogEventRegister.html#PetscLogEventRegister">PetscLogEventRegister</A>(), <A href="../docs/manualpages/Profiling/PetscLogEventBegin.html#PetscLogEventBegin">PetscLogEventBegin</A>(), <A href="../docs/manualpages/Profiling/PetscLogEventEnd.html#PetscLogEventEnd">PetscLogEventEnd</A>()</font>
+
+<a name="line75"> 75: </a><font color="#B22222">.keywords:  Petsc, time, subtract</font>
+<a name="line76"> 76: </a><font color="#B22222">M*/</font>
+
+<a name="line78"> 78: </a><font color="#B22222">/*MC</font>
+<a name="line79"> 79: </a><font color="#B22222">   <A href="../docs/manualpages/Sys/PetscTimeAdd.html#PetscTimeAdd">PetscTimeAdd</A> - Adds the current time of day (in seconds) to the value v.</font>
+
+<a name="line81"> 81: </a><font color="#B22222">   Synopsis:</font>
+<a name="line82"> 82: </a><font color="#B22222">    #include "petsctime.h"</font>
+<a name="line83"> 83: </a><font color="#B22222">   <A href="../docs/manualpages/Sys/PetscTimeAdd.html#PetscTimeAdd">PetscTimeAdd</A>(PetscLogDouble *v)</font>
+
+<a name="line85"> 85: </a><font color="#B22222">   Not Collective</font>
+
+<a name="line87"> 87: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line88"> 88: </a><font color="#B22222">.  v - time counter</font>
+
+<a name="line90"> 90: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line91"> 91: </a><font color="#B22222">.  v - time counter (v = v + current time)</font>
+
+<a name="line93"> 93: </a><font color="#B22222">   Level: developer</font>
+
+<a name="line95"> 95: </a><font color="#B22222">   Notes:</font>
+<a name="line96"> 96: </a><font color="#B22222">   Since the PETSc libraries incorporate timing of phases and operations,</font>
+<a name="line97"> 97: </a><font color="#B22222">   we do not ever recommend using <A href="../docs/manualpages/Sys/PetscTimeAdd.html#PetscTimeAdd">PetscTimeAdd</A>().</font>
+<a name="line98"> 98: </a><font color="#B22222">   The options database command -log_summary activate</font>
+<a name="line99"> 99: </a><font color="#B22222">   PETSc library timing. See the &lt;A href="../../docs/manual.pdf"&gt;Users Manual&lt;/A&gt; for more details.</font>
+
+<a name="line101">101: </a><font color="#B22222">.seealso:  <A href="../docs/manualpages/Sys/PetscTime.html#PetscTime">PetscTime</A>(), <A href="../docs/manualpages/Sys/PetscTimeSubtract.html#PetscTimeSubtract">PetscTimeSubtract</A>(), <A href="../docs/manualpages/Profiling/PetscLogStageRegister.html#PetscLogStageRegister">PetscLogStageRegister</A>(), <A href="../docs/manualpages/Profiling/PetscLogEventRegister.html#PetscLogEventRegister">PetscLogEventRegister</A>(), <A href="../docs/manualpages/Profiling/PetscLogEventBegin.html#PetscLogEventBegin">PetscLogEventBegin</A>(), <A href="../docs/manualpages/Profiling/PetscLogEventEnd.html#PetscLogEventEnd">PetscLogEventEnd</A>()</font>
+
+<a name="line103">103: </a><font color="#B22222">.keywords:  Petsc, time, add</font>
+<a name="line104">104: </a><font color="#B22222">M*/</font>
+
+<a name="line106">106: </a><font color="#B22222">/* ------------------------------------------------------------------</font>
+<a name="line107">107: </a><font color="#B22222">    Some machines have very fast <A href="http://www.mcs.anl.gov/mpi/www/www3/MPI_Wtime.html#MPI_Wtime">MPI_Wtime</A>()</font>
+<a name="line108">108: </a><font color="#B22222">*/</font>
+<a name="line109">109: </a><font color="#A020F0">#if (defined(PETSC_HAVE_FAST_MPI_WTIME) &amp;&amp; !defined(__MPIUNI_H))</font>
+<a name="line110">110: </a><strong><font color="#4169E1"><a name="PetscTime"></a>PETSC_STATIC_INLINE <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Sys/PetscTime.html#PetscTime">PetscTime</A>(PetscLogDouble *v)</font></strong>
+<a name="line111">111: </a>{
+<a name="line112">112: </a>  *v = <A href="http://www.mcs.anl.gov/mpi/www/www3/MPI_Wtime.html#MPI_Wtime">MPI_Wtime</A>();
+<a name="line113">113: </a>  <font color="#4169E1">return</font> 0;
+<a name="line114">114: </a>}
+
+<a name="line116">116: </a><strong><font color="#4169E1"><a name="PetscTimeSubtract"></a>PETSC_STATIC_INLINE <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Sys/PetscTimeSubtract.html#PetscTimeSubtract">PetscTimeSubtract</A>(PetscLogDouble *v)</font></strong>
+<a name="line117">117: </a>{
+<a name="line118">118: </a>  *v -= <A href="http://www.mcs.anl.gov/mpi/www/www3/MPI_Wtime.html#MPI_Wtime">MPI_Wtime</A>();
+<a name="line119">119: </a>  <font color="#4169E1">return</font> 0;
+<a name="line120">120: </a>}
+
+<a name="line122">122: </a><strong><font color="#4169E1"><a name="PetscTimeAdd"></a>PETSC_STATIC_INLINE <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Sys/PetscTimeAdd.html#PetscTimeAdd">PetscTimeAdd</A>(PetscLogDouble *v)</font></strong>
+<a name="line123">123: </a>{
+<a name="line124">124: </a>  *v += <A href="http://www.mcs.anl.gov/mpi/www/www3/MPI_Wtime.html#MPI_Wtime">MPI_Wtime</A>();
+<a name="line125">125: </a>  <font color="#4169E1">return</font> 0;
+<a name="line126">126: </a>}
+
+<a name="line128">128: </a><font color="#B22222">/* ------------------------------------------------------------------</font>
+<a name="line129">129: </a><font color="#B22222">   IBM Power and PowerPC machines have a fast clock read_real_time()</font>
+<a name="line130">130: </a><font color="#B22222">*/</font>
+<a name="line131">131: </a><font color="#A020F0">#elif defined(PETSC_USE_READ_REAL_TIME)</font>
+<a name="line132">132: </a><strong><font color="#4169E1">PETSC_EXTERN PetscLogDouble PetscReadRealTime(void)</font></strong>;
+
+<a name="line134">134: </a><strong><font color="#4169E1"><a name="PetscTime"></a>PETSC_STATIC_INLINE <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Sys/PetscTime.html#PetscTime">PetscTime</A>(PetscLogDouble *v)</font></strong>
+<a name="line135">135: </a>{
+<a name="line136">136: </a>  *v = PetscReadRealTime();
+<a name="line137">137: </a>  <font color="#4169E1">return</font> 0;
+<a name="line138">138: </a>}
+
+<a name="line140">140: </a><strong><font color="#4169E1"><a name="PetscTimeSubtract"></a>PETSC_STATIC_INLINE <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Sys/PetscTimeSubtract.html#PetscTimeSubtract">PetscTimeSubtract</A>(PetscLogDouble *v)</font></strong>
+<a name="line141">141: </a>{
+<a name="line142">142: </a>  *v -= PetscReadRealTime();
+<a name="line143">143: </a>  <font color="#4169E1">return</font> 0;
+<a name="line144">144: </a>}
+
+<a name="line146">146: </a><strong><font color="#4169E1"><a name="PetscTimeAdd"></a>PETSC_STATIC_INLINE <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Sys/PetscTimeAdd.html#PetscTimeAdd">PetscTimeAdd</A>(PetscLogDouble *v)</font></strong>
+<a name="line147">147: </a>{
+<a name="line148">148: </a>  *v += PetscReadRealTime();
+<a name="line149">149: </a>  <font color="#4169E1">return</font> 0;
+<a name="line150">150: </a>}
+
+<a name="line152">152: </a><font color="#B22222">/* ------------------------------------------------------------------</font>
+<a name="line153">153: </a><font color="#B22222">   Microsoft Windows has its own time routines</font>
+<a name="line154">154: </a><font color="#B22222">*/</font>
+<a name="line155">155: </a><font color="#A020F0">#elif defined (PETSC_USE_MICROSOFT_TIME)</font>
+<a name="line156">156: </a><font color="#A020F0">#include &lt;time.h&gt;</font>
+<a name="line157">157: </a><strong><font color="#4169E1">PETSC_EXTERN PetscLogDouble PetscMicrosoftTime(void)</font></strong>;
+
+<a name="line159">159: </a><strong><font color="#4169E1"><a name="PetscTime"></a>PETSC_STATIC_INLINE <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Sys/PetscTime.html#PetscTime">PetscTime</A>(PetscLogDouble *v)</font></strong>
+<a name="line160">160: </a>{
+<a name="line161">161: </a>  *v = PetscMicrosoftTime();
+<a name="line162">162: </a>  <font color="#4169E1">return</font> 0;
+<a name="line163">163: </a>}
+
+<a name="line165">165: </a><strong><font color="#4169E1"><a name="PetscTimeSubtract"></a>PETSC_STATIC_INLINE <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Sys/PetscTimeSubtract.html#PetscTimeSubtract">PetscTimeSubtract</A>(PetscLogDouble *v)</font></strong>
+<a name="line166">166: </a>{
+<a name="line167">167: </a>  *v -= PetscMicrosoftTime();
+<a name="line168">168: </a>  <font color="#4169E1">return</font> 0;
+<a name="line169">169: </a>}
+
+<a name="line171">171: </a><strong><font color="#4169E1"><a name="PetscTimeAdd"></a>PETSC_STATIC_INLINE <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Sys/PetscTimeAdd.html#PetscTimeAdd">PetscTimeAdd</A>(PetscLogDouble *v)</font></strong>
+<a name="line172">172: </a>{
+<a name="line173">173: </a>  *v += PetscMicrosoftTime();
+<a name="line174">174: </a>  <font color="#4169E1">return</font> 0;
+<a name="line175">175: </a>}
+
+<a name="line177">177: </a><font color="#B22222">/* ------------------------------------------------------------------</font>
+<a name="line178">178: </a><font color="#B22222">    The usual Unix time routines.</font>
+<a name="line179">179: </a><font color="#B22222">*/</font>
+<a name="line180">180: </a><font color="#A020F0">#else</font>
+
+<a name="line182">182: </a><font color="#A020F0">#if defined(PETSC_HAVE_SYS_TIME_H)</font>
+<a name="line183">183: </a><font color="#A020F0">#include &lt;sys/time.h&gt;</font>
+<a name="line184">184: </a><font color="#A020F0">#endif</font>
+
+<a name="line186">186: </a><font color="#A020F0">#if defined(PETSC_NEEDS_GETTIMEOFDAY_PROTO)</font>
+<a name="line187">187: </a><strong><font color="#4169E1">PETSC_EXTERN int gettimeofday(struct timeval *,struct timezone *)</font></strong>;
+<a name="line188">188: </a><font color="#A020F0">#endif</font>
+
+<a name="line190">190: </a><strong><font color="#4169E1"><a name="PetscTime"></a>PETSC_STATIC_INLINE <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Sys/PetscTime.html#PetscTime">PetscTime</A>(PetscLogDouble *v)</font></strong>
+<a name="line191">191: </a>{
+<a name="line192">192: </a>  static <font color="#4169E1">struct timeval</font> _tp;
+<a name="line193">193: </a>  gettimeofday(&amp;_tp,(<font color="#4169E1">struct timezone</font> *)0);
+<a name="line194">194: </a>  *v = ((PetscLogDouble)_tp.tv_sec)+(1.0e-6)*(_tp.tv_usec);
+<a name="line195">195: </a>  <font color="#4169E1">return</font> 0;
+<a name="line196">196: </a>}
+
+<a name="line198">198: </a><strong><font color="#4169E1"><a name="PetscTimeSubtract"></a>PETSC_STATIC_INLINE <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Sys/PetscTimeSubtract.html#PetscTimeSubtract">PetscTimeSubtract</A>(PetscLogDouble *v)</font></strong>
+<a name="line199">199: </a>{
+<a name="line200">200: </a>  static <font color="#4169E1">struct timeval</font> _tp;
+<a name="line201">201: </a>  gettimeofday(&amp;_tp,(<font color="#4169E1">struct timezone</font> *)0);
+<a name="line202">202: </a>  *v -= ((PetscLogDouble)_tp.tv_sec)+(1.0e-6)*(_tp.tv_usec);
+<a name="line203">203: </a>  <font color="#4169E1">return</font> 0;
+<a name="line204">204: </a>}
+
+<a name="line206">206: </a><strong><font color="#4169E1"><a name="PetscTimeAdd"></a>PETSC_STATIC_INLINE <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Sys/PetscTimeAdd.html#PetscTimeAdd">PetscTimeAdd</A>(PetscLogDouble *v)</font></strong>
+<a name="line207">207: </a>{
+<a name="line208">208: </a>  static <font color="#4169E1">struct timeval</font> _tp;
+<a name="line209">209: </a>  gettimeofday(&amp;_tp,(<font color="#4169E1">struct timezone</font> *)0);
+<a name="line210">210: </a>  *v += ((PetscLogDouble)_tp.tv_sec)+(1.0e-6)*(_tp.tv_usec);
+<a name="line211">211: </a>  <font color="#4169E1">return</font> 0;
+<a name="line212">212: </a>}
+
+<a name="line214">214: </a><font color="#A020F0">#endif</font>
+
+<a name="line216">216: </a><font color="#A020F0">#endif</font>
+
+
+
+</pre>
+</body>
+
+</html>

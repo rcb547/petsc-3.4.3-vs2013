@@ -1,0 +1,46 @@
+<center><a href="petsc-viewerimpl.h">Actual source code: petsc-viewerimpl.h</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="http://www.mcs.anl.gov/petsc/petsc-current/include/petsc-private/viewerimpl.h.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2013-10-15T16:54:26+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>petsc-3.4.3 2013-10-15</b></div>
+<pre width="80">
+<a name="line2">  2: </a><font color="#A020F0">#ifndef _VIEWERIMPL</font>
+<a name="line3">  3: </a><strong><font color="#228B22">#define _VIEWERIMPL</font></strong>
+
+<a name="line5">  5: </a><font color="#A020F0">#include &lt;petsc-private/petscimpl.h&gt;</font>
+<a name="line6">  6: </a><font color="#A020F0">#include &lt;petscviewer.h&gt;</font>
+
+<a name="line8">  8: </a><font color="#4169E1"><a name="_PetscViewerOps"></a>struct _PetscViewerOps </font>{
+<a name="line9">  9: </a>   <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*destroy)(<A href="../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A>);
+<a name="line10"> 10: </a>   <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*view)(<A href="../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A>,<A href="../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A>);
+<a name="line11"> 11: </a>   <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*flush)(<A href="../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A>);
+<a name="line12"> 12: </a>   <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*getsingleton)(<A href="../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A>,<A href="../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A>*);
+<a name="line13"> 13: </a>   <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*restoresingleton)(<A href="../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A>,<A href="../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A>*);
+<a name="line14"> 14: </a>   <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*getsubcomm)(<A href="../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A>,<A href="../docs/manualpages/Sys/MPI_Comm.html#MPI_Comm">MPI_Comm</A>,<A href="../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A>*);
+<a name="line15"> 15: </a>   <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*restoresubcomm)(<A href="../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A>,<A href="../docs/manualpages/Sys/MPI_Comm.html#MPI_Comm">MPI_Comm</A>,<A href="../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A>*);
+<a name="line16"> 16: </a>   <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*setfromoptions)(<A href="../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A>);
+<a name="line17"> 17: </a>};
+
+<a name="line19"> 19: </a><font color="#B22222">/*</font>
+<a name="line20"> 20: </a><font color="#B22222">   Defines the viewer data structure.</font>
+<a name="line21"> 21: </a><font color="#B22222">*/</font>
+<a name="line22"> 22: </a><font color="#4169E1"><a name="_p_PetscViewer"></a>struct _p_PetscViewer </font>{
+<a name="line23"> 23: </a>  PETSCHEADER(<font color="#4169E1">struct _PetscViewerOps</font>);
+<a name="line24"> 24: </a>  <A href="../docs/manualpages/Viewer/PetscViewerFormat.html#PetscViewerFormat">PetscViewerFormat</A> format,formats[10];
+<a name="line25"> 25: </a>  int               iformat;   <font color="#B22222">/* number of formats that have been pushed on formats[] stack */</font>
+<a name="line26"> 26: </a>  void              *data;
+<a name="line27"> 27: </a>};
+
+
+
+<a name="line31"> 31: </a><font color="#A020F0">#endif</font>
+</pre>
+</body>
+
+</html>

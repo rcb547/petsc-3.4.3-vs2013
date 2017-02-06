@@ -1,0 +1,365 @@
+<center><a href="DMBuilder.hh">Actual source code: DMBuilder.hh</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="http://www.mcs.anl.gov/petsc/petsc-current/include/sieve/DMBuilder.hh.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2013-10-15T17:09:13+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>petsc-3.4.3 2013-10-15</b></div>
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#ifndef included_ALE_DMBuilder_hh</font>
+<a name="line2">  2: </a><strong><font color="#228B22">#define included_ALE_DMBuilder_hh</font></strong>
+
+<a name="line4">  4: </a><font color="#A020F0">#ifndef  included_ALE_Mesh_hh</font>
+<a name="line5">  5: </a><font color="#A020F0">#include &lt;sieve/Mesh.hh&gt;</font>
+<a name="line6">  6: </a><font color="#A020F0">#endif</font>
+
+<a name="line8">  8: </a><font color="#A020F0">#include &lt;petscdmmesh.hh&gt;</font>
+
+<a name="line10"> 10: </a>namespace ALE {
+
+<a name="line12"> 12: </a>  class DMBuilder {
+<a name="line13"> 13: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line16"> 16: </a>    static <A href="../../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> createBasketMesh(<A href="../../docs/manualpages/Sys/MPI_Comm.html#MPI_Comm">MPI_Comm</A> comm, const int dim, const bool structured, const bool interpolate, const int debug, DM *dm) {
+<a name="line17"> 17: </a>      <font color="#4169E1">typedef</font> PETSC_MESH_TYPE::real_section_type::value_type real;
+
+<a name="line21"> 21: </a>      <font color="#4169E1">if</font> (structured) {
+<a name="line22"> 22: </a>        <A href="../../docs/manualpages/Sys/SETERRQ.html#SETERRQ">SETERRQ</A>(<A href="../../docs/manualpages/Sys/PETSC_COMM_SELF.html#PETSC_COMM_SELF">PETSC_COMM_SELF</A>,PETSC_ERR_SUP, <font color="#666666">"Structured grids cannot handle boundary meshes"</font>);
+<a name="line23"> 23: </a>      } <font color="#4169E1">else</font> {
+<a name="line24"> 24: </a>        <font color="#4169E1">typedef</font> ALE::Mesh&lt;<A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>,<A href="../../docs/manualpages/Sys/PetscScalar.html#PetscScalar">PetscScalar</A>&gt; FlexMesh;
+<a name="line25"> 25: </a>        <font color="#4169E1">typedef</font> PETSC_MESH_TYPE::point_type point_type;
+<a name="line26"> 26: </a>        DM boundary;
+
+<a name="line28"> 28: </a>        <A href="../../docs/manualpages/DM/DMCreate.html#DMCreate">DMCreate</A>(comm, &amp;boundary);
+<a name="line29"> 29: </a>        <A href="../../docs/manualpages/DM/DMSetType.html#DMSetType">DMSetType</A>(boundary, DMMESH);
+<a name="line30"> 30: </a>        Obj&lt;PETSC_MESH_TYPE&gt;             meshBd = new PETSC_MESH_TYPE(comm, dim-1, debug);
+<a name="line31"> 31: </a>        Obj&lt;PETSC_MESH_TYPE::sieve_type&gt; sieve  = new PETSC_MESH_TYPE::sieve_type(comm, debug);
+<a name="line32"> 32: </a><strong><font color="#FF0000">        std:</font></strong>:map&lt;point_type,point_type&gt;  renumbering;
+<a name="line33"> 33: </a>        Obj&lt;FlexMesh&gt;                    mB;
+
+<a name="line35"> 35: </a>        meshBd-&gt;setSieve(sieve);
+<a name="line36"> 36: </a>        <font color="#4169E1">if</font> (dim == 2) {
+<a name="line37"> 37: </a>          real lower[2] = {0.0, 0.0};
+<a name="line38"> 38: </a>          real upper[2] = {1.0, 1.0};
+<a name="line39"> 39: </a>          int  edges    = 2;
+
+<a name="line41"> 41: </a>          mB = ALE::MeshBuilder&lt;FlexMesh&gt;::createSquareBoundary(comm, lower, upper, edges, debug);
+<a name="line42"> 42: </a>        } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (dim == 3) {
+<a name="line43"> 43: </a>          real lower[3] = {0.0, 0.0, 0.0};
+<a name="line44"> 44: </a>          real upper[3] = {1.0, 1.0, 1.0};
+<a name="line45"> 45: </a>          int  faces[3] = {3, 3, 3};
+
+<a name="line47"> 47: </a>          mB = ALE::MeshBuilder&lt;FlexMesh&gt;::createCubeBoundary(comm, lower, upper, faces, debug);
+<a name="line48"> 48: </a>        } <font color="#4169E1">else</font> {
+<a name="line49"> 49: </a>          <A href="../../docs/manualpages/Sys/SETERRQ1.html#SETERRQ1">SETERRQ1</A>(<A href="../../docs/manualpages/Sys/PETSC_COMM_SELF.html#PETSC_COMM_SELF">PETSC_COMM_SELF</A>,PETSC_ERR_SUP, <font color="#666666">"Dimension not supported: %d"</font>, dim);
+<a name="line50"> 50: </a>        }
+<a name="line51"> 51: </a><strong><font color="#FF0000">        ALE:</font></strong>:ISieveConverter::convertMesh(*mB, *meshBd, renumbering, false);
+<a name="line52"> 52: </a>        <A href="../../docs/manualpages/DM/DMMeshSetMesh.html#DMMeshSetMesh">DMMeshSetMesh</A>(boundary, meshBd);
+<a name="line53"> 53: </a>        *dm = boundary;
+<a name="line54"> 54: </a>      }
+<a name="line55"> 55: </a>      <font color="#4169E1">return</font>(0);
+<a name="line56"> 56: </a>    };
+<a name="line59"> 59: </a>    static <A href="../../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> createBoxMesh(<A href="../../docs/manualpages/Sys/MPI_Comm.html#MPI_Comm">MPI_Comm</A> comm, const int dim, const bool structured, const bool interpolate, const int debug, DM *dm) {
+<a name="line60"> 60: </a>      <font color="#4169E1">typedef</font> PETSC_MESH_TYPE::real_section_type::value_type real;
+
+<a name="line64"> 64: </a>      <font color="#4169E1">if</font> (structured) {
+<a name="line65"> 65: </a>        DM             da;
+<a name="line66"> 66: </a>        const <A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A> dof = 1;
+<a name="line67"> 67: </a>        const <A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A> pd  = <A href="../../docs/manualpages/Sys/PETSC_DECIDE.html#PETSC_DECIDE">PETSC_DECIDE</A>;
+
+<a name="line69"> 69: </a>        <font color="#4169E1">if</font> (dim == 2) {
+<a name="line70"> 70: </a>          <A href="../../docs/manualpages/DM/DMDACreate2d.html#DMDACreate2d">DMDACreate2d</A>(comm, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, <A href="../../docs/manualpages/DM/DMDA_STENCIL_BOX.html#DMDA_STENCIL_BOX">DMDA_STENCIL_BOX</A>, -3, -3, pd, pd, dof, 1, NULL, NULL, &amp;da);
+<a name="line71"> 71: </a>        } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (dim == 3) {
+<a name="line72"> 72: </a>          <A href="../../docs/manualpages/DM/DMDACreate3d.html#DMDACreate3d">DMDACreate3d</A>(comm, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, <A href="../../docs/manualpages/DM/DMDA_STENCIL_BOX.html#DMDA_STENCIL_BOX">DMDA_STENCIL_BOX</A>, -3, -3, -3, pd, pd, pd, dof, 1, NULL, NULL, NULL, &amp;da);
+<a name="line73"> 73: </a>        } <font color="#4169E1">else</font> {
+<a name="line74"> 74: </a>          <A href="../../docs/manualpages/Sys/SETERRQ1.html#SETERRQ1">SETERRQ1</A>(<A href="../../docs/manualpages/Sys/PETSC_COMM_SELF.html#PETSC_COMM_SELF">PETSC_COMM_SELF</A>,PETSC_ERR_SUP, <font color="#666666">"Dimension not supported: %d"</font>, dim);
+<a name="line75"> 75: </a>        }
+<a name="line76"> 76: </a>        <A href="../../docs/manualpages/DM/DMDASetUniformCoordinates.html#DMDASetUniformCoordinates">DMDASetUniformCoordinates</A>(da, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);
+<a name="line77"> 77: </a>        *dm = da;
+<a name="line78"> 78: </a>      } <font color="#4169E1">else</font> {
+<a name="line79"> 79: </a>        <font color="#4169E1">typedef</font> ALE::Mesh&lt;<A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>,<A href="../../docs/manualpages/Sys/PetscScalar.html#PetscScalar">PetscScalar</A>&gt; FlexMesh;
+<a name="line80"> 80: </a>        <font color="#4169E1">typedef</font> PETSC_MESH_TYPE::point_type point_type;
+<a name="line81"> 81: </a>        DM mesh;
+<a name="line82"> 82: </a>        DM boundary;
+
+<a name="line84"> 84: </a>        <A href="../../docs/manualpages/DM/DMCreate.html#DMCreate">DMCreate</A>(comm, &amp;boundary);
+<a name="line85"> 85: </a>        <A href="../../docs/manualpages/DM/DMSetType.html#DMSetType">DMSetType</A>(boundary, DMMESH);
+<a name="line86"> 86: </a>        Obj&lt;PETSC_MESH_TYPE&gt;             meshBd = new PETSC_MESH_TYPE(comm, dim-1, debug);
+<a name="line87"> 87: </a>        Obj&lt;PETSC_MESH_TYPE::sieve_type&gt; sieve  = new PETSC_MESH_TYPE::sieve_type(comm, debug);
+<a name="line88"> 88: </a><strong><font color="#FF0000">        std:</font></strong>:map&lt;point_type,point_type&gt;  renumbering;
+<a name="line89"> 89: </a>        Obj&lt;FlexMesh&gt;                    mB;
+
+<a name="line91"> 91: </a>        meshBd-&gt;setSieve(sieve);
+<a name="line92"> 92: </a>        <font color="#4169E1">if</font> (dim == 2) {
+<a name="line93"> 93: </a>          real lower[2] = {0.0, 0.0};
+<a name="line94"> 94: </a>          real upper[2] = {1.0, 1.0};
+<a name="line95"> 95: </a>          int  edges[2] = {2, 2};
+
+<a name="line97"> 97: </a>          mB = ALE::MeshBuilder&lt;FlexMesh&gt;::createSquareBoundary(comm, lower, upper, edges, debug);
+<a name="line98"> 98: </a>        } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (dim == 3) {
+<a name="line99"> 99: </a>          real lower[3] = {0.0, 0.0, 0.0};
+<a name="line100">100: </a>          real upper[3] = {1.0, 1.0, 1.0};
+<a name="line101">101: </a>          int  faces[3] = {3, 3, 3};
+
+<a name="line103">103: </a>          mB = ALE::MeshBuilder&lt;FlexMesh&gt;::createCubeBoundary(comm, lower, upper, faces, debug);
+<a name="line104">104: </a>        } <font color="#4169E1">else</font> {
+<a name="line105">105: </a>          <A href="../../docs/manualpages/Sys/SETERRQ1.html#SETERRQ1">SETERRQ1</A>(<A href="../../docs/manualpages/Sys/PETSC_COMM_SELF.html#PETSC_COMM_SELF">PETSC_COMM_SELF</A>,PETSC_ERR_SUP, <font color="#666666">"Dimension not supported: %d"</font>, dim);
+<a name="line106">106: </a>        }
+<a name="line107">107: </a><strong><font color="#FF0000">        ALE:</font></strong>:ISieveConverter::convertMesh(*mB, *meshBd, renumbering, false);
+<a name="line108">108: </a>        <A href="../../docs/manualpages/DM/DMMeshSetMesh.html#DMMeshSetMesh">DMMeshSetMesh</A>(boundary, meshBd);
+<a name="line109">109: </a>        <A href="../../docs/manualpages/DM/DMMeshGenerate.html#DMMeshGenerate">DMMeshGenerate</A>(boundary, (<A href="../../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A>) interpolate, &amp;mesh);
+<a name="line110">110: </a>        <A href="../../docs/manualpages/DM/DMDestroy.html#DMDestroy">DMDestroy</A>(&amp;boundary);
+<a name="line111">111: </a>        *dm = mesh;
+<a name="line112">112: </a>      }
+<a name="line113">113: </a>      <font color="#4169E1">return</font>(0);
+<a name="line114">114: </a>    };
+<a name="line117">117: </a>    static <A href="../../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> createReentrantBoxMesh(<A href="../../docs/manualpages/Sys/MPI_Comm.html#MPI_Comm">MPI_Comm</A> comm, const int dim, const bool interpolate, const int debug, DM *dm) {
+<a name="line118">118: </a>      <font color="#4169E1">typedef</font> ALE::Mesh&lt;<A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>,<A href="../../docs/manualpages/Sys/PetscScalar.html#PetscScalar">PetscScalar</A>&gt; FlexMesh;
+<a name="line119">119: </a>      <font color="#4169E1">typedef</font> PETSC_MESH_TYPE::point_type point_type;
+<a name="line120">120: </a>      <font color="#4169E1">typedef</font> PETSC_MESH_TYPE::real_section_type::value_type real;
+<a name="line121">121: </a>      DM         mesh;
+<a name="line122">122: </a>      DM         boundary;
+
+<a name="line126">126: </a>      <A href="../../docs/manualpages/DM/DMCreate.html#DMCreate">DMCreate</A>(comm, &amp;boundary);
+<a name="line127">127: </a>      <A href="../../docs/manualpages/DM/DMSetType.html#DMSetType">DMSetType</A>(boundary, DMMESH);
+<a name="line128">128: </a>      Obj&lt;PETSC_MESH_TYPE&gt;             meshBd = new PETSC_MESH_TYPE(comm, dim-1, debug);
+<a name="line129">129: </a>      Obj&lt;PETSC_MESH_TYPE::sieve_type&gt; sieve  = new PETSC_MESH_TYPE::sieve_type(comm, debug);
+<a name="line130">130: </a><strong><font color="#FF0000">      std:</font></strong>:map&lt;point_type,point_type&gt;  renumbering;
+<a name="line131">131: </a>      Obj&lt;FlexMesh&gt;                    mB;
+
+<a name="line133">133: </a>      meshBd-&gt;setSieve(sieve);
+<a name="line134">134: </a>      <font color="#4169E1">if</font> (dim == 2) {
+<a name="line135">135: </a>        real lower[2]  = {-1.0, -1.0};
+<a name="line136">136: </a>        real upper[2]  = {1.0, 1.0};
+<a name="line137">137: </a>        real offset[2] = {0.5, 0.5};
+
+<a name="line139">139: </a>        mB = ALE::MeshBuilder&lt;FlexMesh&gt;::createReentrantBoundary(comm, lower, upper, offset, debug);
+<a name="line140">140: </a>      } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (dim == 3) {
+<a name="line141">141: </a>        real lower[3]  = {-1.0, -1.0, -1.0};
+<a name="line142">142: </a>        real upper[3]  = { 1.0,  1.0,  1.0};
+<a name="line143">143: </a>        real offset[3] = { 0.5,  0.5,  0.5};
+
+<a name="line145">145: </a>        mB = ALE::MeshBuilder&lt;FlexMesh&gt;::createFicheraCornerBoundary(comm, lower, upper, offset, debug);
+<a name="line146">146: </a>      } <font color="#4169E1">else</font> {
+<a name="line147">147: </a>        <A href="../../docs/manualpages/Sys/SETERRQ1.html#SETERRQ1">SETERRQ1</A>(<A href="../../docs/manualpages/Sys/PETSC_COMM_SELF.html#PETSC_COMM_SELF">PETSC_COMM_SELF</A>,PETSC_ERR_SUP, <font color="#666666">"Dimension not supported: %d"</font>, dim);
+<a name="line148">148: </a>      }
+<a name="line149">149: </a><strong><font color="#FF0000">      ALE:</font></strong>:ISieveConverter::convertMesh(*mB, *meshBd, renumbering, false);
+<a name="line150">150: </a>      <A href="../../docs/manualpages/DM/DMMeshSetMesh.html#DMMeshSetMesh">DMMeshSetMesh</A>(boundary, meshBd);
+<a name="line151">151: </a>      <A href="../../docs/manualpages/DM/DMMeshGenerate.html#DMMeshGenerate">DMMeshGenerate</A>(boundary, (<A href="../../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A>) interpolate, &amp;mesh);
+<a name="line152">152: </a>      <A href="../../docs/manualpages/DM/DMDestroy.html#DMDestroy">DMDestroy</A>(&amp;boundary);
+<a name="line153">153: </a>      *dm = mesh;
+<a name="line154">154: </a>      <font color="#4169E1">return</font>(0);
+<a name="line155">155: </a>    };
+<a name="line158">158: </a>    static <A href="../../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> createSphericalMesh(<A href="../../docs/manualpages/Sys/MPI_Comm.html#MPI_Comm">MPI_Comm</A> comm, const int dim, const bool interpolate, const int debug, DM *dm) {
+<a name="line159">159: </a>      <font color="#4169E1">typedef</font> ALE::Mesh&lt;<A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>,<A href="../../docs/manualpages/Sys/PetscScalar.html#PetscScalar">PetscScalar</A>&gt; FlexMesh;
+<a name="line160">160: </a>      <font color="#4169E1">typedef</font> PETSC_MESH_TYPE::point_type point_type;
+<a name="line161">161: </a>      DM         mesh;
+<a name="line162">162: </a>      DM         boundary;
+
+<a name="line166">166: </a>      <A href="../../docs/manualpages/DM/DMCreate.html#DMCreate">DMCreate</A>(comm, &amp;boundary);
+<a name="line167">167: </a>      <A href="../../docs/manualpages/DM/DMSetType.html#DMSetType">DMSetType</A>(boundary, DMMESH);
+<a name="line168">168: </a>      Obj&lt;PETSC_MESH_TYPE&gt;             meshBd = new PETSC_MESH_TYPE(comm, dim-1, debug);
+<a name="line169">169: </a>      Obj&lt;PETSC_MESH_TYPE::sieve_type&gt; sieve  = new PETSC_MESH_TYPE::sieve_type(comm, debug);
+<a name="line170">170: </a><strong><font color="#FF0000">      std:</font></strong>:map&lt;point_type,point_type&gt;  renumbering;
+<a name="line171">171: </a>      Obj&lt;FlexMesh&gt;                    mB;
+
+<a name="line173">173: </a>      meshBd-&gt;setSieve(sieve);
+<a name="line174">174: </a>      <font color="#4169E1">if</font> (dim == 2) {
+<a name="line175">175: </a>        mB = ALE::MeshBuilder&lt;FlexMesh&gt;::createCircularReentrantBoundary(comm, 100, 1.0, 1.0, debug);
+<a name="line176">176: </a>      } <font color="#4169E1">else</font> {
+<a name="line177">177: </a>        <A href="../../docs/manualpages/Sys/SETERRQ1.html#SETERRQ1">SETERRQ1</A>(<A href="../../docs/manualpages/Sys/PETSC_COMM_SELF.html#PETSC_COMM_SELF">PETSC_COMM_SELF</A>,PETSC_ERR_SUP, <font color="#666666">"Dimension not supported: %d"</font>, dim);
+<a name="line178">178: </a>      }
+<a name="line179">179: </a><strong><font color="#FF0000">      ALE:</font></strong>:ISieveConverter::convertMesh(*mB, *meshBd, renumbering, false);
+<a name="line180">180: </a>      <A href="../../docs/manualpages/DM/DMMeshSetMesh.html#DMMeshSetMesh">DMMeshSetMesh</A>(boundary, meshBd);
+<a name="line181">181: </a>      <A href="../../docs/manualpages/DM/DMMeshGenerate.html#DMMeshGenerate">DMMeshGenerate</A>(boundary, (<A href="../../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A>) interpolate, &amp;mesh);
+<a name="line182">182: </a>      <A href="../../docs/manualpages/DM/DMDestroy.html#DMDestroy">DMDestroy</A>(&amp;boundary);
+<a name="line183">183: </a>      *dm = mesh;
+<a name="line184">184: </a>      <font color="#4169E1">return</font>(0);
+<a name="line185">185: </a>    };
+<a name="line188">188: </a>    static <A href="../../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> createReentrantSphericalMesh(<A href="../../docs/manualpages/Sys/MPI_Comm.html#MPI_Comm">MPI_Comm</A> comm, const int dim, const bool interpolate, const int debug, DM *dm) {
+<a name="line189">189: </a>      <font color="#4169E1">typedef</font> ALE::Mesh&lt;<A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>,<A href="../../docs/manualpages/Sys/PetscScalar.html#PetscScalar">PetscScalar</A>&gt; FlexMesh;
+<a name="line190">190: </a>      <font color="#4169E1">typedef</font> PETSC_MESH_TYPE::point_type point_type;
+<a name="line191">191: </a>      DM         mesh;
+<a name="line192">192: </a>      DM         boundary;
+
+<a name="line196">196: </a>      <A href="../../docs/manualpages/DM/DMCreate.html#DMCreate">DMCreate</A>(comm, &amp;boundary);
+<a name="line197">197: </a>      <A href="../../docs/manualpages/DM/DMSetType.html#DMSetType">DMSetType</A>(boundary, DMMESH);
+<a name="line198">198: </a>      Obj&lt;PETSC_MESH_TYPE&gt;             meshBd = new PETSC_MESH_TYPE(comm, dim-1, debug);
+<a name="line199">199: </a>      Obj&lt;PETSC_MESH_TYPE::sieve_type&gt; sieve  = new PETSC_MESH_TYPE::sieve_type(comm, debug);
+<a name="line200">200: </a><strong><font color="#FF0000">      std:</font></strong>:map&lt;point_type,point_type&gt;  renumbering;
+<a name="line201">201: </a>      Obj&lt;FlexMesh&gt;                    mB;
+
+<a name="line203">203: </a>      meshBd-&gt;setSieve(sieve);
+<a name="line204">204: </a>      <font color="#4169E1">if</font> (dim == 2) {
+<a name="line205">205: </a>        mB = ALE::MeshBuilder&lt;FlexMesh&gt;::createCircularReentrantBoundary(comm, 100, 1.0, 0.9, debug);
+<a name="line206">206: </a>      } <font color="#4169E1">else</font> {
+<a name="line207">207: </a>        <A href="../../docs/manualpages/Sys/SETERRQ1.html#SETERRQ1">SETERRQ1</A>(<A href="../../docs/manualpages/Sys/PETSC_COMM_SELF.html#PETSC_COMM_SELF">PETSC_COMM_SELF</A>,PETSC_ERR_SUP, <font color="#666666">"Dimension not supported: %d"</font>, dim);
+<a name="line208">208: </a>      }
+<a name="line209">209: </a><strong><font color="#FF0000">      ALE:</font></strong>:ISieveConverter::convertMesh(*mB, *meshBd, renumbering, false);
+<a name="line210">210: </a>      <A href="../../docs/manualpages/DM/DMMeshSetMesh.html#DMMeshSetMesh">DMMeshSetMesh</A>(boundary, meshBd);
+<a name="line211">211: </a>      <A href="../../docs/manualpages/DM/DMMeshGenerate.html#DMMeshGenerate">DMMeshGenerate</A>(boundary, (<A href="../../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A>) interpolate, &amp;mesh);
+<a name="line212">212: </a>      <A href="../../docs/manualpages/DM/DMDestroy.html#DMDestroy">DMDestroy</A>(&amp;boundary);
+<a name="line213">213: </a>      *dm = mesh;
+<a name="line214">214: </a>      <font color="#4169E1">return</font>(0);
+<a name="line215">215: </a>    };
+<a name="line218">218: </a>    static <A href="../../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> MeshRefineSingularity(DM mesh, double * singularity, double factor, DM *refinedMesh) {
+<a name="line219">219: </a>      <font color="#4169E1">typedef</font> PETSC_MESH_TYPE::real_section_type::value_type real;
+<a name="line220">220: </a><strong><font color="#FF0000">      ALE:</font></strong>:Obj&lt;PETSC_MESH_TYPE&gt; oldMesh;
+<a name="line221">221: </a>      double              oldLimit;
+<a name="line222">222: </a>      <A href="../../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A>      ierr;
+
+<a name="line225">225: </a>      <A href="../../docs/manualpages/DM/DMMeshGetMesh.html#DMMeshGetMesh">DMMeshGetMesh</A>(mesh, oldMesh);
+<a name="line226">226: </a>      <A href="../../docs/manualpages/DM/DMCreate.html#DMCreate">DMCreate</A>(oldMesh-&gt;comm(), refinedMesh);
+<a name="line227">227: </a>      <A href="../../docs/manualpages/DM/DMSetType.html#DMSetType">DMSetType</A>(*refinedMesh, DMMESH);
+<a name="line228">228: </a>      int dim = oldMesh-&gt;getDimension();
+<a name="line229">229: </a>      oldLimit = oldMesh-&gt;getMaxVolume();
+<a name="line230">230: </a>      //double oldLimInv = 1./oldLimit;
+<a name="line231">231: </a>      real curLimit, tmpLimit;
+<a name="line232">232: </a>      real minLimit = oldLimit/16384.;             //arbitrary;
+<a name="line233">233: </a>      const ALE::Obj&lt;PETSC_MESH_TYPE::real_section_type&gt;&amp; coordinates = oldMesh-&gt;getRealSection(<font color="#666666">"coordinates"</font>);
+<a name="line234">234: </a>      const ALE::Obj&lt;PETSC_MESH_TYPE::real_section_type&gt;&amp; volume_limits = oldMesh-&gt;getRealSection(<font color="#666666">"volume_limits"</font>);
+<a name="line235">235: </a>      volume_limits-&gt;setFiberDimension(oldMesh-&gt;heightStratum(0), 1);
+<a name="line236">236: </a>      oldMesh-&gt;allocate(volume_limits);
+<a name="line237">237: </a>      const ALE::Obj&lt;PETSC_MESH_TYPE::label_sequence&gt;&amp; cells = oldMesh-&gt;heightStratum(0);
+<a name="line238">238: </a><strong><font color="#FF0000">      PETSC_MESH_TYPE:</font></strong>:label_sequence::iterator c_iter = cells-&gt;begin();
+<a name="line239">239: </a><strong><font color="#FF0000">      PETSC_MESH_TYPE:</font></strong>:label_sequence::iterator c_iter_end = cells-&gt;end();
+<a name="line240">240: </a>      real centerCoords[dim];
+<a name="line241">241: </a>      <font color="#4169E1">while</font> (c_iter != c_iter_end) {
+<a name="line242">242: </a>        const real * coords = oldMesh-&gt;restrictClosure(coordinates, *c_iter);
+<a name="line243">243: </a>        <font color="#4169E1">for</font> (int i = 0; i &lt; dim; i++) {
+<a name="line244">244: </a>          centerCoords[i] = 0;
+<a name="line245">245: </a>          <font color="#4169E1">for</font> (int j = 0; j &lt; dim+1; j++) {
+<a name="line246">246: </a>            centerCoords[i] += coords[j*dim+i];
+<a name="line247">247: </a>          }
+<a name="line248">248: </a>          centerCoords[i] = centerCoords[i]/(dim+1);
+<a name="line249">249: </a>        }
+<a name="line250">250: </a>        real dist = 0.;
+<a name="line251">251: </a>        <font color="#4169E1">for</font> (int i = 0; i &lt; dim; i++) {
+<a name="line252">252: </a>          dist += (centerCoords[i] - singularity[i])*(centerCoords[i] - singularity[i]);
+<a name="line253">253: </a>        }
+<a name="line254">254: </a>        <font color="#4169E1">if</font> (dist &gt; 0.) {
+<a name="line255">255: </a>          dist = sqrt(dist);
+<a name="line256">256: </a>          real mu = pow(dist, factor);
+<a name="line257">257: </a>          //<A href="../../docs/manualpages/Sys/PetscPrintf.html#PetscPrintf">PetscPrintf</A>(oldMesh-&gt;comm(), <font color="#666666">"%f\n"</font>, mu);
+<a name="line258">258: </a>          tmpLimit = oldLimit*pow(mu, dim);
+<a name="line259">259: </a>          <font color="#4169E1">if</font> (tmpLimit &gt; minLimit) {
+<a name="line260">260: </a>            curLimit = tmpLimit;
+<a name="line261">261: </a>          } <font color="#4169E1">else</font> curLimit = minLimit;
+<a name="line262">262: </a>        } <font color="#4169E1">else</font> curLimit = minLimit;
+<a name="line263">263: </a>        //<A href="../../docs/manualpages/Sys/PetscPrintf.html#PetscPrintf">PetscPrintf</A>(oldMesh-&gt;comm(), <font color="#666666">"%f, %f\n"</font>, dist, tmpLimit);
+<a name="line264">264: </a>        volume_limits-&gt;updatePoint(*c_iter, &amp;curLimit);
+<a name="line265">265: </a>        c_iter++;
+<a name="line266">266: </a>      }
+<a name="line267">267: </a><font color="#A020F0">#ifdef PETSC_OPT_SIEVE</font>
+<a name="line268">268: </a><strong><font color="#FF0000">      ALE:</font></strong>:Obj&lt;PETSC_MESH_TYPE&gt; newMesh = ALE::Generator&lt;PETSC_MESH_TYPE&gt;::refineMeshV(oldMesh, volume_limits, true);
+<a name="line269">269: </a><font color="#A020F0">#else</font>
+<a name="line270">270: </a><strong><font color="#FF0000">      ALE:</font></strong>:Obj&lt;PETSC_MESH_TYPE&gt; newMesh = ALE::Generator&lt;PETSC_MESH_TYPE&gt;::refineMesh(oldMesh, volume_limits, true);
+<a name="line271">271: </a><font color="#A020F0">#endif</font>
+<a name="line272">272: </a>      <A href="../../docs/manualpages/DM/DMMeshSetMesh.html#DMMeshSetMesh">DMMeshSetMesh</A>(*refinedMesh, newMesh);
+<a name="line273">273: </a>      const ALE::Obj&lt;PETSC_MESH_TYPE::real_section_type&gt;&amp; s = newMesh-&gt;getRealSection(<font color="#666666">"</font><font color="#4169E1">default</font>");
+<a name="line274">274: </a>      const Obj&lt;std::set&lt;std::string&gt; &gt;&amp; discs = oldMesh-&gt;getDiscretizations();
+
+<a name="line276">276: </a>      <font color="#4169E1">for</font>(std::set&lt;std::string&gt;::const_iterator f_iter = discs-&gt;begin(); f_iter != discs-&gt;end(); ++f_iter) {
+<a name="line277">277: </a>        newMesh-&gt;setDiscretization(*f_iter, oldMesh-&gt;getDiscretization(*f_iter));
+<a name="line278">278: </a>      }
+<a name="line279">279: </a>      newMesh-&gt;setupField(s);
+<a name="line280">280: </a>      <font color="#4169E1">return</font>(0);
+<a name="line281">281: </a>    };
+<a name="line284">284: </a>    static <A href="../../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> MeshRefineSingularity_Fichera(DM mesh, double * singularity, double factor, DM *refinedMesh) {
+<a name="line285">285: </a>      <font color="#4169E1">typedef</font> PETSC_MESH_TYPE::real_section_type::value_type real;
+<a name="line286">286: </a><strong><font color="#FF0000">      ALE:</font></strong>:Obj&lt;PETSC_MESH_TYPE&gt; oldMesh;
+<a name="line287">287: </a>      real                      oldLimit;
+<a name="line288">288: </a>      <A href="../../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A>            ierr;
+
+<a name="line291">291: </a>      <A href="../../docs/manualpages/DM/DMMeshGetMesh.html#DMMeshGetMesh">DMMeshGetMesh</A>(mesh, oldMesh);
+<a name="line292">292: </a>      <A href="../../docs/manualpages/DM/DMCreate.html#DMCreate">DMCreate</A>(oldMesh-&gt;comm(), refinedMesh);
+<a name="line293">293: </a>      <A href="../../docs/manualpages/DM/DMSetType.html#DMSetType">DMSetType</A>(*refinedMesh, DMMESH);
+<a name="line294">294: </a>      int dim = oldMesh-&gt;getDimension();
+<a name="line295">295: </a>      oldLimit = oldMesh-&gt;getMaxVolume();
+<a name="line296">296: </a>      //double oldLimInv = 1./oldLimit;
+<a name="line297">297: </a>      real curLimit, tmpLimit;
+<a name="line298">298: </a>      real minLimit = oldLimit/16384.;             //arbitrary;
+<a name="line299">299: </a>      const ALE::Obj&lt;PETSC_MESH_TYPE::real_section_type&gt;&amp; coordinates = oldMesh-&gt;getRealSection(<font color="#666666">"coordinates"</font>);
+<a name="line300">300: </a>      const ALE::Obj&lt;PETSC_MESH_TYPE::real_section_type&gt;&amp; volume_limits = oldMesh-&gt;getRealSection(<font color="#666666">"volume_limits"</font>);
+<a name="line301">301: </a>      volume_limits-&gt;setFiberDimension(oldMesh-&gt;heightStratum(0), 1);
+<a name="line302">302: </a>      oldMesh-&gt;allocate(volume_limits);
+<a name="line303">303: </a>      const ALE::Obj&lt;PETSC_MESH_TYPE::label_sequence&gt;&amp; cells = oldMesh-&gt;heightStratum(0);
+<a name="line304">304: </a><strong><font color="#FF0000">      PETSC_MESH_TYPE:</font></strong>:label_sequence::iterator c_iter = cells-&gt;begin();
+<a name="line305">305: </a><strong><font color="#FF0000">      PETSC_MESH_TYPE:</font></strong>:label_sequence::iterator c_iter_end = cells-&gt;end();
+<a name="line306">306: </a>      real centerCoords[dim];
+<a name="line307">307: </a>      <font color="#4169E1">while</font> (c_iter != c_iter_end) {
+<a name="line308">308: </a>        const real *coords = oldMesh-&gt;restrictClosure(coordinates, *c_iter);
+<a name="line309">309: </a>        <font color="#4169E1">for</font> (int i = 0; i &lt; dim; i++) {
+<a name="line310">310: </a>          centerCoords[i] = 0;
+<a name="line311">311: </a>          <font color="#4169E1">for</font> (int j = 0; j &lt; dim+1; j++) {
+<a name="line312">312: </a>            centerCoords[i] += coords[j*dim+i];
+<a name="line313">313: </a>          }
+<a name="line314">314: </a>          centerCoords[i] = centerCoords[i]/(dim+1);
+<a name="line315">315: </a>          //<A href="../../docs/manualpages/Sys/PetscPrintf.html#PetscPrintf">PetscPrintf</A>(oldMesh-&gt;comm(), <font color="#666666">"%f, "</font>, centerCoords[i]);
+<a name="line316">316: </a>        }
+<a name="line317">317: </a>        //<A href="../../docs/manualpages/Sys/PetscPrintf.html#PetscPrintf">PetscPrintf</A>(oldMesh-&gt;comm(), <font color="#666666">"\n"</font>);
+<a name="line318">318: </a>        real dist = 0.;
+<a name="line319">319: </a>        real cornerdist = 0.;
+<a name="line320">320: </a>        //HERE'S THE DIFFERENCE: <font color="#4169E1">if</font> centercoords is less than the singularity coordinate <font color="#4169E1">for</font> each direction, include that direction in the distance
+<a name="line321">321: </a>        <font color="#B22222">/*</font>
+<a name="line322">322: </a><font color="#B22222">          for (int i = 0; i &lt; dim; i++) {</font>
+<a name="line323">323: </a><font color="#B22222">          if (centerCoords[i] &lt;= singularity[i]) {</font>
+<a name="line324">324: </a><font color="#B22222">          dist += (centerCoords[i] - singularity[i])*(centerCoords[i] - singularity[i]);</font>
+<a name="line325">325: </a><font color="#B22222">          }</font>
+<a name="line326">326: </a><font color="#B22222">          }</font>
+<a name="line327">327: </a><font color="#B22222">        */</font>
+<a name="line328">328: </a>        //determine: the per-dimension distance: cases
+<a name="line329">329: </a>        <font color="#4169E1">for</font> (int i = 0; i &lt; dim; i++) {
+<a name="line330">330: </a>          cornerdist = 0.;
+<a name="line331">331: </a>          <font color="#4169E1">if</font> (centerCoords[i] &gt; singularity[i]) {
+<a name="line332">332: </a>            <font color="#4169E1">for</font> (int j = 0; j &lt; dim; j++) {
+<a name="line333">333: </a>              <font color="#4169E1">if</font> (j != i) cornerdist += (centerCoords[j] - singularity[j])*(centerCoords[j] - singularity[j]);
+<a name="line334">334: </a>            }
+<a name="line335">335: </a>            <font color="#4169E1">if</font> (cornerdist &lt; dist || dist == 0.) dist = cornerdist;
+<a name="line336">336: </a>          }
+<a name="line337">337: </a>        }
+<a name="line338">338: </a>        //patch up AROUND the corner by minimizing between the distance from the relevant axis and the singular vertex
+<a name="line339">339: </a>        real singdist = 0.;
+<a name="line340">340: </a>        <font color="#4169E1">for</font> (int i = 0; i &lt; dim; i++) {
+<a name="line341">341: </a>          singdist += (centerCoords[i] - singularity[i])*(centerCoords[i] - singularity[i]);
+<a name="line342">342: </a>        }
+<a name="line343">343: </a>        <font color="#4169E1">if</font> (singdist &lt; dist || dist == 0.) dist = singdist;
+<a name="line344">344: </a>        <font color="#4169E1">if</font> (dist &gt; 0.) {
+<a name="line345">345: </a>          dist = sqrt(dist);
+<a name="line346">346: </a>          real mu = pow(dist, factor);
+<a name="line347">347: </a>          //<A href="../../docs/manualpages/Sys/PetscPrintf.html#PetscPrintf">PetscPrintf</A>(oldMesh-&gt;comm(), <font color="#666666">"%f, %f\n"</font>, mu, dist);
+<a name="line348">348: </a>          tmpLimit = oldLimit*pow(mu, dim);
+<a name="line349">349: </a>          <font color="#4169E1">if</font> (tmpLimit &gt; minLimit) {
+<a name="line350">350: </a>            curLimit = tmpLimit;
+<a name="line351">351: </a>          } <font color="#4169E1">else</font> curLimit = minLimit;
+<a name="line352">352: </a>        } <font color="#4169E1">else</font> curLimit = minLimit;
+<a name="line353">353: </a>        //<A href="../../docs/manualpages/Sys/PetscPrintf.html#PetscPrintf">PetscPrintf</A>(oldMesh-&gt;comm(), <font color="#666666">"%f, %f\n"</font>, dist, tmpLimit);
+<a name="line354">354: </a>        volume_limits-&gt;updatePoint(*c_iter, &amp;curLimit);
+<a name="line355">355: </a>        c_iter++;
+<a name="line356">356: </a>      }
+<a name="line357">357: </a><font color="#A020F0">#ifdef PETSC_OPT_SIEVE</font>
+<a name="line358">358: </a><strong><font color="#FF0000">      ALE:</font></strong>:Obj&lt;PETSC_MESH_TYPE&gt; newMesh = ALE::Generator&lt;PETSC_MESH_TYPE&gt;::refineMeshV(oldMesh, volume_limits, true);
+<a name="line359">359: </a><font color="#A020F0">#else</font>
+<a name="line360">360: </a><strong><font color="#FF0000">      ALE:</font></strong>:Obj&lt;PETSC_MESH_TYPE&gt; newMesh = ALE::Generator&lt;PETSC_MESH_TYPE&gt;::refineMesh(oldMesh, volume_limits, true);
+<a name="line361">361: </a><font color="#A020F0">#endif</font>
+<a name="line362">362: </a>      <A href="../../docs/manualpages/DM/DMMeshSetMesh.html#DMMeshSetMesh">DMMeshSetMesh</A>(*refinedMesh, newMesh);
+<a name="line363">363: </a>      const ALE::Obj&lt;PETSC_MESH_TYPE::real_section_type&gt;&amp; s = newMesh-&gt;getRealSection(<font color="#666666">"</font><font color="#4169E1">default</font>");
+<a name="line364">364: </a>      const Obj&lt;std::set&lt;std::string&gt; &gt;&amp; discs = oldMesh-&gt;getDiscretizations();
+
+<a name="line366">366: </a>      <font color="#4169E1">for</font>(std::set&lt;std::string&gt;::const_iterator f_iter = discs-&gt;begin(); f_iter != discs-&gt;end(); ++f_iter) {
+<a name="line367">367: </a>        newMesh-&gt;setDiscretization(*f_iter, oldMesh-&gt;getDiscretization(*f_iter));
+<a name="line368">368: </a>      }
+<a name="line369">369: </a>      newMesh-&gt;setupField(s);
+<a name="line370">370: </a>      //  <A href="../../docs/manualpages/Sys/PetscPrintf.html#PetscPrintf">PetscPrintf</A>(newMesh-&gt;comm(), <font color="#666666">"refined\n"</font>);
+<a name="line371">371: </a>      <font color="#4169E1">return</font>(0);
+<a name="line372">372: </a>    };
+<a name="line373">373: </a>  };
+<a name="line374">374: </a>}
+
+<a name="line376">376: </a><font color="#A020F0">#endif</font>
+</pre>
+</body>
+
+</html>

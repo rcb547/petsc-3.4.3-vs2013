@@ -1,0 +1,442 @@
+<center><a href="Topology.hh">Actual source code: Topology.hh</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="http://www.mcs.anl.gov/petsc/petsc-current/include/sieve/Topology.hh.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2013-10-15T17:09:12+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>petsc-3.4.3 2013-10-15</b></div>
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#ifndef included_ALE_CoSieve_hh</font>
+<a name="line2">  2: </a><strong><font color="#228B22">#define included_ALE_CoSieve_hh</font></strong>
+
+<a name="line4">  4: </a><font color="#A020F0">#ifndef  included_ALE_Sieve_hh</font>
+<a name="line5">  5: </a><font color="#A020F0">#include &lt;sieve/Sieve.hh&gt;</font>
+<a name="line6">  6: </a><font color="#A020F0">#endif</font>
+
+<a name="line8">  8: </a>namespace ALE {
+<a name="line9">  9: </a>  // A Topology is a collection of Sieves
+<a name="line10"> 10: </a>  //   Each Sieve has a label, which we call a \emph{patch}
+<a name="line11"> 11: </a>  //   The collection itself we call a \emph{sheaf}
+<a name="line12"> 12: </a>  //   The main operation we provide in Topology is the creation of a \emph{label}
+<a name="line13"> 13: </a>  //     A label is a bidirectional mapping of Sieve points to integers, implemented with a Sifter
+<a name="line14"> 14: </a>  template&lt;typename Patch_, typename Sieve_, typename Alloc_ = malloc_allocator&lt;typename Sieve_::point_type&gt; &gt;
+<a name="line15"> 15: </a>  class Topology : public ALE::ParallelObject {
+<a name="line16"> 16: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line17"> 17: </a>    <font color="#4169E1">typedef</font> Patch_                                                patch_type;
+<a name="line18"> 18: </a>    <font color="#4169E1">typedef</font> Sieve_                                                sieve_type;
+<a name="line19"> 19: </a>    <font color="#4169E1">typedef</font> Alloc_                                                alloc_type;
+<a name="line20"> 20: </a>    <font color="#4169E1">typedef</font> typename alloc_type::template rebind&lt;int&gt;::other      int_alloc_type;
+<a name="line21"> 21: </a>    <font color="#4169E1">typedef</font> typename sieve_type::point_type                       point_type;
+<a name="line22"> 22: </a>    <font color="#4169E1">typedef</font> typename alloc_type::template rebind&lt;std::pair&lt;const patch_type, Obj&lt;sieve_type&gt; &gt; &gt;::other       pair1_alloc_type;
+<a name="line23"> 23: </a>    <font color="#4169E1">typedef</font> typename std::map&lt;patch_type, Obj&lt;sieve_type&gt;, std::less&lt;patch_type&gt;, pair1_alloc_type&gt;           sheaf_type;
+<a name="line24"> 24: </a>    <font color="#4169E1">typedef</font> typename ALE::Sifter&lt;int, point_type, int&gt;                                                        patch_label_type;
+<a name="line25"> 25: </a>    <font color="#4169E1">typedef</font> typename alloc_type::template rebind&lt;patch_label_type&gt;::other                                     patch_label_alloc_type;
+<a name="line26"> 26: </a>    <font color="#4169E1">typedef</font> typename patch_label_alloc_type::pointer                                                          patch_label_ptr;
+<a name="line27"> 27: </a>    <font color="#4169E1">typedef</font> typename alloc_type::template rebind&lt;std::pair&lt;const patch_type, Obj&lt;patch_label_type&gt; &gt; &gt;::other pair2_alloc_type;
+<a name="line28"> 28: </a>    <font color="#4169E1">typedef</font> typename std::map&lt;patch_type, Obj&lt;patch_label_type&gt;, std::less&lt;patch_type&gt;, pair2_alloc_type&gt;     label_type;
+<a name="line29"> 29: </a>    <font color="#4169E1">typedef</font> typename alloc_type::template rebind&lt;std::pair&lt;const patch_type, int&gt; &gt;::other                    pair3_alloc_type;
+<a name="line30"> 30: </a>    <font color="#4169E1">typedef</font> typename std::map&lt;patch_type, int, std::less&lt;patch_type&gt;, pair3_alloc_type&gt;                       max_label_type;
+<a name="line31"> 31: </a>    <font color="#4169E1">typedef</font> typename alloc_type::template rebind&lt;std::pair&lt;const std::string, label_type&gt; &gt;::other            pair4_alloc_type;
+<a name="line32"> 32: </a>    <font color="#4169E1">typedef</font> typename std::map&lt;const std::string, label_type, std::less&lt;const std::string&gt;, pair4_alloc_type&gt;  labels_type;
+<a name="line33"> 33: </a>    <font color="#4169E1">typedef</font> typename patch_label_type::supportSequence                       label_sequence;
+<a name="line34"> 34: </a>    <font color="#4169E1">typedef</font> typename std::set&lt;point_type, std::less&lt;point_type&gt;, alloc_type&gt; point_set_type;
+<a name="line35"> 35: </a>    <font color="#4169E1">typedef</font> typename alloc_type::template rebind&lt;point_set_type&gt;::other      point_set_alloc_type;
+<a name="line36"> 36: </a>    <font color="#4169E1">typedef</font> typename point_set_alloc_type::pointer                           point_set_ptr;
+<a name="line37"> 37: </a>    <font color="#4169E1">typedef</font> typename ALE::Sifter&lt;int,point_type,point_type&gt;                  send_overlap_type;
+<a name="line38"> 38: </a>    <font color="#4169E1">typedef</font> typename alloc_type::template rebind&lt;send_overlap_type&gt;::other   send_overlap_alloc_type;
+<a name="line39"> 39: </a>    <font color="#4169E1">typedef</font> typename send_overlap_alloc_type::pointer                        send_overlap_ptr;
+<a name="line40"> 40: </a>    <font color="#4169E1">typedef</font> typename ALE::Sifter&lt;point_type,int,point_type&gt;                  recv_overlap_type;
+<a name="line41"> 41: </a>    <font color="#4169E1">typedef</font> typename alloc_type::template rebind&lt;recv_overlap_type&gt;::other   recv_overlap_alloc_type;
+<a name="line42"> 42: </a>    <font color="#4169E1">typedef</font> typename recv_overlap_alloc_type::pointer                        recv_overlap_ptr;
+<a name="line43"> 43: </a><strong><font color="#FF0000">  protected:</font></strong>
+<a name="line44"> 44: </a>    sheaf_type     _sheaf;
+<a name="line45"> 45: </a>    labels_type    _labels;
+<a name="line46"> 46: </a>    int            _maxHeight;
+<a name="line47"> 47: </a>    max_label_type _maxHeights;
+<a name="line48"> 48: </a>    int            _maxDepth;
+<a name="line49"> 49: </a>    max_label_type _maxDepths;
+<a name="line50"> 50: </a>    bool           _calculatedOverlap;
+<a name="line51"> 51: </a>    Obj&lt;send_overlap_type&gt; _sendOverlap;
+<a name="line52"> 52: </a>    Obj&lt;recv_overlap_type&gt; _recvOverlap;
+<a name="line53"> 53: </a>    Obj&lt;send_overlap_type&gt; _distSendOverlap;
+<a name="line54"> 54: </a>    Obj&lt;recv_overlap_type&gt; _distRecvOverlap;
+<a name="line55"> 55: </a>    // Work space
+<a name="line56"> 56: </a>    Obj&lt;point_set_type&gt;    _modifiedPoints;
+<a name="line57"> 57: </a>    alloc_type             _allocator;
+<a name="line58"> 58: </a>    int_alloc_type         _int_allocator;
+<a name="line59"> 59: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line60"> 60: </a>    Topology(<A href="../../docs/manualpages/Sys/MPI_Comm.html#MPI_Comm">MPI_Comm</A> comm, const int debug = 0) : ParallelObject(comm, debug), _maxHeight(-1), _maxDepth(-1), _calculatedOverlap(false) {
+<a name="line61"> 61: </a>      send_overlap_ptr pSendOverlap = send_overlap_alloc_type(this-&gt;_allocator).allocate(1);
+<a name="line62"> 62: </a>      send_overlap_alloc_type(this-&gt;_allocator).construct(pSendOverlap, send_overlap_type(this-&gt;comm(), this-&gt;debug()));
+<a name="line63"> 63: </a>      this-&gt;_sendOverlap = Obj&lt;send_overlap_type&gt;(pSendOverlap, <font color="#4169E1">sizeof</font>(send_overlap_type));
+<a name="line64"> 64: </a>      ///this-&gt;_sendOverlap    = new send_overlap_type(this-&gt;comm(), this-&gt;debug());
+<a name="line65"> 65: </a>      recv_overlap_ptr pRecvOverlap = recv_overlap_alloc_type(this-&gt;_allocator).allocate(1);
+<a name="line66"> 66: </a>      recv_overlap_alloc_type(this-&gt;_allocator).construct(pRecvOverlap, recv_overlap_type(this-&gt;comm(), this-&gt;debug()));
+<a name="line67"> 67: </a>      this-&gt;_recvOverlap = Obj&lt;recv_overlap_type&gt;(pRecvOverlap, <font color="#4169E1">sizeof</font>(recv_overlap_type));
+<a name="line68"> 68: </a>      ///this-&gt;_recvOverlap    = new recv_overlap_type(this-&gt;comm(), this-&gt;debug());
+<a name="line69"> 69: </a>      point_set_ptr pModPoints = point_set_alloc_type(this-&gt;_allocator).allocate(1);
+<a name="line70"> 70: </a>      point_set_alloc_type(this-&gt;_allocator).construct(pModPoints, point_set_type());
+<a name="line71"> 71: </a>      this-&gt;_modifiedPoints = Obj&lt;point_set_type&gt;(pModPoints, <font color="#4169E1">sizeof</font>(point_set_type));
+<a name="line72"> 72: </a>      ///this-&gt;_modifiedPoints = new point_set_type();
+<a name="line73"> 73: </a>    };
+<a name="line74"> 74: </a>    virtual ~Topology() {};
+<a name="line75"> 75: </a><strong><font color="#FF0000">  public:</font></strong> // Verifiers
+<a name="line76"> 76: </a>    void checkPatch(const patch_type&amp; patch) {
+<a name="line77"> 77: </a>      <font color="#4169E1">if</font> (this-&gt;_sheaf.find(patch) == this-&gt;_sheaf.end()) {
+<a name="line78"> 78: </a>        ostringstream msg;
+<a name="line79"> 79: </a>        msg &lt;&lt; <font color="#666666">"Invalid topology patch: "</font> &lt;&lt; patch &lt;&lt; std::endl;
+<a name="line80"> 80: </a>        throw ALE::Exception(msg.str().c_str());
+<a name="line81"> 81: </a>      }
+<a name="line82"> 82: </a>    };
+<a name="line83"> 83: </a>    void checkLabel(const std::string&amp; name, const patch_type&amp; patch) {
+<a name="line84"> 84: </a>      this-&gt;checkPatch(patch);
+<a name="line85"> 85: </a>      <font color="#4169E1">if</font> ((this-&gt;_labels.find(name) == this-&gt;_labels.end()) || (this-&gt;_labels[name].find(patch) == this-&gt;_labels[name].end())) {
+<a name="line86"> 86: </a>        ostringstream msg;
+<a name="line87"> 87: </a>        msg &lt;&lt; <font color="#666666">"Invalid label name: "</font> &lt;&lt; name &lt;&lt; <font color="#666666">" for patch "</font> &lt;&lt; patch &lt;&lt; std::endl;
+<a name="line88"> 88: </a>        throw ALE::Exception(msg.str().c_str());
+<a name="line89"> 89: </a>      }
+<a name="line90"> 90: </a>    };
+<a name="line91"> 91: </a>    bool hasPatch(const patch_type&amp; patch) {
+<a name="line92"> 92: </a>      <font color="#4169E1">if</font> (this-&gt;_sheaf.find(patch) != this-&gt;_sheaf.end()) {
+<a name="line93"> 93: </a>        <font color="#4169E1">return</font> true;
+<a name="line94"> 94: </a>      }
+<a name="line95"> 95: </a>      <font color="#4169E1">return</font> false;
+<a name="line96"> 96: </a>    };
+<a name="line97"> 97: </a>    bool hasLabel(const std::string&amp; name, const patch_type&amp; patch) {
+<a name="line98"> 98: </a>      <font color="#4169E1">if</font> ((this-&gt;_labels.find(name) != this-&gt;_labels.end()) &amp;&amp; (this-&gt;_labels[name].find(patch) != this-&gt;_labels[name].end())) {
+<a name="line99"> 99: </a>        <font color="#4169E1">return</font> true;
+<a name="line100">100: </a>      }
+<a name="line101">101: </a>      <font color="#4169E1">return</font> false;
+<a name="line102">102: </a>    };
+<a name="line103">103: </a><strong><font color="#FF0000">  public:</font></strong> // Accessors
+<a name="line104">104: </a>    const Obj&lt;sieve_type&gt;&amp; getPatch(const patch_type&amp; patch) {
+<a name="line105">105: </a>      this-&gt;checkPatch(patch);
+<a name="line106">106: </a>      <font color="#4169E1">return</font> this-&gt;_sheaf[patch];
+<a name="line107">107: </a>    };
+<a name="line108">108: </a>    void setPatch(const patch_type&amp; patch, const Obj&lt;sieve_type&gt;&amp; sieve) {
+<a name="line109">109: </a>      this-&gt;_sheaf[patch] = sieve;
+<a name="line110">110: </a>    };
+<a name="line111">111: </a>    int getValue (const Obj&lt;patch_label_type&gt;&amp; label, const point_type&amp; point, const int defValue = 0) {
+<a name="line112">112: </a>      const Obj&lt;typename patch_label_type::coneSequence&gt;&amp; cone = label-&gt;cone(point);
+
+<a name="line114">114: </a>      <font color="#4169E1">if</font> (cone-&gt;size() == 0) <font color="#4169E1">return</font> defValue;
+<a name="line115">115: </a>      <font color="#4169E1">return</font> *cone-&gt;begin();
+<a name="line116">116: </a>    };
+<a name="line117">117: </a>    template&lt;typename InputPoints&gt;
+<a name="line118">118: </a>    int getMaxValue (const Obj&lt;patch_label_type&gt;&amp; label, const Obj&lt;InputPoints&gt;&amp; points, const int defValue = 0) {
+<a name="line119">119: </a>      int maxValue = defValue;
+
+<a name="line121">121: </a>      <font color="#4169E1">for</font>(typename InputPoints::iterator p_iter = points-&gt;begin(); p_iter != points-&gt;end(); ++p_iter) {
+<a name="line122">122: </a>        maxValue = std::max(maxValue, this-&gt;getValue(label, *p_iter, defValue));
+<a name="line123">123: </a>      }
+<a name="line124">124: </a>      <font color="#4169E1">return</font> maxValue;
+<a name="line125">125: </a>    }
+<a name="line126">126: </a>    void setValue(const Obj&lt;patch_label_type&gt;&amp; label, const point_type&amp; point, const int value) {
+<a name="line127">127: </a>      label-&gt;setCone(value, point);
+<a name="line128">128: </a>    };
+<a name="line129">129: </a>    const Obj&lt;patch_label_type&gt;&amp; createLabel(const patch_type&amp; patch, const std::string&amp; name) {
+<a name="line130">130: </a>      this-&gt;checkPatch(patch);
+<a name="line131">131: </a>      ///patch_label_ptr pLabel = patch_label_alloc_type(this-&gt;_allocator).allocate(1);
+<a name="line132">132: </a>      ///patch_label_alloc_type(this-&gt;_allocator).construct(pLabel, patch_label_type(this-&gt;comm(), this-&gt;debug()));
+<a name="line133">133: </a>      ///this-&gt;_labels[name][patch] = Obj&lt;patch_label_type&gt;(pLabel, <font color="#4169E1">sizeof</font>(patch_label_type));
+<a name="line134">134: </a>      this-&gt;_labels[name][patch] = new patch_label_type(this-&gt;comm(), this-&gt;debug());
+<a name="line135">135: </a>      <font color="#4169E1">return</font> this-&gt;_labels[name][patch];
+<a name="line136">136: </a>    };
+<a name="line137">137: </a>    const Obj&lt;patch_label_type&gt;&amp; getLabel(const patch_type&amp; patch, const std::string&amp; name) {
+<a name="line138">138: </a>      this-&gt;checkLabel(name, patch);
+<a name="line139">139: </a>      <font color="#4169E1">return</font> this-&gt;_labels[name][patch];
+<a name="line140">140: </a>    };
+<a name="line141">141: </a>    const Obj&lt;label_sequence&gt;&amp; getLabelStratum(const patch_type&amp; patch, const std::string&amp; name, int value) {
+<a name="line142">142: </a>      this-&gt;checkLabel(name, patch);
+<a name="line143">143: </a>      <font color="#4169E1">return</font> this-&gt;_labels[name][patch]-&gt;support(value);
+<a name="line144">144: </a>    };
+<a name="line145">145: </a>    const sheaf_type&amp; getPatches() {
+<a name="line146">146: </a>      <font color="#4169E1">return</font> this-&gt;_sheaf;
+<a name="line147">147: </a>    };
+<a name="line148">148: </a>    const labels_type&amp; getLabels() {
+<a name="line149">149: </a>      <font color="#4169E1">return</font> this-&gt;_labels;
+<a name="line150">150: </a>    };
+<a name="line151">151: </a>    void clear() {
+<a name="line152">152: </a>      this-&gt;_sheaf.clear();
+<a name="line153">153: </a>      this-&gt;_labels.clear();
+<a name="line154">154: </a>      this-&gt;_maxHeight = -1;
+<a name="line155">155: </a>      this-&gt;_maxHeights.clear();
+<a name="line156">156: </a>      this-&gt;_maxDepth = -1;
+<a name="line157">157: </a>      this-&gt;_maxDepths.clear();
+<a name="line158">158: </a>    };
+<a name="line159">159: </a>    const Obj&lt;send_overlap_type&gt;&amp; getSendOverlap() const {<font color="#4169E1">return</font> this-&gt;_sendOverlap;};
+<a name="line160">160: </a>    void setSendOverlap(const Obj&lt;send_overlap_type&gt;&amp; overlap) {this-&gt;_sendOverlap = overlap;};
+<a name="line161">161: </a>    const Obj&lt;recv_overlap_type&gt;&amp; getRecvOverlap() const {<font color="#4169E1">return</font> this-&gt;_recvOverlap;};
+<a name="line162">162: </a>    void setRecvOverlap(const Obj&lt;recv_overlap_type&gt;&amp; overlap) {this-&gt;_recvOverlap = overlap;};
+<a name="line163">163: </a>    const Obj&lt;send_overlap_type&gt;&amp; getDistSendOverlap() const {<font color="#4169E1">return</font> this-&gt;_distSendOverlap;};
+<a name="line164">164: </a>    void setDistSendOverlap(const Obj&lt;send_overlap_type&gt;&amp; overlap) {this-&gt;_distSendOverlap = overlap;};
+<a name="line165">165: </a>    const Obj&lt;recv_overlap_type&gt;&amp; getDistRecvOverlap() const {<font color="#4169E1">return</font> this-&gt;_distRecvOverlap;};
+<a name="line166">166: </a>    void setDistRecvOverlap(const Obj&lt;recv_overlap_type&gt;&amp; overlap) {this-&gt;_distRecvOverlap = overlap;};
+<a name="line167">167: </a><strong><font color="#FF0000">  public:</font></strong> // Stratification
+<a name="line168">168: </a>    template&lt;class InputPoints&gt;
+<a name="line169">169: </a>    void computeHeight(const Obj&lt;patch_label_type&gt;&amp; height, const Obj&lt;sieve_type&gt;&amp; sieve, const Obj&lt;InputPoints&gt;&amp; points, int&amp; maxHeight) {
+<a name="line170">170: </a>      this-&gt;_modifiedPoints-&gt;clear();
+
+<a name="line172">172: </a>      <font color="#4169E1">for</font>(typename InputPoints::iterator p_iter = points-&gt;begin(); p_iter != points-&gt;end(); ++p_iter) {
+<a name="line173">173: </a>        // Compute the max height of the points in the support of p, and add 1
+<a name="line174">174: </a>        int h0 = this-&gt;getValue(height, *p_iter, -1);
+<a name="line175">175: </a>        int h1 = this-&gt;getMaxValue(height, sieve-&gt;support(*p_iter), -1) + 1;
+
+<a name="line177">177: </a>        <font color="#4169E1">if</font>(h1 != h0) {
+<a name="line178">178: </a>          this-&gt;setValue(height, *p_iter, h1);
+<a name="line179">179: </a>          <font color="#4169E1">if</font> (h1 &gt; maxHeight) maxHeight = h1;
+<a name="line180">180: </a>          this-&gt;_modifiedPoints-&gt;insert(*p_iter);
+<a name="line181">181: </a>        }
+<a name="line182">182: </a>      }
+<a name="line183">183: </a>      // FIX: We would like to avoid the copy here with cone()
+<a name="line184">184: </a>      <font color="#4169E1">if</font>(this-&gt;_modifiedPoints-&gt;size() &gt; 0) {
+<a name="line185">185: </a>        this-&gt;computeHeight(height, sieve, sieve-&gt;cone(this-&gt;_modifiedPoints), maxHeight);
+<a name="line186">186: </a>      }
+<a name="line187">187: </a>    }
+<a name="line188">188: </a>    void computeHeights() {
+<a name="line189">189: </a>      const std::string name(<font color="#666666">"height"</font>);
+
+<a name="line191">191: </a>      this-&gt;_maxHeight = -1;
+<a name="line192">192: </a>      <font color="#4169E1">for</font>(typename sheaf_type::iterator s_iter = this-&gt;_sheaf.begin(); s_iter != this-&gt;_sheaf.end(); ++s_iter) {
+<a name="line193">193: </a>        const Obj&lt;patch_label_type&gt;&amp; label = this-&gt;createLabel(s_iter-&gt;first, name);
+
+<a name="line195">195: </a>        this-&gt;_maxHeights[s_iter-&gt;first] = -1;
+<a name="line196">196: </a>        this-&gt;computeHeight(label, s_iter-&gt;second, s_iter-&gt;second-&gt;leaves(), this-&gt;_maxHeights[s_iter-&gt;first]);
+<a name="line197">197: </a>        <font color="#4169E1">if</font> (this-&gt;_maxHeights[s_iter-&gt;first] &gt; this-&gt;_maxHeight) this-&gt;_maxHeight = this-&gt;_maxHeights[s_iter-&gt;first];
+<a name="line198">198: </a>      }
+<a name="line199">199: </a>    }
+<a name="line200">200: </a>    int height() const {<font color="#4169E1">return</font> this-&gt;_maxHeight;};
+<a name="line201">201: </a>    int height(const patch_type&amp; patch) {
+<a name="line202">202: </a>      this-&gt;checkPatch(patch);
+<a name="line203">203: </a>      <font color="#4169E1">return</font> this-&gt;_maxHeights[patch];
+<a name="line204">204: </a>    }
+<a name="line205">205: </a>    int height(const patch_type&amp; patch, const point_type&amp; point) {
+<a name="line206">206: </a>      <font color="#4169E1">return</font> this-&gt;getValue(this-&gt;_labels[<font color="#666666">"height"</font>][patch], point, -1);
+<a name="line207">207: </a>    }
+<a name="line208">208: </a>    const Obj&lt;label_sequence&gt;&amp; heightStratum(const patch_type&amp; patch, int height) {
+<a name="line209">209: </a>      <font color="#4169E1">return</font> this-&gt;getLabelStratum(patch, <font color="#666666">"height"</font>, height);
+<a name="line210">210: </a>    }
+<a name="line211">211: </a>    template&lt;class InputPoints&gt;
+<a name="line212">212: </a>    void computeDepth(const Obj&lt;patch_label_type&gt;&amp; depth, const Obj&lt;sieve_type&gt;&amp; sieve, const Obj&lt;InputPoints&gt;&amp; points, int&amp; maxDepth) {
+<a name="line213">213: </a>      this-&gt;_modifiedPoints-&gt;clear();
+
+<a name="line215">215: </a>      <font color="#4169E1">for</font>(typename InputPoints::iterator p_iter = points-&gt;begin(); p_iter != points-&gt;end(); ++p_iter) {
+<a name="line216">216: </a>        // Compute the max depth of the points in the cone of p, and add 1
+<a name="line217">217: </a>        int d0 = this-&gt;getValue(depth, *p_iter, -1);
+<a name="line218">218: </a>        int d1 = this-&gt;getMaxValue(depth, sieve-&gt;cone(*p_iter), -1) + 1;
+
+<a name="line220">220: </a>        <font color="#4169E1">if</font>(d1 != d0) {
+<a name="line221">221: </a>          this-&gt;setValue(depth, *p_iter, d1);
+<a name="line222">222: </a>          <font color="#4169E1">if</font> (d1 &gt; maxDepth) maxDepth = d1;
+<a name="line223">223: </a>          this-&gt;_modifiedPoints-&gt;insert(*p_iter);
+<a name="line224">224: </a>        }
+<a name="line225">225: </a>      }
+<a name="line226">226: </a>      // FIX: We would like to avoid the copy here with support()
+<a name="line227">227: </a>      <font color="#4169E1">if</font>(this-&gt;_modifiedPoints-&gt;size() &gt; 0) {
+<a name="line228">228: </a>        this-&gt;computeDepth(depth, sieve, sieve-&gt;support(this-&gt;_modifiedPoints), maxDepth);
+<a name="line229">229: </a>      }
+<a name="line230">230: </a>    }
+<a name="line231">231: </a>    void computeDepths() {
+<a name="line232">232: </a>      const std::string name(<font color="#666666">"depth"</font>);
+
+<a name="line234">234: </a>      this-&gt;_maxDepth = -1;
+<a name="line235">235: </a>      <font color="#4169E1">for</font>(typename sheaf_type::iterator s_iter = this-&gt;_sheaf.begin(); s_iter != this-&gt;_sheaf.end(); ++s_iter) {
+<a name="line236">236: </a>        const Obj&lt;patch_label_type&gt;&amp; label = this-&gt;createLabel(s_iter-&gt;first, name);
+
+<a name="line238">238: </a>        this-&gt;_maxDepths[s_iter-&gt;first] = -1;
+<a name="line239">239: </a>        this-&gt;computeDepth(label, s_iter-&gt;second, s_iter-&gt;second-&gt;roots(), this-&gt;_maxDepths[s_iter-&gt;first]);
+<a name="line240">240: </a>        <font color="#4169E1">if</font> (this-&gt;_maxDepths[s_iter-&gt;first] &gt; this-&gt;_maxDepth) this-&gt;_maxDepth = this-&gt;_maxDepths[s_iter-&gt;first];
+<a name="line241">241: </a>      }
+<a name="line242">242: </a>    }
+<a name="line243">243: </a>    int depth() const {<font color="#4169E1">return</font> this-&gt;_maxDepth;};
+<a name="line244">244: </a>    int depth(const patch_type&amp; patch) {
+<a name="line245">245: </a>      this-&gt;checkPatch(patch);
+<a name="line246">246: </a>      <font color="#4169E1">return</font> this-&gt;_maxDepths[patch];
+<a name="line247">247: </a>    }
+<a name="line248">248: </a>    int depth(const patch_type&amp; patch, const point_type&amp; point) {
+<a name="line249">249: </a>      <font color="#4169E1">return</font> this-&gt;getValue(this-&gt;_labels[<font color="#666666">"depth"</font>][patch], point, -1);
+<a name="line250">250: </a>    }
+<a name="line251">251: </a>    const Obj&lt;label_sequence&gt;&amp; depthStratum(const patch_type&amp; patch, int depth) {
+<a name="line252">252: </a>      <font color="#4169E1">return</font> this-&gt;getLabelStratum(patch, <font color="#666666">"depth"</font>, depth);
+<a name="line253">253: </a>    }
+<a name="line256">256: </a>    void stratify() {
+<a name="line257">257: </a>      ALE_LOG_EVENT_BEGIN;
+<a name="line258">258: </a>      this-&gt;computeHeights();
+<a name="line259">259: </a>      this-&gt;computeDepths();
+<a name="line260">260: </a>      ALE_LOG_EVENT_END;
+<a name="line261">261: </a>    }
+<a name="line262">262: </a><strong><font color="#FF0000">  public:</font></strong> // Viewers
+<a name="line263">263: </a>    void view(const std::string&amp; name, <A href="../../docs/manualpages/Sys/MPI_Comm.html#MPI_Comm">MPI_Comm</A> comm = MPI_COMM_NULL) {
+<a name="line264">264: </a>      <font color="#4169E1">if</font> (comm == MPI_COMM_NULL) {
+<a name="line265">265: </a>        comm = this-&gt;comm();
+<a name="line266">266: </a>      }
+<a name="line267">267: </a>      <font color="#4169E1">if</font> (name == <font color="#666666">""</font>) {
+<a name="line268">268: </a>        <A href="../../docs/manualpages/Sys/PetscPrintf.html#PetscPrintf">PetscPrintf</A>(comm, <font color="#666666">"viewing a Topology\n"</font>);
+<a name="line269">269: </a>      } <font color="#4169E1">else</font> {
+<a name="line270">270: </a>        <A href="../../docs/manualpages/Sys/PetscPrintf.html#PetscPrintf">PetscPrintf</A>(comm, <font color="#666666">"viewing Topology '%s'\n"</font>, name.c_str());
+<a name="line271">271: </a>      }
+<a name="line272">272: </a>      <A href="../../docs/manualpages/Sys/PetscPrintf.html#PetscPrintf">PetscPrintf</A>(comm, <font color="#666666">"  maximum height %d maximum depth %d\n"</font>, this-&gt;height(), this-&gt;depth());
+<a name="line273">273: </a>      <font color="#4169E1">for</font>(typename sheaf_type::const_iterator s_iter = this-&gt;_sheaf.begin(); s_iter != this-&gt;_sheaf.end(); ++s_iter) {
+<a name="line274">274: </a>        ostringstream txt;
+
+<a name="line276">276: </a>        txt &lt;&lt; <font color="#666666">"Patch "</font> &lt;&lt; s_iter-&gt;first;
+<a name="line277">277: </a>        s_iter-&gt;second-&gt;view(txt.str().c_str(), comm);
+<a name="line278">278: </a>        <A href="../../docs/manualpages/Sys/PetscPrintf.html#PetscPrintf">PetscPrintf</A>(comm, <font color="#666666">"  maximum height %d maximum depth %d\n"</font>, this-&gt;height(s_iter-&gt;first), this-&gt;depth(s_iter-&gt;first));
+<a name="line279">279: </a>      }
+<a name="line280">280: </a>      <font color="#4169E1">for</font>(typename labels_type::const_iterator l_iter = this-&gt;_labels.begin(); l_iter != this-&gt;_labels.end(); ++l_iter) {
+<a name="line281">281: </a>        <A href="../../docs/manualpages/Sys/PetscPrintf.html#PetscPrintf">PetscPrintf</A>(comm, <font color="#666666">"  label %s constructed\n"</font>, l_iter-&gt;first.c_str());
+<a name="line282">282: </a>      }
+<a name="line283">283: </a>    }
+<a name="line284">284: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line285">285: </a>    void constructOverlap(const patch_type&amp; patch) {
+<a name="line286">286: </a>      <font color="#4169E1">if</font> (this-&gt;_calculatedOverlap) <font color="#4169E1">return</font>;
+<a name="line287">287: </a>      <font color="#4169E1">if</font> (this-&gt;hasPatch(patch)) {
+<a name="line288">288: </a>        this-&gt;constructOverlap(this-&gt;getPatch(patch)-&gt;base(), this-&gt;_sendOverlap, this-&gt;_recvOverlap);
+<a name="line289">289: </a>        this-&gt;constructOverlap(this-&gt;getPatch(patch)-&gt;cap(), this-&gt;_sendOverlap, this-&gt;_recvOverlap);
+<a name="line290">290: </a>      }
+<a name="line291">291: </a>      <font color="#4169E1">if</font> (this-&gt;debug()) {
+<a name="line292">292: </a>        this-&gt;_sendOverlap-&gt;view(<font color="#666666">"Send overlap"</font>);
+<a name="line293">293: </a>        this-&gt;_recvOverlap-&gt;view(<font color="#666666">"Receive overlap"</font>);
+<a name="line294">294: </a>      }
+<a name="line295">295: </a>      this-&gt;_calculatedOverlap = true;
+<a name="line296">296: </a>    }
+<a name="line297">297: </a>    template&lt;typename Sequence&gt;
+<a name="line298">298: </a>    void constructOverlap(const Obj&lt;Sequence&gt;&amp; points, const Obj&lt;send_overlap_type&gt;&amp; sendOverlap, const Obj&lt;recv_overlap_type&gt;&amp; recvOverlap) {
+<a name="line299">299: </a>      point_type *sendBuf = this-&gt;_allocator.allocate(points-&gt;size());
+<a name="line300">300: </a>      <font color="#4169E1">for</font>(unsigned int i = 0; i &lt; points-&gt;size(); ++i) {this-&gt;_allocator.construct(sendBuf+i, point_type());}
+<a name="line301">301: </a>      ///point_type *sendBuf = new point_type[points-&gt;size()];
+<a name="line302">302: </a>      int         size    = 0;
+<a name="line303">303: </a>      <font color="#4169E1">for</font>(typename Sequence::iterator l_iter = points-&gt;begin(); l_iter != points-&gt;end(); ++l_iter) {
+<a name="line304">304: </a>        sendBuf[size++] = *l_iter;
+<a name="line305">305: </a>      }
+<a name="line306">306: </a>      int *sizes   = this-&gt;_int_allocator.allocate(this-&gt;commSize()+1);   // The number of points coming from each process
+<a name="line307">307: </a>      int *offsets = this-&gt;_int_allocator.allocate(this-&gt;commSize()+1); // Prefix sums <font color="#4169E1">for</font> sizes
+<a name="line308">308: </a>      int *oldOffs = this-&gt;_int_allocator.allocate(this-&gt;commSize()+1); // Temporary storage
+<a name="line309">309: </a>      <font color="#4169E1">for</font>(int i = 0; i &lt; this-&gt;commSize()+1; ++i) {
+<a name="line310">310: </a>        this-&gt;_int_allocator.construct(sizes+i,   0);
+<a name="line311">311: </a>        this-&gt;_int_allocator.construct(offsets+i, 0);
+<a name="line312">312: </a>        this-&gt;_int_allocator.construct(oldOffs+i, 0);
+<a name="line313">313: </a>      }
+<a name="line314">314: </a>      ///int *sizes   = new int[this-&gt;commSize()];
+<a name="line315">315: </a>      ///int *offsets = new int[this-&gt;commSize()+1];
+<a name="line316">316: </a>      ///int *oldOffs = new int[this-&gt;commSize()+1];
+<a name="line317">317: </a>      point_type *remotePoints = NULL;            // The points from each process
+<a name="line318">318: </a>      int        *remoteRanks  = NULL;            // The rank and number of overlap points of each process that overlaps another
+
+<a name="line320">320: </a>      // Change to Allgather() <font color="#4169E1">for</font> the correct binning algorithm
+<a name="line321">321: </a>      <A href="http://www.mcs.anl.gov/mpi/www/www3/MPI_Gather.html#MPI_Gather">MPI_Gather</A>(&amp;size, 1, MPI_INT, sizes, 1, MPI_INT, 0, this-&gt;comm());
+<a name="line322">322: </a>      <font color="#4169E1">if</font> (this-&gt;commRank() == 0) {
+<a name="line323">323: </a>        offsets[0] = 0;
+<a name="line324">324: </a>        <font color="#4169E1">for</font>(int p = 1; p &lt;= this-&gt;commSize(); p++) {
+<a name="line325">325: </a>          offsets[p] = offsets[p-1] + sizes[p-1];
+<a name="line326">326: </a>        }
+<a name="line327">327: </a>        remotePoints = this-&gt;_allocator.allocate(offsets[this-&gt;commSize()]);
+<a name="line328">328: </a>        <font color="#4169E1">for</font>(int i = 0; i &lt; offsets[this-&gt;commSize()]; ++i) {this-&gt;_allocator.construct(remotePoints+i, point_type());}
+<a name="line329">329: </a>        ///remotePoints = new point_type[offsets[this-&gt;commSize()]];
+<a name="line330">330: </a>      }
+<a name="line331">331: </a>      <A href="http://www.mcs.anl.gov/mpi/www/www3/MPI_Gatherv.html#MPI_Gatherv">MPI_Gatherv</A>(sendBuf, size, MPI_INT, remotePoints, sizes, offsets, MPI_INT, 0, this-&gt;comm());
+<a name="line332">332: </a><strong><font color="#FF0000">      std:</font></strong>:map&lt;int, std::map&lt;int, std::set&lt;point_type&gt; &gt; &gt; overlapInfo; // Maps (p,q) to their set of overlap points
+
+<a name="line334">334: </a>      <font color="#4169E1">if</font> (this-&gt;commRank() == 0) {
+<a name="line335">335: </a>        <font color="#4169E1">for</font>(int p = 0; p &lt; this-&gt;commSize(); p++) {
+<a name="line336">336: </a><strong><font color="#FF0000">          std:</font></strong>:sort(&amp;remotePoints[offsets[p]], &amp;remotePoints[offsets[p+1]]);
+<a name="line337">337: </a>        }
+<a name="line338">338: </a>        <font color="#4169E1">for</font>(int p = 0; p &lt;= this-&gt;commSize(); p++) {
+<a name="line339">339: </a>          oldOffs[p] = offsets[p];
+<a name="line340">340: </a>        }
+<a name="line341">341: </a>        <font color="#4169E1">for</font>(int p = 0; p &lt; this-&gt;commSize(); p++) {
+<a name="line342">342: </a>          <font color="#4169E1">for</font>(int q = p+1; q &lt; this-&gt;commSize(); q++) {
+<a name="line343">343: </a><strong><font color="#FF0000">            std:</font></strong>:set_intersection(&amp;remotePoints[oldOffs[p]], &amp;remotePoints[oldOffs[p+1]],
+<a name="line344">344: </a>                                  &amp;remotePoints[oldOffs[q]], &amp;remotePoints[oldOffs[q+1]],
+<a name="line345">345: </a><strong><font color="#FF0000">                                  std:</font></strong>:insert_iterator&lt;std::set&lt;point_type&gt; &gt;(overlapInfo[p][q], overlapInfo[p][q].begin()));
+<a name="line346">346: </a>            overlapInfo[q][p] = overlapInfo[p][q];
+<a name="line347">347: </a>          }
+<a name="line348">348: </a>          sizes[p]     = overlapInfo[p].size()*2;
+<a name="line349">349: </a>          offsets[p+1] = offsets[p] + sizes[p];
+<a name="line350">350: </a>        }
+<a name="line351">351: </a>        remoteRanks = this-&gt;_int_allocator.allocate(offsets[this-&gt;commSize()]);
+<a name="line352">352: </a>        <font color="#4169E1">for</font>(int i = 0; i &lt; offsets[this-&gt;commSize()]; ++i) {this-&gt;_int_allocator.construct(remoteRanks+i, 0);}
+<a name="line353">353: </a>        ///remoteRanks = new int[offsets[this-&gt;commSize()]];
+<a name="line354">354: </a>        int       k = 0;
+<a name="line355">355: </a>        <font color="#4169E1">for</font>(int p = 0; p &lt; this-&gt;commSize(); p++) {
+<a name="line356">356: </a>          <font color="#4169E1">for</font>(typename std::map&lt;int, std::set&lt;point_type&gt; &gt;::iterator r_iter = overlapInfo[p].begin(); r_iter != overlapInfo[p].end(); ++r_iter) {
+<a name="line357">357: </a>            remoteRanks[k*2]   = r_iter-&gt;first;
+<a name="line358">358: </a>            remoteRanks[k*2+1] = r_iter-&gt;second.size();
+<a name="line359">359: </a>            k++;
+<a name="line360">360: </a>          }
+<a name="line361">361: </a>        }
+<a name="line362">362: </a>      }
+<a name="line363">363: </a>      int numOverlaps;                          // The number of processes overlapping this process
+<a name="line364">364: </a>      <A href="http://www.mcs.anl.gov/mpi/www/www3/MPI_Scatter.html#MPI_Scatter">MPI_Scatter</A>(sizes, 1, MPI_INT, &amp;numOverlaps, 1, MPI_INT, 0, this-&gt;comm());
+<a name="line365">365: </a>      int *overlapRanks = this-&gt;_int_allocator.allocate(numOverlaps);
+<a name="line366">366: </a>      <font color="#4169E1">for</font>(int i = 0; i &lt; numOverlaps; ++i) {this-&gt;_int_allocator.construct(overlapRanks+i, 0);}
+<a name="line367">367: </a>      ///int *overlapRanks = new int[numOverlaps]; // The rank and overlap size <font color="#4169E1">for</font> each overlapping process
+<a name="line368">368: </a>      <A href="http://www.mcs.anl.gov/mpi/www/www3/MPI_Scatterv.html#MPI_Scatterv">MPI_Scatterv</A>(remoteRanks, sizes, offsets, MPI_INT, overlapRanks, numOverlaps, MPI_INT, 0, this-&gt;comm());
+<a name="line369">369: </a>      point_type *sendPoints = NULL;            // The points to send to each process
+<a name="line370">370: </a>      <font color="#4169E1">if</font> (this-&gt;commRank() == 0) {
+<a name="line371">371: </a>        <font color="#4169E1">for</font>(int p = 0, k = 0; p &lt; this-&gt;commSize(); p++) {
+<a name="line372">372: </a>          sizes[p] = 0;
+<a name="line373">373: </a>          <font color="#4169E1">for</font>(int r = 0; r &lt; (int) overlapInfo[p].size(); r++) {
+<a name="line374">374: </a>            sizes[p] += remoteRanks[k*2+1];
+<a name="line375">375: </a>            k++;
+<a name="line376">376: </a>          }
+<a name="line377">377: </a>          offsets[p+1] = offsets[p] + sizes[p];
+<a name="line378">378: </a>        }
+<a name="line379">379: </a>        sendPoints = this-&gt;_allocator.allocate(offsets[this-&gt;commSize()]);
+<a name="line380">380: </a>        <font color="#4169E1">for</font>(int i = 0; i &lt; offsets[this-&gt;commSize()]; ++i) {this-&gt;_allocator.construct(sendPoints+i, point_type());}
+<a name="line381">381: </a>        ///sendPoints = new point_type[offsets[this-&gt;commSize()]];
+<a name="line382">382: </a>        <font color="#4169E1">for</font>(int p = 0, k = 0; p &lt; this-&gt;commSize(); p++) {
+<a name="line383">383: </a>          <font color="#4169E1">for</font>(typename std::map&lt;int, std::set&lt;point_type&gt; &gt;::iterator r_iter = overlapInfo[p].begin(); r_iter != overlapInfo[p].end(); ++r_iter) {
+<a name="line384">384: </a>            int rank = r_iter-&gt;first;
+<a name="line385">385: </a>            <font color="#4169E1">for</font>(typename std::set&lt;point_type&gt;::iterator p_iter = (overlapInfo[p][rank]).begin(); p_iter != (overlapInfo[p][rank]).end(); ++p_iter) {
+<a name="line386">386: </a>              sendPoints[k++] = *p_iter;
+<a name="line387">387: </a>            }
+<a name="line388">388: </a>          }
+<a name="line389">389: </a>        }
+<a name="line390">390: </a>      }
+<a name="line391">391: </a>      int numOverlapPoints = 0;
+<a name="line392">392: </a>      <font color="#4169E1">for</font>(int r = 0; r &lt; numOverlaps/2; r++) {
+<a name="line393">393: </a>        numOverlapPoints += overlapRanks[r*2+1];
+<a name="line394">394: </a>      }
+<a name="line395">395: </a>      point_type *overlapPoints = this-&gt;_allocator.allocate(numOverlapPoints);
+<a name="line396">396: </a>      <font color="#4169E1">for</font>(int i = 0; i &lt; numOverlapPoints; ++i) {this-&gt;_allocator.construct(overlapPoints+i, point_type());}
+<a name="line397">397: </a>      ///point_type *overlapPoints = new point_type[numOverlapPoints];
+<a name="line398">398: </a>      <A href="http://www.mcs.anl.gov/mpi/www/www3/MPI_Scatterv.html#MPI_Scatterv">MPI_Scatterv</A>(sendPoints, sizes, offsets, MPI_INT, overlapPoints, numOverlapPoints, MPI_INT, 0, this-&gt;comm());
+
+<a name="line400">400: </a>      <font color="#4169E1">for</font>(int r = 0, k = 0; r &lt; numOverlaps/2; r++) {
+<a name="line401">401: </a>        int rank = overlapRanks[r*2];
+
+<a name="line403">403: </a>        <font color="#4169E1">for</font>(int p = 0; p &lt; overlapRanks[r*2+1]; p++) {
+<a name="line404">404: </a>          point_type point = overlapPoints[k++];
+
+<a name="line406">406: </a>          sendOverlap-&gt;addArrow(point, rank, point);
+<a name="line407">407: </a>          recvOverlap-&gt;addArrow(rank, point, point);
+<a name="line408">408: </a>        }
+<a name="line409">409: </a>      }
+
+<a name="line411">411: </a>      delete [] overlapPoints;
+<a name="line412">412: </a>      delete [] overlapRanks;
+<a name="line413">413: </a>      delete [] sizes;
+<a name="line414">414: </a>      delete [] offsets;
+<a name="line415">415: </a>      delete [] oldOffs;
+<a name="line416">416: </a>      <font color="#4169E1">if</font> (this-&gt;commRank() == 0) {
+<a name="line417">417: </a>        delete [] remoteRanks;
+<a name="line418">418: </a>        delete [] remotePoints;
+<a name="line419">419: </a>        delete [] sendPoints;
+<a name="line420">420: </a>      }
+<a name="line421">421: </a>    }
+<a name="line422">422: </a>  };
+
+<a name="line424">424: </a>  // An Overlap is a Sifter describing the overlap of two Sieves
+<a name="line425">425: </a>  //   Each arrow is local point ---(remote point)---&gt; remote rank right now
+<a name="line426">426: </a>  //     For XSifter, this should change to (local patch, local point) ---&gt; (remote rank, remote patch, remote point)
+<a name="line427">427: </a>}
+
+<a name="line429">429: </a><font color="#A020F0">#endif</font>
+</pre>
+</body>
+
+</html>

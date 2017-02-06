@@ -1,0 +1,1141 @@
+<center><a href="CartesianSieve.hh">Actual source code: CartesianSieve.hh</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="http://www.mcs.anl.gov/petsc/petsc-current/include/sieve/CartesianSieve.hh.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2013-10-15T17:08:40+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>petsc-3.4.3 2013-10-15</b></div>
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#ifndef included_ALE_CartesianSieve_hh</font>
+<a name="line2">  2: </a><strong><font color="#228B22">#define included_ALE_CartesianSieve_hh</font></strong>
+
+<a name="line4">  4: </a><font color="#A020F0">#ifndef  included_ALE_Mesh_hh</font>
+<a name="line5">  5: </a><font color="#A020F0">#include &lt;sieve/Mesh.hh&gt;</font>
+<a name="line6">  6: </a><font color="#A020F0">#endif</font>
+
+<a name="line8">  8: </a>namespace ALE {
+<a name="line9">  9: </a>  namespace CartesianSieveDef {
+<a name="line10"> 10: </a>    static void nextCodeOdd(int a[], const int n, const int size) {
+<a name="line11"> 11: </a>      <font color="#4169E1">for</font>(int d = size-2; d &gt;= 0; --d) a[d+1] = a[d];
+<a name="line12"> 12: </a>      <font color="#4169E1">if</font> (n == (n/2)*2) {
+<a name="line13"> 13: </a>        a[0] = 1;
+<a name="line14"> 14: </a>      } <font color="#4169E1">else</font> {
+<a name="line15"> 15: </a>        a[0] = 0;
+<a name="line16"> 16: </a>      }
+<a name="line17"> 17: </a>    };
+<a name="line18"> 18: </a>    static void nextCodeEven(int a[], const int n, const int size) {
+<a name="line19"> 19: </a><strong><font color="#FF0000">      ALE:</font></strong>:CartesianSieveDef::nextCodeOdd(a, n, size);
+<a name="line20"> 20: </a>      a[0] ^= 1;
+<a name="line21"> 21: </a>      <font color="#4169E1">for</font>(int d = 1; d &lt; size; ++d) a[d] ^= 0;
+<a name="line22"> 22: </a>    };
+<a name="line23"> 23: </a>    static void getGrayCode(const int n, const int size, int code[]) {
+<a name="line24"> 24: </a>      <font color="#4169E1">if</font> (n == 1 &lt;&lt; size) {
+<a name="line25"> 25: </a>        code[0] = -1;
+<a name="line26"> 26: </a>      } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (n == 0) {
+<a name="line27"> 27: </a>        <font color="#4169E1">for</font>(int d = 0; d &lt; size; ++d) code[d] = 0;
+<a name="line28"> 28: </a>      } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (n == 1) {
+<a name="line29"> 29: </a>        code[0] = 1;
+<a name="line30"> 30: </a>        <font color="#4169E1">for</font>(int d = 1; d &lt; size; ++d) code[d] = 0;
+<a name="line31"> 31: </a>      } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (n == (n/2)*2) {
+<a name="line32"> 32: </a>        // Might have to shift pointer
+<a name="line33"> 33: </a><strong><font color="#FF0000">        ALE:</font></strong>:CartesianSieveDef::getGrayCode(n/2, size, code);
+<a name="line34"> 34: </a><strong><font color="#FF0000">        ALE:</font></strong>:CartesianSieveDef::nextCodeEven(code, n/2, size);
+<a name="line35"> 35: </a>      } <font color="#4169E1">else</font> {
+<a name="line36"> 36: </a>        // Might have to shift pointer
+<a name="line37"> 37: </a><strong><font color="#FF0000">        ALE:</font></strong>:CartesianSieveDef::getGrayCode((n-1)/2, size, code);
+<a name="line38"> 38: </a><strong><font color="#FF0000">        ALE:</font></strong>:CartesianSieveDef::nextCodeOdd(code, (n-1)/2, size);
+<a name="line39"> 39: </a>      }
+<a name="line40"> 40: </a>    };
+<a name="line41"> 41: </a>    static void getIndices(const int dim, const int sizes[], const int&amp; point, int indices[]) {
+<a name="line42"> 42: </a>      int p       = point;
+<a name="line43"> 43: </a>      int divisor = 1;
+
+<a name="line45"> 45: </a>      <font color="#4169E1">for</font>(int d = 0; d &lt; dim-1; ++d) {
+<a name="line46"> 46: </a>        divisor *= sizes[d];
+<a name="line47"> 47: </a>      }
+<a name="line48"> 48: </a>      //std::cout &lt;&lt; <font color="#666666">"  Getting indices for point "</font> &lt;&lt; point &lt;&lt; <font color="#666666">":"</font>;
+<a name="line49"> 49: </a>      <font color="#4169E1">for</font>(int d = dim-1; d &gt;= 0; --d) {
+<a name="line50"> 50: </a>        indices[d] = p/divisor;
+<a name="line51"> 51: </a>        p -= divisor*indices[d];
+<a name="line52"> 52: </a>        <font color="#4169E1">if</font> (d &gt; 0) divisor /= sizes[d-1];
+<a name="line53"> 53: </a>      }
+<a name="line54"> 54: </a>      //<font color="#4169E1">for</font>(int d = 0; d &lt; dim; ++d) {
+<a name="line55"> 55: </a>      //  std::cout &lt;&lt; <font color="#666666">" "</font> &lt;&lt; indices[d];
+<a name="line56"> 56: </a>      //}
+<a name="line57"> 57: </a>      //std::cout &lt;&lt; std::endl;
+<a name="line58"> 58: </a>    };
+<a name="line59"> 59: </a>    static inline int getValue(const int dim, const int sizes[], const int indices[], const int code[], const bool forward = true) {
+<a name="line60"> 60: </a>      //std::cout &lt;&lt; <font color="#666666">"Building value"</font> &lt;&lt; std::endl &lt;&lt; <font color="#666666">"  code:"</font>;
+<a name="line61"> 61: </a>      //<font color="#4169E1">for</font>(int d = 0; d &lt; dim; ++d) std::cout &lt;&lt; <font color="#666666">" "</font> &lt;&lt; code[d];
+<a name="line62"> 62: </a>      //std::cout &lt;&lt; std::endl &lt;&lt; <font color="#666666">"  indices:"</font>;
+<a name="line63"> 63: </a>      //<font color="#4169E1">for</font>(int d = 0; d &lt; dim; ++d) std::cout &lt;&lt; <font color="#666666">" "</font> &lt;&lt; indices[d];
+<a name="line64"> 64: </a>      //std::cout &lt;&lt; std::endl;
+<a name="line65"> 65: </a>      <font color="#4169E1">if</font> (code[0] &lt; 0) {
+<a name="line66"> 66: </a>        //std::cout &lt;&lt; <font color="#666666">"  value "</font> &lt;&lt; -1 &lt;&lt; std::endl;
+<a name="line67"> 67: </a>        <font color="#4169E1">return</font> -1;
+<a name="line68"> 68: </a>      }
+<a name="line69"> 69: </a>      int value = indices[dim-1];
+<a name="line70"> 70: </a>      <font color="#4169E1">if</font> (forward) {
+<a name="line71"> 71: </a>        <font color="#4169E1">if</font> (code[dim-1]) value++;
+<a name="line72"> 72: </a>      } <font color="#4169E1">else</font> {
+<a name="line73"> 73: </a>        <font color="#4169E1">if</font> (!code[dim-1]) value--;
+<a name="line74"> 74: </a>      }
+<a name="line75"> 75: </a>      //std::cout &lt;&lt; <font color="#666666">"  value "</font> &lt;&lt; value &lt;&lt; std::endl;
+<a name="line76"> 76: </a>      <font color="#4169E1">for</font>(int d = dim-2; d &gt;= 0; --d) {
+<a name="line77"> 77: </a>        value = value*sizes[d] + indices[d];
+<a name="line78"> 78: </a>        <font color="#4169E1">if</font> (forward) {
+<a name="line79"> 79: </a>          <font color="#4169E1">if</font> (code[d]) value++;
+<a name="line80"> 80: </a>        } <font color="#4169E1">else</font> {
+<a name="line81"> 81: </a>          <font color="#4169E1">if</font> (!code[d]) value--;
+<a name="line82"> 82: </a>        }
+<a name="line83"> 83: </a>        //std::cout &lt;&lt; <font color="#666666">"  value "</font> &lt;&lt; value &lt;&lt; std::endl;
+<a name="line84"> 84: </a>      }
+<a name="line85"> 85: </a>      //std::cout &lt;&lt; <font color="#666666">"  final value "</font> &lt;&lt; value &lt;&lt; std::endl;
+<a name="line86"> 86: </a>      <font color="#4169E1">return</font> value;
+<a name="line87"> 87: </a>    };
+
+
+<a name="line90"> 90: </a>    template &lt;typename PointType_&gt;
+<a name="line91"> 91: </a>    class PointSequence {
+<a name="line92"> 92: </a><strong><font color="#FF0000">    public:</font></strong>
+<a name="line93"> 93: </a>      <font color="#4169E1">typedef</font> PointType_ point_type;
+<a name="line94"> 94: </a>      // We traverse the points in natural order
+<a name="line95"> 95: </a>      class iterator {
+<a name="line96"> 96: </a><strong><font color="#FF0000">      public:</font></strong>
+<a name="line97"> 97: </a>        // Standard iterator typedefs
+<a name="line98"> 98: </a>        <font color="#4169E1">typedef</font> std::input_iterator_tag iterator_category;
+<a name="line99"> 99: </a>        <font color="#4169E1">typedef</font> point_type              value_type;
+<a name="line100">100: </a>        <font color="#4169E1">typedef</font> int                     difference_type;
+<a name="line101">101: </a>        <font color="#4169E1">typedef</font> value_type*             pointer;
+<a name="line102">102: </a>        <font color="#4169E1">typedef</font> value_type&amp;             reference;
+<a name="line103">103: </a><strong><font color="#FF0000">      protected:</font></strong>
+<a name="line104">104: </a>        value_type _value;
+<a name="line105">105: </a><strong><font color="#FF0000">      public:</font></strong>
+<a name="line106">106: </a>        iterator(const value_type&amp; start) : _value(start) {};
+<a name="line107">107: </a>        iterator(const iterator&amp; iter) : _value(iter._value) {};
+<a name="line108">108: </a>        virtual ~iterator() {};
+<a name="line109">109: </a><strong><font color="#FF0000">      public:</font></strong>
+<a name="line110">110: </a>        virtual bool             operator==(const iterator&amp; iter) const {<font color="#4169E1">return</font> this-&gt;_value == iter._value;};
+<a name="line111">111: </a>        virtual bool             operator!=(const iterator&amp; iter) const {<font color="#4169E1">return</font> this-&gt;_value != iter._value;};
+<a name="line112">112: </a>        virtual const value_type operator*() const {<font color="#4169E1">return</font> this-&gt;_value;};
+<a name="line113">113: </a>        virtual iterator&amp;        operator++() {++this-&gt;_value; <font color="#4169E1">return</font> *this;};
+<a name="line114">114: </a>        virtual iterator         operator++(int n) {iterator tmp(*this); ++this-&gt;_value; <font color="#4169E1">return</font> tmp;};
+<a name="line115">115: </a>      };
+<a name="line116">116: </a><strong><font color="#FF0000">    protected:</font></strong>
+<a name="line117">117: </a>      point_type _start;
+<a name="line118">118: </a>      point_type _end;
+<a name="line119">119: </a><strong><font color="#FF0000">    public:</font></strong>
+<a name="line120">120: </a>      PointSequence(const point_type&amp; start, const point_type&amp; end) : _start(start), _end(end) {};
+<a name="line121">121: </a>      virtual ~PointSequence() {};
+<a name="line122">122: </a><strong><font color="#FF0000">    public:</font></strong>
+<a name="line123">123: </a>      virtual iterator begin() {<font color="#4169E1">return</font> iterator(this-&gt;_start);};
+<a name="line124">124: </a>      virtual iterator end()   {<font color="#4169E1">return</font> iterator(this-&gt;_end);};
+<a name="line125">125: </a>      virtual bool     empty() {<font color="#4169E1">return</font> this-&gt;_start &gt;= this-&gt;_end;};
+<a name="line126">126: </a>    };
+<a name="line127">127: </a>    // In one dimension, we have
+<a name="line128">128: </a>    //
+<a name="line129">129: </a>    //   v_k---c_k---v_{k+1}
+<a name="line130">130: </a>    //
+<a name="line131">131: </a>    // In two dimensions, we have
+<a name="line132">132: </a>    //
+<a name="line133">133: </a>    //            c_{k+m}             c_{k+m+1}
+<a name="line134">134: </a>    //
+<a name="line135">135: </a>    // v_{k+m+1}-----------v_{k+m+2}--
+<a name="line136">136: </a>    //    |                    |
+<a name="line137">137: </a>    //    |       c_k          |      c_{k+1}
+<a name="line138">138: </a>    //    |                    |
+<a name="line139">139: </a>    //   v_k---------------v_{k+1}----
+<a name="line140">140: </a>    //
+<a name="line141">141: </a>    // So <font color="#4169E1">for</font> c_k the cone is (v_{k+(k/m)}, v_{k+(k/m)+1}, v_{k+m+(k/m)}, v_{k+m+(k/m)+1})
+<a name="line142">142: </a>    //
+<a name="line143">143: </a>    // In three dimensions, we have
+<a name="line144">144: </a>    //
+<a name="line145">145: </a>    //         v_{k+m+1+(m+1)*(n+1)} v_{k+m+1+(m+1)*(n+1)+1}
+<a name="line146">146: </a>    //
+<a name="line147">147: </a>    // v_{k+m+1}           v_{k+m+2}
+<a name="line148">148: </a>    //
+<a name="line149">149: </a>    //
+<a name="line150">150: </a>    //         v_{k+(m+1)*(n+1)}     v_{k+(m+1)*(n+1)+1}
+<a name="line151">151: </a>    //
+<a name="line152">152: </a>    //   v_k               v_{k+1}
+<a name="line153">153: </a>    //
+<a name="line154">154: </a>    // Suppose we <font color="#4169E1">break</font> down the index k into a tuple (i,j), then 2d becomes
+<a name="line155">155: </a>    //
+<a name="line156">156: </a>    //   cone(c_{i,j}) = (v_{i,j}, v_{i+1,j}, v_{i,j+1}, v_{i+1,j+1})
+<a name="line157">157: </a>    //                 = (v_{k}, v_{k+1}, v_{k+m+1}, v_{k+m+2})
+<a name="line158">158: </a>    // Now <font color="#4169E1">for</font> 2D
+<a name="line159">159: </a>    //   i = k%m
+<a name="line160">160: </a>    //   j = k/m
+<a name="line161">161: </a>    // and 3D
+<a name="line162">162: </a>    //   k = q/(m*n)
+<a name="line163">163: </a>    //   j = (q - m*n*k)/m
+<a name="line164">164: </a>    //   i = (q - m*n*k - m*j)
+<a name="line165">165: </a>    template &lt;typename PointType_&gt;
+<a name="line166">166: </a>    class ConeSequence {
+<a name="line167">167: </a><strong><font color="#FF0000">    public:</font></strong>
+<a name="line168">168: </a>      <font color="#4169E1">typedef</font> PointType_ point_type;
+<a name="line169">169: </a>      // We traverse the points in natural order
+<a name="line170">170: </a>      class iterator {
+<a name="line171">171: </a><strong><font color="#FF0000">      public:</font></strong>
+<a name="line172">172: </a>        // Standard iterator typedefs
+<a name="line173">173: </a>        <font color="#4169E1">typedef</font> std::input_iterator_tag iterator_category;
+<a name="line174">174: </a>        <font color="#4169E1">typedef</font> PointType_              value_type;
+<a name="line175">175: </a>        <font color="#4169E1">typedef</font> int                     difference_type;
+<a name="line176">176: </a>        <font color="#4169E1">typedef</font> value_type*             pointer;
+<a name="line177">177: </a>        <font color="#4169E1">typedef</font> value_type&amp;             reference;
+<a name="line178">178: </a><strong><font color="#FF0000">      protected:</font></strong>
+<a name="line179">179: </a>        int               _dim;
+<a name="line180">180: </a>        const int        *_sizes;
+<a name="line181">181: </a>        const int        *_cellSizes;
+<a name="line182">182: </a>        int               _numCells;
+<a name="line183">183: </a>        int               _pos;
+<a name="line184">184: </a>        int              *_code;
+<a name="line185">185: </a>        value_type        _value;
+<a name="line186">186: </a>        value_type *_indices;
+<a name="line187">187: </a><strong><font color="#FF0000">      protected:</font></strong>
+<a name="line188">188: </a>        void init() {
+<a name="line189">189: </a>          this-&gt;_code = new int[this-&gt;_dim];
+<a name="line190">190: </a>          <font color="#4169E1">if</font> (this-&gt;_pos == -2) {
+<a name="line191">191: </a>            this-&gt;_value = this-&gt;_indices[0];
+<a name="line192">192: </a>            ++this-&gt;_pos;
+<a name="line193">193: </a>          } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (this-&gt;_pos == -1) {
+<a name="line194">194: </a>            this-&gt;_value = ALE::CartesianSieveDef::getValue(this-&gt;_dim, this-&gt;_cellSizes, this-&gt;_indices, this-&gt;_code);
+<a name="line195">195: </a>          } <font color="#4169E1">else</font> {
+<a name="line196">196: </a><strong><font color="#FF0000">            ALE:</font></strong>:CartesianSieveDef::getGrayCode(this-&gt;_pos, this-&gt;_dim, this-&gt;_code);
+<a name="line197">197: </a>            this-&gt;_value = ALE::CartesianSieveDef::getValue(this-&gt;_dim, this-&gt;_sizes, this-&gt;_indices, this-&gt;_code) + this-&gt;_numCells;
+<a name="line198">198: </a>          }
+<a name="line199">199: </a>        };
+<a name="line200">200: </a><strong><font color="#FF0000">      public:</font></strong>
+<a name="line201">201: </a>        iterator(const int dim, const int sizes[], const int cellSizes[], const int numCells, const value_type indices[], const int pos, const bool addSelf = false) : _dim(dim), _sizes(sizes), _cellSizes(cellSizes), _numCells(numCells), _pos(pos) {
+<a name="line202">202: </a>          this-&gt;_indices = new int[this-&gt;_dim];
+<a name="line203">203: </a>          <font color="#4169E1">for</font>(int d = 0; d &lt; this-&gt;_dim; ++d) this-&gt;_indices[d] = indices[d];
+<a name="line204">204: </a>          this-&gt;init();
+<a name="line205">205: </a>        };
+<a name="line206">206: </a>        iterator(const iterator&amp; iter) : _dim(iter._dim), _sizes(iter._sizes), _cellSizes(iter._cellSizes), _numCells(iter._numCells), _pos(iter._pos) {
+<a name="line207">207: </a>          this-&gt;_indices = new int[this-&gt;_dim];
+<a name="line208">208: </a>          <font color="#4169E1">for</font>(int d = 0; d &lt; this-&gt;_dim; ++d) this-&gt;_indices[d] = iter._indices[d];
+<a name="line209">209: </a>          this-&gt;init();
+<a name="line210">210: </a>        };
+<a name="line211">211: </a>        virtual ~iterator() {
+<a name="line212">212: </a>          delete [] this-&gt;_code;
+<a name="line213">213: </a>          delete [] this-&gt;_indices;
+<a name="line214">214: </a>        };
+<a name="line215">215: </a><strong><font color="#FF0000">      public:</font></strong>
+<a name="line216">216: </a>        virtual bool              operator==(const iterator&amp; iter) const {<font color="#4169E1">return</font> this-&gt;_pos == iter._pos;};
+<a name="line217">217: </a>        virtual bool              operator!=(const iterator&amp; iter) const {<font color="#4169E1">return</font> this-&gt;_pos != iter._pos;};
+<a name="line218">218: </a>        virtual const value_type  operator*() const {<font color="#4169E1">return</font> this-&gt;_value;};
+<a name="line219">219: </a>        virtual iterator&amp;         operator++() {
+<a name="line220">220: </a><strong><font color="#FF0000">          ALE:</font></strong>:CartesianSieveDef::getGrayCode(++this-&gt;_pos, this-&gt;_dim, this-&gt;_code);
+<a name="line221">221: </a>          this-&gt;_value = ALE::CartesianSieveDef::getValue(this-&gt;_dim, this-&gt;_sizes, this-&gt;_indices, this-&gt;_code) + this-&gt;_numCells;
+<a name="line222">222: </a>          <font color="#4169E1">return</font> *this;
+<a name="line223">223: </a>        };
+<a name="line224">224: </a>        virtual iterator          operator++(int n) {
+<a name="line225">225: </a>          iterator tmp(*this);
+<a name="line226">226: </a><strong><font color="#FF0000">          ALE:</font></strong>:CartesianSieveDef::getGrayCode(++this-&gt;_pos, this-&gt;_dim, this-&gt;_code);
+<a name="line227">227: </a>          this-&gt;_value = ALE::CartesianSieveDef::getValue(this-&gt;_dim, this-&gt;_sizes, this-&gt;_indices, this-&gt;_code) + this-&gt;_numCells;
+<a name="line228">228: </a>          <font color="#4169E1">return</font> tmp;
+<a name="line229">229: </a>        };
+<a name="line230">230: </a>      };
+<a name="line231">231: </a><strong><font color="#FF0000">    protected:</font></strong>
+<a name="line232">232: </a>      int         _dim;
+<a name="line233">233: </a>      const int  *_sizes;
+<a name="line234">234: </a>      int        *_vertexSizes;
+<a name="line235">235: </a>      int         _numCells;
+<a name="line236">236: </a>      point_type  _cell;
+<a name="line237">237: </a>      int        *_indices;
+<a name="line238">238: </a>      bool        _addSelf;
+<a name="line239">239: </a><strong><font color="#FF0000">    public:</font></strong>
+<a name="line240">240: </a>      ConeSequence(const int dim, const int sizes[], const int numCells, const point_type&amp; cell, const bool addSelf = false) : _dim(dim), _sizes(sizes), _numCells(numCells), _cell(cell), _addSelf(addSelf) {
+<a name="line241">241: </a>        this-&gt;_vertexSizes = new int[dim];
+<a name="line242">242: </a>        this-&gt;_indices     = new point_type[dim];
+<a name="line243">243: </a>        //this-&gt;getIndices(this-&gt;_cell, this-&gt;_indices);
+<a name="line244">244: </a>        <font color="#4169E1">for</font>(int d = 0; d &lt; this-&gt;_dim; ++d) this-&gt;_vertexSizes[d] = this-&gt;_sizes[d]+1;
+<a name="line245">245: </a><strong><font color="#FF0000">        ALE:</font></strong>:CartesianSieveDef::getIndices(this-&gt;_dim, this-&gt;_sizes, this-&gt;_cell, this-&gt;_indices);
+<a name="line246">246: </a>      };
+<a name="line247">247: </a>      virtual ~ConeSequence() {
+<a name="line248">248: </a>        delete [] this-&gt;_vertexSizes;
+<a name="line249">249: </a>        delete [] this-&gt;_indices;
+<a name="line250">250: </a>      };
+<a name="line251">251: </a><strong><font color="#FF0000">    protected:</font></strong>
+<a name="line252">252: </a>      void getIndices(const point_type&amp; cell, const int indices[]) {
+<a name="line253">253: </a>        point_type c       = cell;
+<a name="line254">254: </a>        int        divisor = 1;
+
+<a name="line256">256: </a>        <font color="#4169E1">for</font>(int d = 0; d &lt; this-&gt;_dim-1; ++d) {
+<a name="line257">257: </a>          divisor *= this-&gt;_sizes[d];
+<a name="line258">258: </a>        }
+<a name="line259">259: </a>        //std::cout &lt;&lt; <font color="#666666">"  Got indices for cell "</font> &lt;&lt; cell &lt;&lt; <font color="#666666">":"</font>;
+<a name="line260">260: </a>        <font color="#4169E1">for</font>(int d = this-&gt;_dim-1; d &gt;= 0; --d) {
+<a name="line261">261: </a>          this-&gt;_indices[d] = c/divisor;
+<a name="line262">262: </a>          c -= divisor*this-&gt;_indices[d];
+<a name="line263">263: </a>          <font color="#4169E1">if</font> (d &gt; 0) divisor /= this-&gt;_sizes[d-1];
+<a name="line264">264: </a>        }
+<a name="line265">265: </a>        //<font color="#4169E1">for</font>(int d = 0; d &lt; this-&gt;_dim; ++d) {
+<a name="line266">266: </a>        //  std::cout &lt;&lt; <font color="#666666">" "</font> &lt;&lt; this-&gt;_indices[d];
+<a name="line267">267: </a>        //}
+<a name="line268">268: </a>        //std::cout &lt;&lt; std::endl;
+<a name="line269">269: </a>      };
+<a name="line270">270: </a><strong><font color="#FF0000">    public:</font></strong>
+<a name="line271">271: </a>      virtual iterator begin() {
+<a name="line272">272: </a>        int start = 0;
+
+<a name="line274">274: </a>        <font color="#4169E1">if</font> (this-&gt;_addSelf) {
+<a name="line275">275: </a>          <font color="#4169E1">if</font> (this-&gt;_cell &gt;= this-&gt;_numCells) {
+<a name="line276">276: </a>            start = -2;
+<a name="line277">277: </a>            this-&gt;_indices[0] = this-&gt;_cell;
+<a name="line278">278: </a>          } <font color="#4169E1">else</font> {
+<a name="line279">279: </a>            start = -1;
+<a name="line280">280: </a>          }
+<a name="line281">281: </a>        }
+<a name="line282">282: </a>        <font color="#4169E1">return</font> iterator(this-&gt;_dim, this-&gt;_vertexSizes, this-&gt;_sizes, this-&gt;_numCells, this-&gt;_indices, start);
+<a name="line283">283: </a>      };
+<a name="line284">284: </a>      virtual iterator end() {
+<a name="line285">285: </a>        int end = 1 &lt;&lt; this-&gt;_dim;
+
+<a name="line287">287: </a>        <font color="#4169E1">if</font> (!this-&gt;_dim || (this-&gt;_cell &gt;= this-&gt;_numCells)) {
+<a name="line288">288: </a>          end = 0;
+<a name="line289">289: </a>        }
+<a name="line290">290: </a>        <font color="#4169E1">return</font> iterator(this-&gt;_dim, this-&gt;_vertexSizes, this-&gt;_sizes, this-&gt;_numCells, this-&gt;_indices, end);
+<a name="line291">291: </a>      };
+<a name="line292">292: </a>    };
+<a name="line293">293: </a>    template &lt;typename PointType_&gt;
+<a name="line294">294: </a>    class SupportSequence {
+<a name="line295">295: </a><strong><font color="#FF0000">    public:</font></strong>
+<a name="line296">296: </a>      <font color="#4169E1">typedef</font> PointType_ point_type;
+<a name="line297">297: </a>      // We traverse the points in natural order
+<a name="line298">298: </a>      class iterator {
+<a name="line299">299: </a><strong><font color="#FF0000">      public:</font></strong>
+<a name="line300">300: </a>        // Standard iterator typedefs
+<a name="line301">301: </a>        <font color="#4169E1">typedef</font> std::input_iterator_tag iterator_category;
+<a name="line302">302: </a>        <font color="#4169E1">typedef</font> PointType_              value_type;
+<a name="line303">303: </a>        <font color="#4169E1">typedef</font> int                     difference_type;
+<a name="line304">304: </a>        <font color="#4169E1">typedef</font> value_type*             pointer;
+<a name="line305">305: </a>        <font color="#4169E1">typedef</font> value_type&amp;             reference;
+<a name="line306">306: </a><strong><font color="#FF0000">      protected:</font></strong>
+<a name="line307">307: </a>        int               _dim;
+<a name="line308">308: </a>        const int        *_sizes;
+<a name="line309">309: </a>        int               _pos;
+<a name="line310">310: </a>        int              *_code;
+<a name="line311">311: </a>        value_type        _value;
+<a name="line312">312: </a>        value_type *_indices;
+<a name="line313">313: </a><strong><font color="#FF0000">      protected:</font></strong>
+<a name="line314">314: </a>        bool validIndex(const int indices[], const int code[]) {
+<a name="line315">315: </a>          <font color="#4169E1">for</font>(int d = 0; d &lt; this-&gt;_dim; ++d) {
+<a name="line316">316: </a>            <font color="#4169E1">if</font> ((code[d])  &amp;&amp; (indices[d] &gt;= this-&gt;_sizes[d])) <font color="#4169E1">return</font> false;
+<a name="line317">317: </a>            <font color="#4169E1">if</font> ((!code[d]) &amp;&amp; (indices[d] &lt; 1)) <font color="#4169E1">return</font> false;
+<a name="line318">318: </a>          }
+<a name="line319">319: </a>          <font color="#4169E1">return</font> true;
+<a name="line320">320: </a>        }
+<a name="line321">321: </a>        void init() {
+<a name="line322">322: </a>          this-&gt;_code = new int[this-&gt;_dim];
+<a name="line323">323: </a><strong><font color="#FF0000">          ALE:</font></strong>:CartesianSieveDef::getGrayCode(this-&gt;_pos, this-&gt;_dim, this-&gt;_code);
+<a name="line324">324: </a>          <font color="#4169E1">while</font>((this-&gt;_code[0] &gt;= 0) &amp;&amp; !this-&gt;validIndex(this-&gt;_indices, this-&gt;_code)) {
+<a name="line325">325: </a><strong><font color="#FF0000">            ALE:</font></strong>:CartesianSieveDef::getGrayCode(++this-&gt;_pos, this-&gt;_dim, this-&gt;_code);
+<a name="line326">326: </a>          }
+<a name="line327">327: </a>          this-&gt;_value = ALE::CartesianSieveDef::getValue(this-&gt;_dim, this-&gt;_sizes, this-&gt;_indices, this-&gt;_code, false);
+<a name="line328">328: </a>        };
+<a name="line329">329: </a><strong><font color="#FF0000">      public:</font></strong>
+<a name="line330">330: </a>        iterator(const int dim, const int sizes[], const value_type indices[], const int pos) : _dim(dim), _sizes(sizes), _pos(pos) {
+<a name="line331">331: </a>          this-&gt;_indices = new int[this-&gt;_dim];
+<a name="line332">332: </a>          <font color="#4169E1">for</font>(int d = 0; d &lt; this-&gt;_dim; ++d) this-&gt;_indices[d] = indices[d];
+<a name="line333">333: </a>          this-&gt;init();
+<a name="line334">334: </a>        };
+<a name="line335">335: </a>        iterator(const iterator&amp; iter) : _dim(iter._dim), _sizes(iter._sizes), _pos(iter._pos) {
+<a name="line336">336: </a>          this-&gt;_indices = new int[this-&gt;_dim];
+<a name="line337">337: </a>          <font color="#4169E1">for</font>(int d = 0; d &lt; this-&gt;_dim; ++d) this-&gt;_indices[d] = iter._indices[d];
+<a name="line338">338: </a>          this-&gt;init();
+<a name="line339">339: </a>        };
+<a name="line340">340: </a>        virtual ~iterator() {
+<a name="line341">341: </a>          delete [] this-&gt;_code;
+<a name="line342">342: </a>          delete [] this-&gt;_indices;
+<a name="line343">343: </a>        };
+<a name="line344">344: </a><strong><font color="#FF0000">      public:</font></strong>
+<a name="line345">345: </a>        virtual bool              operator==(const iterator&amp; iter) const {<font color="#4169E1">return</font> this-&gt;_pos == iter._pos;};
+<a name="line346">346: </a>        virtual bool              operator!=(const iterator&amp; iter) const {<font color="#4169E1">return</font> this-&gt;_pos != iter._pos;};
+<a name="line347">347: </a>        virtual const value_type  operator*() const {<font color="#4169E1">return</font> this-&gt;_value;};
+<a name="line348">348: </a>        virtual iterator&amp;         operator++() {
+<a name="line349">349: </a>          <font color="#4169E1">do</font> {
+<a name="line350">350: </a><strong><font color="#FF0000">            ALE:</font></strong>:CartesianSieveDef::getGrayCode(++this-&gt;_pos, this-&gt;_dim, this-&gt;_code);
+<a name="line351">351: </a>          } <font color="#4169E1">while</font>((this-&gt;_code[0] &gt;= 0) &amp;&amp; !this-&gt;validIndex(this-&gt;_indices, this-&gt;_code));
+<a name="line352">352: </a>          this-&gt;_value = ALE::CartesianSieveDef::getValue(this-&gt;_dim, this-&gt;_sizes, this-&gt;_indices, this-&gt;_code, false);
+<a name="line353">353: </a>          <font color="#4169E1">return</font> *this;
+<a name="line354">354: </a>        };
+<a name="line355">355: </a>        virtual iterator          operator++(int n) {
+<a name="line356">356: </a>          iterator tmp(*this);
+<a name="line357">357: </a>          <font color="#4169E1">do</font> {
+<a name="line358">358: </a><strong><font color="#FF0000">            ALE:</font></strong>:CartesianSieveDef::getGrayCode(++this-&gt;_pos, this-&gt;_dim, this-&gt;_code);
+<a name="line359">359: </a>          } <font color="#4169E1">while</font>((this-&gt;_code[0] &gt;= 0) &amp;&amp; !this-&gt;validIndex(this-&gt;_indices, this-&gt;_code));
+<a name="line360">360: </a>          this-&gt;_value = ALE::CartesianSieveDef::getValue(this-&gt;_dim, this-&gt;_sizes, this-&gt;_indices, this-&gt;_code, false);
+<a name="line361">361: </a>          <font color="#4169E1">return</font> tmp;
+<a name="line362">362: </a>        };
+<a name="line363">363: </a>      };
+<a name="line364">364: </a><strong><font color="#FF0000">    protected:</font></strong>
+<a name="line365">365: </a>      int         _dim;
+<a name="line366">366: </a>      const int  *_sizes;
+<a name="line367">367: </a>      int        *_vertexSizes;
+<a name="line368">368: </a>      int         _numCells;
+<a name="line369">369: </a>      point_type  _vertex;
+<a name="line370">370: </a>      int        *_indices;
+<a name="line371">371: </a><strong><font color="#FF0000">    public:</font></strong>
+<a name="line372">372: </a>      SupportSequence(const int dim, const int sizes[], const int numCells, const point_type&amp; vertex) : _dim(dim), _sizes(sizes), _numCells(numCells), _vertex(vertex) {
+<a name="line373">373: </a>        this-&gt;_vertexSizes = new int[dim];
+<a name="line374">374: </a>        this-&gt;_indices     = new point_type[dim];
+<a name="line375">375: </a>        //this-&gt;getIndices(this-&gt;_vertex, this-&gt;_indices);
+<a name="line376">376: </a>        <font color="#4169E1">for</font>(int d = 0; d &lt; this-&gt;_dim; ++d) this-&gt;_vertexSizes[d] = this-&gt;_sizes[d]+1;
+<a name="line377">377: </a><strong><font color="#FF0000">        ALE:</font></strong>:CartesianSieveDef::getIndices(this-&gt;_dim, this-&gt;_vertexSizes, this-&gt;_vertex - this-&gt;_numCells, this-&gt;_indices);
+<a name="line378">378: </a>      };
+<a name="line379">379: </a>      virtual ~SupportSequence() {
+<a name="line380">380: </a>        delete [] this-&gt;_vertexSizes;
+<a name="line381">381: </a>        delete [] this-&gt;_indices;
+<a name="line382">382: </a>      };
+<a name="line383">383: </a><strong><font color="#FF0000">    protected:</font></strong>
+<a name="line384">384: </a>      void getIndices(const point_type&amp; vertex, const int indices[]) {
+<a name="line385">385: </a>        point_type v       = vertex - this-&gt;_numCells;
+<a name="line386">386: </a>        int        divisor = 1;
+
+<a name="line388">388: </a>        <font color="#4169E1">for</font>(int d = 0; d &lt; this-&gt;_dim-1; ++d) {
+<a name="line389">389: </a>          divisor *= this-&gt;_sizes[d]+1;
+<a name="line390">390: </a>        }
+<a name="line391">391: </a><strong><font color="#FF0000">        std:</font></strong>:cout &lt;&lt; <font color="#666666">"  Got indices for vertex "</font> &lt;&lt; vertex &lt;&lt; <font color="#666666">":"</font>;
+<a name="line392">392: </a>        <font color="#4169E1">for</font>(int d = this-&gt;_dim-1; d &gt;= 0; --d) {
+<a name="line393">393: </a>          this-&gt;_indices[d] = v/divisor;
+<a name="line394">394: </a>          v -= divisor*this-&gt;_indices[d];
+<a name="line395">395: </a>          <font color="#4169E1">if</font> (d &gt; 0) divisor /= this-&gt;_sizes[d-1]+1;
+<a name="line396">396: </a>        }
+<a name="line397">397: </a>        <font color="#4169E1">for</font>(int d = 0; d &lt; this-&gt;_dim; ++d) {
+<a name="line398">398: </a><strong><font color="#FF0000">          std:</font></strong>:cout &lt;&lt; <font color="#666666">" "</font> &lt;&lt; this-&gt;_indices[d];
+<a name="line399">399: </a>        }
+<a name="line400">400: </a><strong><font color="#FF0000">        std:</font></strong>:cout &lt;&lt; std::endl;
+<a name="line401">401: </a>      };
+<a name="line402">402: </a><strong><font color="#FF0000">    public:</font></strong>
+<a name="line403">403: </a>      virtual iterator begin() {<font color="#4169E1">return</font> iterator(this-&gt;_dim, this-&gt;_sizes, this-&gt;_indices, 0);};
+<a name="line404">404: </a>      virtual iterator end()   {<font color="#4169E1">return</font> iterator(this-&gt;_dim, this-&gt;_sizes, this-&gt;_indices, this-&gt;_dim ? 1 &lt;&lt; this-&gt;_dim: 0);};
+<a name="line405">405: </a>    };
+<a name="line406">406: </a>  }
+<a name="line407">407: </a>  // We can <font color="#4169E1">do</font> meets of two cells as empty <font color="#4169E1">if</font> they <font color="#4169E1">do</font> not intersect, and a k-dimensional face (with 2^k vertices)
+<a name="line408">408: </a>  //   <font color="#4169E1">if</font> they have k indices in common
+<a name="line409">409: </a>  // We can <font color="#4169E1">do</font> joins of two vertices. If they have have k indices in common, they span a d-k face, and thus have
+<a name="line410">410: </a>  //   2^{k} cells in the join.
+<a name="line411">411: </a>  // Note meet and join are both empty <font color="#4169E1">if</font> any index differs by more than 1
+
+<a name="line413">413: </a>  // This is a purely Cartesian mesh
+<a name="line414">414: </a>  //   We will only represent cells and vertices, meaning the cap consists only of
+<a name="line415">415: </a>  //     vertices, and the base only of cells.
+<a name="line416">416: </a>  //   numCells:    m x n x ...
+<a name="line417">417: </a>  //   numVertices: m+1 x n+1 x ...
+<a name="line418">418: </a>  //   Points:
+<a name="line419">419: </a>  //     cells:       0     - numCells-1
+<a name="line420">420: </a>  //     vertices: numCells - numCells+numVertices-1
+<a name="line421">421: </a>  template &lt;typename Point_&gt;
+<a name="line422">422: </a>  class CartesianSieve : public ALE::ParallelObject {
+<a name="line423">423: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line424">424: </a>    <font color="#4169E1">typedef</font> Point_ point_type;
+<a name="line425">425: </a>    <font color="#4169E1">typedef</font> CartesianSieveDef::PointSequence&lt;point_type&gt;   baseSequence;
+<a name="line426">426: </a>    <font color="#4169E1">typedef</font> CartesianSieveDef::PointSequence&lt;point_type&gt;   capSequence;
+<a name="line427">427: </a>    <font color="#4169E1">typedef</font> CartesianSieveDef::ConeSequence&lt;point_type&gt;    coneSequence;
+<a name="line428">428: </a>    <font color="#4169E1">typedef</font> CartesianSieveDef::SupportSequence&lt;point_type&gt; supportSequence;
+<a name="line429">429: </a>    // Backward compatibility
+<a name="line430">430: </a>    <font color="#4169E1">typedef</font> coneSequence coneArray;
+<a name="line431">431: </a>    <font color="#4169E1">typedef</font> coneSequence coneSet;
+<a name="line432">432: </a>    <font color="#4169E1">typedef</font> supportSequence supportArray;
+<a name="line433">433: </a>    <font color="#4169E1">typedef</font> supportSequence supportSet;
+<a name="line434">434: </a><strong><font color="#FF0000">  protected:</font></strong>
+<a name="line435">435: </a>    int  _dim;
+<a name="line436">436: </a>    int *_sizes;
+<a name="line437">437: </a>    int  _numCells;
+<a name="line438">438: </a>    int  _numVertices;
+<a name="line439">439: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line440">440: </a>    CartesianSieve(<A href="../../docs/manualpages/Sys/MPI_Comm.html#MPI_Comm">MPI_Comm</A> comm, const int dim, const int numCells[], const int&amp; debug = 0) : ParallelObject(comm, debug), _dim(dim) {
+<a name="line441">441: </a>      this-&gt;_sizes       = new int[dim];
+<a name="line442">442: </a>      this-&gt;_numCells    = 1;
+<a name="line443">443: </a>      this-&gt;_numVertices = 1;
+<a name="line444">444: </a>      <font color="#4169E1">for</font>(int d = 0; d &lt; dim; ++d) {
+<a name="line445">445: </a>        this-&gt;_sizes[d]     = numCells[d];
+<a name="line446">446: </a>        this-&gt;_numCells    *= numCells[d];
+<a name="line447">447: </a>        this-&gt;_numVertices *= numCells[d]+1;
+<a name="line448">448: </a>      }
+<a name="line449">449: </a>    };
+<a name="line450">450: </a>    virtual ~CartesianSieve() {
+<a name="line451">451: </a>      delete [] this-&gt;_sizes;
+<a name="line452">452: </a>    };
+<a name="line453">453: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line454">454: </a>    int getDimension() const {<font color="#4169E1">return</font> this-&gt;_dim;};
+<a name="line455">455: </a>    const int *getSizes() const {<font color="#4169E1">return</font> this-&gt;_sizes;};
+<a name="line456">456: </a>    int getNumCells() const {<font color="#4169E1">return</font> this-&gt;_numCells;};
+<a name="line457">457: </a>    int getNumVertices() const {<font color="#4169E1">return</font> this-&gt;_numVertices;};
+<a name="line458">458: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line459">459: </a>    // WARNING: Creating a lot of objects here
+<a name="line460">460: </a>    Obj&lt;baseSequence&gt; base() {
+<a name="line461">461: </a>      Obj&lt;baseSequence&gt; base = new baseSequence(0, this-&gt;_numCells);
+<a name="line462">462: </a>      <font color="#4169E1">return</font> base;
+<a name="line463">463: </a>    };
+<a name="line464">464: </a>    Obj&lt;baseSequence&gt; leaves() {
+<a name="line465">465: </a>      <font color="#4169E1">return</font> this-&gt;base();
+<a name="line466">466: </a>    };
+<a name="line467">467: </a>    // WARNING: Creating a lot of objects here
+<a name="line468">468: </a>    Obj&lt;capSequence&gt; cap() {
+<a name="line469">469: </a>       Obj&lt;capSequence&gt; cap = new capSequence(this-&gt;_numCells, this-&gt;_numCells+this-&gt;_numVertices);
+<a name="line470">470: </a>       <font color="#4169E1">return</font> cap;
+<a name="line471">471: </a>    };
+<a name="line472">472: </a>    Obj&lt;capSequence&gt; roots() {
+<a name="line473">473: </a>       <font color="#4169E1">return</font> this-&gt;cap();
+<a name="line474">474: </a>    };
+<a name="line475">475: </a>    // WARNING: Creating a lot of objects here
+<a name="line476">476: </a>    Obj&lt;coneSequence&gt; cone(const point_type&amp; p) {
+<a name="line477">477: </a>      <font color="#4169E1">if</font> ((p &lt; 0) || (p &gt;= this-&gt;_numCells)) {
+<a name="line478">478: </a>        Obj&lt;coneSequence&gt; cone = new coneSequence(0, this-&gt;_sizes, this-&gt;_numCells, 0);
+<a name="line479">479: </a>        <font color="#4169E1">return</font> cone;
+<a name="line480">480: </a>      }
+<a name="line481">481: </a>      Obj&lt;coneSequence&gt; cone = new coneSequence(this-&gt;_dim, this-&gt;_sizes, this-&gt;_numCells, p);
+<a name="line482">482: </a>      <font color="#4169E1">return</font> cone;
+<a name="line483">483: </a>    };
+<a name="line484">484: </a>    // WARNING: Creating a lot of objects here
+<a name="line485">485: </a>    Obj&lt;supportSequence&gt; support(const point_type&amp; p) {
+<a name="line486">486: </a>      <font color="#4169E1">if</font> ((p &lt; this-&gt;_numCells) || (p &gt;= this-&gt;_numCells+this-&gt;_numVertices)) {
+<a name="line487">487: </a>        Obj&lt;supportSequence&gt; support = new supportSequence(0, this-&gt;_sizes, this-&gt;_numCells, 0);
+<a name="line488">488: </a>        <font color="#4169E1">return</font> support;
+<a name="line489">489: </a>      }
+<a name="line490">490: </a>      Obj&lt;supportSequence&gt; support = new supportSequence(this-&gt;_dim, this-&gt;_sizes, this-&gt;_numCells, p);
+<a name="line491">491: </a>      <font color="#4169E1">return</font> support;
+<a name="line492">492: </a>    };
+<a name="line493">493: </a>    // WARNING: Creating a lot of objects here
+<a name="line494">494: </a>    Obj&lt;coneSequence&gt; closure(const point_type&amp; p) {
+<a name="line495">495: </a>      Obj&lt;coneSequence&gt; cone = new coneSequence(this-&gt;_dim, this-&gt;_sizes, this-&gt;_numCells, p, true);
+<a name="line496">496: </a>      <font color="#4169E1">return</font> cone;
+<a name="line497">497: </a>    };
+<a name="line498">498: </a>    // WARNING: Creating a lot of objects here
+<a name="line499">499: </a>    Obj&lt;supportSequence&gt; star(const point_type&amp; p) {<font color="#4169E1">return</font> this-&gt;support(p);};
+<a name="line500">500: </a>    // WARNING: Creating a lot of objects here
+<a name="line501">501: </a>    Obj&lt;coneSequence&gt; nCone(const point_type&amp; p, const int n) {
+<a name="line502">502: </a>      <font color="#4169E1">if</font> (n == 0) <font color="#4169E1">return</font> this-&gt;cone(-1);
+<a name="line503">503: </a>      <font color="#4169E1">if</font> (n != 1) throw ALE::Exception(<font color="#666666">"Invalid height for nCone"</font>);
+<a name="line504">504: </a>      <font color="#4169E1">return</font> this-&gt;cone(p);
+<a name="line505">505: </a>    };
+<a name="line506">506: </a>    // WARNING: Creating a lot of objects here
+<a name="line507">507: </a>    Obj&lt;supportSequence&gt; nSupport(const point_type&amp; p, const int n) {
+<a name="line508">508: </a>      <font color="#4169E1">if</font> (n == 0) <font color="#4169E1">return</font> this-&gt;support(-1);
+<a name="line509">509: </a>      <font color="#4169E1">if</font> (n != 1) throw ALE::Exception(<font color="#666666">"Invalid depth for nSupport"</font>);
+<a name="line510">510: </a>      <font color="#4169E1">return</font> this-&gt;support(p);
+<a name="line511">511: </a>    };
+<a name="line512">512: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line513">513: </a>    void view(const std::string&amp; name, <A href="../../docs/manualpages/Sys/MPI_Comm.html#MPI_Comm">MPI_Comm</A> comm = MPI_COMM_NULL) {
+<a name="line514">514: </a>        ostringstream txt;
+
+<a name="line516">516: </a>      <font color="#4169E1">if</font> (comm == MPI_COMM_NULL) {
+<a name="line517">517: </a>        comm = this-&gt;comm();
+<a name="line518">518: </a>      }
+<a name="line519">519: </a>      <font color="#4169E1">if</font> (name == <font color="#666666">""</font>) {
+<a name="line520">520: </a>        <A href="../../docs/manualpages/Sys/PetscPrintf.html#PetscPrintf">PetscPrintf</A>(comm, <font color="#666666">"viewing a CartesianSieve\n"</font>);
+<a name="line521">521: </a>      } <font color="#4169E1">else</font> {
+<a name="line522">522: </a>        <A href="../../docs/manualpages/Sys/PetscPrintf.html#PetscPrintf">PetscPrintf</A>(comm, <font color="#666666">"viewing CartesianSieve '%s'\n"</font>, name.c_str());
+<a name="line523">523: </a>      }
+<a name="line524">524: </a>      <font color="#4169E1">if</font>(this-&gt;commRank() == 0) {
+<a name="line525">525: </a>        txt &lt;&lt; <font color="#666666">"cap --&gt; base:\n"</font>;
+<a name="line526">526: </a>      }
+<a name="line527">527: </a>      Obj&lt;capSequence&gt;  cap  = this-&gt;cap();
+<a name="line528">528: </a>      Obj&lt;baseSequence&gt; base = this-&gt;base();
+<a name="line529">529: </a>      <font color="#4169E1">if</font>(cap-&gt;empty()) {
+<a name="line530">530: </a>        txt &lt;&lt; <font color="#666666">"["</font> &lt;&lt; this-&gt;commRank() &lt;&lt; <font color="#666666">"]: empty"</font> &lt;&lt; std::endl;
+<a name="line531">531: </a>      }
+<a name="line532">532: </a>      <font color="#4169E1">for</font>(typename capSequence::iterator capi = cap-&gt;begin(); capi != cap-&gt;end(); ++capi) {
+<a name="line533">533: </a>        const Obj&lt;supportSequence&gt;&amp;              supp    = this-&gt;support(*capi);
+<a name="line534">534: </a>        const typename supportSequence::iterator suppEnd = supp-&gt;end();
+
+<a name="line536">536: </a>        <font color="#4169E1">for</font>(typename supportSequence::iterator suppi = supp-&gt;begin(); suppi != suppEnd; ++suppi) {
+<a name="line537">537: </a>          txt &lt;&lt; <font color="#666666">"["</font> &lt;&lt; this-&gt;commRank() &lt;&lt; <font color="#666666">"]: "</font> &lt;&lt; *capi &lt;&lt; <font color="#666666">"----&gt;"</font> &lt;&lt; *suppi &lt;&lt; std::endl;
+<a name="line538">538: </a>        }
+<a name="line539">539: </a>      }
+<a name="line540">540: </a>      <A href="../../docs/manualpages/Sys/PetscSynchronizedPrintf.html#PetscSynchronizedPrintf">PetscSynchronizedPrintf</A>(this-&gt;comm(), txt.str().c_str());
+<a name="line541">541: </a>      <A href="../../docs/manualpages/Sys/PetscSynchronizedFlush.html#PetscSynchronizedFlush">PetscSynchronizedFlush</A>(this-&gt;comm());
+<a name="line542">542: </a>      //
+<a name="line543">543: </a>      ostringstream txt1;
+<a name="line544">544: </a>      <font color="#4169E1">if</font>(this-&gt;commRank() == 0) {
+<a name="line545">545: </a>        txt1 &lt;&lt; <font color="#666666">"base --&gt; cap:\n"</font>;
+<a name="line546">546: </a>      }
+<a name="line547">547: </a>      <font color="#4169E1">if</font>(base-&gt;empty()) {
+<a name="line548">548: </a>        txt1 &lt;&lt; <font color="#666666">"["</font> &lt;&lt; this-&gt;commRank() &lt;&lt; <font color="#666666">"]: empty"</font> &lt;&lt; std::endl;
+<a name="line549">549: </a>      }
+<a name="line550">550: </a>      <font color="#4169E1">for</font>(typename baseSequence::iterator basei = base-&gt;begin(); basei != base-&gt;end(); ++basei) {
+<a name="line551">551: </a>        const Obj&lt;coneSequence&gt;&amp;              cone    = this-&gt;cone(*basei);
+<a name="line552">552: </a>        const typename coneSequence::iterator coneEnd = cone-&gt;end();
+
+<a name="line554">554: </a>        <font color="#4169E1">for</font>(typename coneSequence::iterator conei = cone-&gt;begin(); conei != coneEnd; ++conei) {
+<a name="line555">555: </a>          txt1 &lt;&lt; <font color="#666666">"["</font> &lt;&lt; this-&gt;commRank() &lt;&lt; <font color="#666666">"]: "</font> &lt;&lt; *basei &lt;&lt; <font color="#666666">"&lt;----"</font> &lt;&lt; *conei &lt;&lt; std::endl;
+<a name="line556">556: </a>        }
+<a name="line557">557: </a>      }
+<a name="line558">558: </a>      //
+<a name="line559">559: </a>      <A href="../../docs/manualpages/Sys/PetscSynchronizedPrintf.html#PetscSynchronizedPrintf">PetscSynchronizedPrintf</A>(this-&gt;comm(), txt1.str().c_str());
+<a name="line560">560: </a>      <A href="../../docs/manualpages/Sys/PetscSynchronizedFlush.html#PetscSynchronizedFlush">PetscSynchronizedFlush</A>(this-&gt;comm());
+<a name="line561">561: </a>      //
+<a name="line562">562: </a>      ostringstream txt2;
+<a name="line563">563: </a>      <font color="#4169E1">if</font>(this-&gt;commRank() == 0) {
+<a name="line564">564: </a>        txt2 &lt;&lt; <font color="#666666">"cap &lt;point&gt;:\n"</font>;
+<a name="line565">565: </a>      }
+<a name="line566">566: </a>      txt2 &lt;&lt; <font color="#666666">"["</font> &lt;&lt; this-&gt;commRank() &lt;&lt; <font color="#666666">"]:  ["</font>;
+<a name="line567">567: </a>      <font color="#4169E1">for</font>(typename capSequence::iterator capi = cap-&gt;begin(); capi != cap-&gt;end(); ++capi) {
+<a name="line568">568: </a>        txt2 &lt;&lt; <font color="#666666">" &lt;"</font> &lt;&lt; *capi &lt;&lt; <font color="#666666">"&gt;"</font>;
+<a name="line569">569: </a>      }
+<a name="line570">570: </a>      txt2 &lt;&lt; <font color="#666666">" ]"</font> &lt;&lt; std::endl;
+<a name="line571">571: </a>      //
+<a name="line572">572: </a>      <A href="../../docs/manualpages/Sys/PetscSynchronizedPrintf.html#PetscSynchronizedPrintf">PetscSynchronizedPrintf</A>(this-&gt;comm(), txt2.str().c_str());
+<a name="line573">573: </a>      <A href="../../docs/manualpages/Sys/PetscSynchronizedFlush.html#PetscSynchronizedFlush">PetscSynchronizedFlush</A>(this-&gt;comm());
+<a name="line574">574: </a>      //
+<a name="line575">575: </a>      ostringstream txt3;
+<a name="line576">576: </a>      <font color="#4169E1">if</font>(this-&gt;commRank() == 0) {
+<a name="line577">577: </a>        txt3 &lt;&lt; <font color="#666666">"base &lt;point&gt;:\n"</font>;
+<a name="line578">578: </a>      }
+<a name="line579">579: </a>      txt3 &lt;&lt; <font color="#666666">"["</font> &lt;&lt; this-&gt;commRank() &lt;&lt; <font color="#666666">"]:  ["</font>;
+<a name="line580">580: </a>      <font color="#4169E1">for</font>(typename baseSequence::iterator basei = base-&gt;begin(); basei != base-&gt;end(); ++basei) {
+<a name="line581">581: </a>        txt3 &lt;&lt; <font color="#666666">" &lt;"</font> &lt;&lt; *basei &lt;&lt; <font color="#666666">"&gt;"</font>;
+<a name="line582">582: </a>      }
+<a name="line583">583: </a>      txt3 &lt;&lt; <font color="#666666">" ]"</font> &lt;&lt; std::endl;
+<a name="line584">584: </a>      //
+<a name="line585">585: </a>      <A href="../../docs/manualpages/Sys/PetscSynchronizedPrintf.html#PetscSynchronizedPrintf">PetscSynchronizedPrintf</A>(this-&gt;comm(), txt3.str().c_str());
+<a name="line586">586: </a>      <A href="../../docs/manualpages/Sys/PetscSynchronizedFlush.html#PetscSynchronizedFlush">PetscSynchronizedFlush</A>(this-&gt;comm());
+<a name="line587">587: </a>    };
+<a name="line588">588: </a>  };
+
+<a name="line590">590: </a>  // We <font color="#4169E1">do</font> not just use Bundle, because we need to optimize labels
+<a name="line591">591: </a>  class CartesianBundle : public ALE::ParallelObject {
+<a name="line592">592: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line593">593: </a>    <font color="#4169E1">typedef</font> CartesianSieve&lt;int&gt;                                       sieve_type;
+<a name="line594">594: </a>    <font color="#4169E1">typedef</font> sieve_type::point_type                                    point_type;
+<a name="line595">595: </a>    <font color="#4169E1">typedef</font> Section&lt;point_type, double&gt;                               real_section_type;
+<a name="line596">596: </a>    <font color="#4169E1">typedef</font> Section&lt;point_type, int&gt;                                  int_section_type;
+<a name="line597">597: </a>    <font color="#4169E1">typedef</font> UniformSection&lt;MinimalArrow&lt;point_type, point_type&gt;, int&gt; arrow_section_type;
+<a name="line598">598: </a>    <font color="#4169E1">typedef</font> std::map&lt;std::string, Obj&lt;arrow_section_type&gt; &gt;           arrow_sections_type;
+<a name="line599">599: </a>    <font color="#4169E1">typedef</font> std::map&lt;std::string, Obj&lt;real_section_type&gt; &gt;            real_sections_type;
+<a name="line600">600: </a>    <font color="#4169E1">typedef</font> std::map&lt;std::string, Obj&lt;int_section_type&gt; &gt;             int_sections_type;
+<a name="line601">601: </a>    <font color="#4169E1">typedef</font> sieve_type::baseSequence                                  label_sequence;
+<a name="line602">602: </a>    <font color="#4169E1">typedef</font> ALE::Sifter&lt;int,point_type,point_type&gt;                    send_overlap_type;
+<a name="line603">603: </a>    <font color="#4169E1">typedef</font> ALE::Sifter&lt;point_type,int,point_type&gt;                    recv_overlap_type;
+<a name="line604">604: </a><strong><font color="#FF0000">  protected:</font></strong>
+<a name="line605">605: </a>    Obj&lt;sieve_type&gt;        _sieve;
+<a name="line606">606: </a>    int                    _maxHeight;
+<a name="line607">607: </a>    int                    _maxDepth;
+<a name="line608">608: </a>    arrow_sections_type    _arrowSections;
+<a name="line609">609: </a>    real_sections_type     _realSections;
+<a name="line610">610: </a>    int_sections_type      _intSections;
+<a name="line611">611: </a>    Obj&lt;send_overlap_type&gt; _sendOverlap;
+<a name="line612">612: </a>    Obj&lt;recv_overlap_type&gt; _recvOverlap;
+<a name="line613">613: </a>    Obj&lt;send_overlap_type&gt; _distSendOverlap;
+<a name="line614">614: </a>    Obj&lt;recv_overlap_type&gt; _distRecvOverlap;
+<a name="line615">615: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line616">616: </a>    CartesianBundle(<A href="../../docs/manualpages/Sys/MPI_Comm.html#MPI_Comm">MPI_Comm</A> comm, const int debug = 0) : ALE::ParallelObject(comm, debug), _maxHeight(-1), _maxDepth(-1) {
+<a name="line617">617: </a>      this-&gt;_sendOverlap = new send_overlap_type(this-&gt;comm(), this-&gt;debug());
+<a name="line618">618: </a>      this-&gt;_recvOverlap = new recv_overlap_type(this-&gt;comm(), this-&gt;debug());
+<a name="line619">619: </a>    };
+<a name="line620">620: </a>    virtual ~CartesianBundle() {};
+<a name="line621">621: </a><strong><font color="#FF0000">    public:</font></strong> // Accessors
+<a name="line622">622: </a>      void clear() {
+<a name="line623">623: </a>        this-&gt;_maxHeight = -1;
+<a name="line624">624: </a>        this-&gt;_maxDepth  = -1;
+<a name="line625">625: </a>      };
+<a name="line626">626: </a>    const Obj&lt;sieve_type&gt;&amp; getSieve() const {<font color="#4169E1">return</font> this-&gt;_sieve;};
+<a name="line627">627: </a>    void setSieve(const Obj&lt;sieve_type&gt;&amp; sieve) {this-&gt;_sieve = sieve;};
+<a name="line628">628: </a>    bool hasArrowSection(const std::string&amp; name) const {
+<a name="line629">629: </a>      <font color="#4169E1">return</font> this-&gt;_arrowSections.find(name) != this-&gt;_arrowSections.end();
+<a name="line630">630: </a>    };
+<a name="line631">631: </a>    const Obj&lt;arrow_section_type&gt;&amp; getArrowSection(const std::string&amp; name) {
+<a name="line632">632: </a>      <font color="#4169E1">if</font> (!this-&gt;hasArrowSection(name)) {
+<a name="line633">633: </a>        Obj&lt;arrow_section_type&gt; section = new arrow_section_type(this-&gt;comm(), this-&gt;debug());
+
+<a name="line635">635: </a>        section-&gt;setName(name);
+<a name="line636">636: </a>        <font color="#4169E1">if</font> (this-&gt;_debug) {std::cout &lt;&lt; <font color="#666666">"Creating new arrow section: "</font> &lt;&lt; name &lt;&lt; std::endl;}
+<a name="line637">637: </a>        this-&gt;_arrowSections[name] = section;
+<a name="line638">638: </a>      }
+<a name="line639">639: </a>      <font color="#4169E1">return</font> this-&gt;_arrowSections[name];
+<a name="line640">640: </a>    };
+<a name="line641">641: </a>    void setArrowSection(const std::string&amp; name, const Obj&lt;arrow_section_type&gt;&amp; section) {
+<a name="line642">642: </a>      this-&gt;_arrowSections[name] = section;
+<a name="line643">643: </a>    };
+<a name="line644">644: </a>    Obj&lt;std::set&lt;std::string&gt; &gt; getArrowSections() const {
+<a name="line645">645: </a>      Obj&lt;std::set&lt;std::string&gt; &gt; names = std::set&lt;std::string&gt;();
+
+<a name="line647">647: </a>      <font color="#4169E1">for</font>(arrow_sections_type::const_iterator s_iter = this-&gt;_arrowSections.begin(); s_iter != this-&gt;_arrowSections.end(); ++s_iter) {
+<a name="line648">648: </a>        names-&gt;insert(s_iter-&gt;first);
+<a name="line649">649: </a>      }
+<a name="line650">650: </a>      <font color="#4169E1">return</font> names;
+<a name="line651">651: </a>    };
+<a name="line652">652: </a>    bool hasRealSection(const std::string&amp; name) const {
+<a name="line653">653: </a>      <font color="#4169E1">return</font> this-&gt;_realSections.find(name) != this-&gt;_realSections.end();
+<a name="line654">654: </a>    };
+<a name="line655">655: </a>    const Obj&lt;real_section_type&gt;&amp; getRealSection(const std::string&amp; name) {
+<a name="line656">656: </a>      <font color="#4169E1">if</font> (!this-&gt;hasRealSection(name)) {
+<a name="line657">657: </a>        Obj&lt;real_section_type&gt; section = new real_section_type(this-&gt;comm(), this-&gt;debug());
+
+<a name="line659">659: </a>        section-&gt;setName(name);
+<a name="line660">660: </a>        <font color="#4169E1">if</font> (this-&gt;_debug) {std::cout &lt;&lt; <font color="#666666">"Creating new real section: "</font> &lt;&lt; name &lt;&lt; std::endl;}
+<a name="line661">661: </a>        this-&gt;_realSections[name] = section;
+<a name="line662">662: </a>      }
+<a name="line663">663: </a>      <font color="#4169E1">return</font> this-&gt;_realSections[name];
+<a name="line664">664: </a>    };
+<a name="line665">665: </a>    void setRealSection(const std::string&amp; name, const Obj&lt;real_section_type&gt;&amp; section) {
+<a name="line666">666: </a>      this-&gt;_realSections[name] = section;
+<a name="line667">667: </a>    };
+<a name="line668">668: </a>    Obj&lt;std::set&lt;std::string&gt; &gt; getRealSections() const {
+<a name="line669">669: </a>      Obj&lt;std::set&lt;std::string&gt; &gt; names = std::set&lt;std::string&gt;();
+
+<a name="line671">671: </a>      <font color="#4169E1">for</font>(real_sections_type::const_iterator s_iter = this-&gt;_realSections.begin(); s_iter != this-&gt;_realSections.end(); ++s_iter) {
+<a name="line672">672: </a>        names-&gt;insert(s_iter-&gt;first);
+<a name="line673">673: </a>      }
+<a name="line674">674: </a>      <font color="#4169E1">return</font> names;
+<a name="line675">675: </a>    };
+<a name="line676">676: </a>    bool hasIntSection(const std::string&amp; name) const {
+<a name="line677">677: </a>      <font color="#4169E1">return</font> this-&gt;_intSections.find(name) != this-&gt;_intSections.end();
+<a name="line678">678: </a>    };
+<a name="line679">679: </a>    const Obj&lt;int_section_type&gt;&amp; getIntSection(const std::string&amp; name) {
+<a name="line680">680: </a>      <font color="#4169E1">if</font> (!this-&gt;hasIntSection(name)) {
+<a name="line681">681: </a>        Obj&lt;int_section_type&gt; section = new int_section_type(this-&gt;comm(), this-&gt;debug());
+
+<a name="line683">683: </a>        section-&gt;setName(name);
+<a name="line684">684: </a>        <font color="#4169E1">if</font> (this-&gt;_debug) {std::cout &lt;&lt; <font color="#666666">"Creating new int section: "</font> &lt;&lt; name &lt;&lt; std::endl;}
+<a name="line685">685: </a>        this-&gt;_intSections[name] = section;
+<a name="line686">686: </a>      }
+<a name="line687">687: </a>      <font color="#4169E1">return</font> this-&gt;_intSections[name];
+<a name="line688">688: </a>    };
+<a name="line689">689: </a>    void setIntSection(const std::string&amp; name, const Obj&lt;int_section_type&gt;&amp; section) {
+<a name="line690">690: </a>      this-&gt;_intSections[name] = section;
+<a name="line691">691: </a>    };
+<a name="line692">692: </a>    Obj&lt;std::set&lt;std::string&gt; &gt; getIntSections() const {
+<a name="line693">693: </a>      Obj&lt;std::set&lt;std::string&gt; &gt; names = std::set&lt;std::string&gt;();
+
+<a name="line695">695: </a>      <font color="#4169E1">for</font>(int_sections_type::const_iterator s_iter = this-&gt;_intSections.begin(); s_iter != this-&gt;_intSections.end(); ++s_iter) {
+<a name="line696">696: </a>        names-&gt;insert(s_iter-&gt;first);
+<a name="line697">697: </a>      }
+<a name="line698">698: </a>      <font color="#4169E1">return</font> names;
+<a name="line699">699: </a>    };
+<a name="line700">700: </a>    const Obj&lt;send_overlap_type&gt;&amp; getSendOverlap() const {<font color="#4169E1">return</font> this-&gt;_sendOverlap;};
+<a name="line701">701: </a>    void setSendOverlap(const Obj&lt;send_overlap_type&gt;&amp; overlap) {this-&gt;_sendOverlap = overlap;};
+<a name="line702">702: </a>    const Obj&lt;recv_overlap_type&gt;&amp; getRecvOverlap() const {<font color="#4169E1">return</font> this-&gt;_recvOverlap;};
+<a name="line703">703: </a>    void setRecvOverlap(const Obj&lt;recv_overlap_type&gt;&amp; overlap) {this-&gt;_recvOverlap = overlap;};
+<a name="line704">704: </a>    const Obj&lt;send_overlap_type&gt;&amp; getDistSendOverlap() const {<font color="#4169E1">return</font> this-&gt;_distSendOverlap;};
+<a name="line705">705: </a>    void setDistSendOverlap(const Obj&lt;send_overlap_type&gt;&amp; overlap) {this-&gt;_distSendOverlap = overlap;};
+<a name="line706">706: </a>    const Obj&lt;recv_overlap_type&gt;&amp; getDistRecvOverlap() const {<font color="#4169E1">return</font> this-&gt;_distRecvOverlap;};
+<a name="line707">707: </a>    void setDistRecvOverlap(const Obj&lt;recv_overlap_type&gt;&amp; overlap) {this-&gt;_distRecvOverlap = overlap;};
+<a name="line708">708: </a><strong><font color="#FF0000">  public:</font></strong> // Stratification
+<a name="line711">711: </a>    virtual void stratify() {
+<a name="line712">712: </a>      ALE_LOG_EVENT_BEGIN;
+<a name="line713">713: </a>      this-&gt;_maxHeight = 1;
+<a name="line714">714: </a>      this-&gt;_maxDepth  = 1;
+<a name="line715">715: </a>      ALE_LOG_EVENT_END;
+<a name="line716">716: </a>    };
+<a name="line717">717: </a>    virtual int height() const {<font color="#4169E1">return</font> this-&gt;_maxHeight;};
+<a name="line718">718: </a>    virtual int height(const point_type&amp; point) {
+<a name="line719">719: </a>      const int numCells    = this-&gt;getSieve()-&gt;getNumCells();
+<a name="line720">720: </a>      const int numVertices = this-&gt;getSieve()-&gt;getNumVertices();
+<a name="line721">721: </a>      <font color="#4169E1">if</font> ((point &gt;= 0)        &amp;&amp; (point &lt; numCells))             <font color="#4169E1">return</font> 0;
+<a name="line722">722: </a>      <font color="#4169E1">if</font> ((point &gt;= numCells) &amp;&amp; (point &lt; numCells+numVertices)) <font color="#4169E1">return</font> 1;
+<a name="line723">723: </a>      <font color="#4169E1">return</font> -1;
+<a name="line724">724: </a>    };
+<a name="line725">725: </a>    // WARNING: Creating a lot of objects here
+<a name="line726">726: </a>    virtual const Obj&lt;label_sequence&gt; heightStratum(int height) {
+<a name="line727">727: </a>      <font color="#4169E1">if</font> (height == 0) <font color="#4169E1">return</font> this-&gt;getSieve()-&gt;base();
+<a name="line728">728: </a>      <font color="#4169E1">if</font> (height == 1) <font color="#4169E1">return</font> this-&gt;getSieve()-&gt;cap();
+<a name="line729">729: </a>      throw ALE::Exception(<font color="#666666">"Invalid height stratum"</font>);
+<a name="line730">730: </a>    };
+<a name="line731">731: </a>    virtual int depth() const {<font color="#4169E1">return</font> this-&gt;_maxDepth;};
+<a name="line732">732: </a>    virtual int depth(const point_type&amp; point) {
+<a name="line733">733: </a>      const int numCells    = this-&gt;getSieve()-&gt;getNumCells();
+<a name="line734">734: </a>      const int numVertices = this-&gt;getSieve()-&gt;getNumVertices();
+<a name="line735">735: </a>      <font color="#4169E1">if</font> ((point &gt;= 0)        &amp;&amp; (point &lt; numCells))             <font color="#4169E1">return</font> 1;
+<a name="line736">736: </a>      <font color="#4169E1">if</font> ((point &gt;= numCells) &amp;&amp; (point &lt; numCells+numVertices)) <font color="#4169E1">return</font> 0;
+<a name="line737">737: </a>      <font color="#4169E1">return</font> -1;
+<a name="line738">738: </a>    };
+<a name="line739">739: </a>    // WARNING: Creating a lot of objects here
+<a name="line740">740: </a>    virtual const Obj&lt;label_sequence&gt; depthStratum(int depth) {
+<a name="line741">741: </a>      <font color="#4169E1">if</font> (depth == 0) <font color="#4169E1">return</font> this-&gt;getSieve()-&gt;cap();
+<a name="line742">742: </a>      <font color="#4169E1">if</font> (depth == 1) <font color="#4169E1">return</font> this-&gt;getSieve()-&gt;base();
+<a name="line743">743: </a>      throw ALE::Exception(<font color="#666666">"Invalid depth stratum"</font>);
+<a name="line744">744: </a>    };
+<a name="line745">745: </a>    virtual const Obj&lt;label_sequence&gt; getLabelStratum(const std::string&amp; name, int value) {
+<a name="line746">746: </a>      <font color="#4169E1">if</font> (name == <font color="#666666">"height"</font>) {
+<a name="line747">747: </a>        <font color="#4169E1">return</font> this-&gt;heightStratum(value);
+<a name="line748">748: </a>      } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (name == <font color="#666666">"depth"</font>) {
+<a name="line749">749: </a>        <font color="#4169E1">return</font> this-&gt;depthStratum(value);
+<a name="line750">750: </a>      }
+<a name="line751">751: </a>      throw ALE::Exception(<font color="#666666">"Invalid label name"</font>);
+<a name="line752">752: </a>    }
+<a name="line753">753: </a><strong><font color="#FF0000">  public:</font></strong> // Viewers
+<a name="line754">754: </a>    void view(const std::string&amp; name, <A href="../../docs/manualpages/Sys/MPI_Comm.html#MPI_Comm">MPI_Comm</A> comm = MPI_COMM_NULL) {
+<a name="line755">755: </a>      <font color="#4169E1">if</font> (comm == MPI_COMM_NULL) {
+<a name="line756">756: </a>        comm = this-&gt;comm();
+<a name="line757">757: </a>      }
+<a name="line758">758: </a>      <font color="#4169E1">if</font> (name == <font color="#666666">""</font>) {
+<a name="line759">759: </a>        <A href="../../docs/manualpages/Sys/PetscPrintf.html#PetscPrintf">PetscPrintf</A>(comm, <font color="#666666">"viewing a CartesianBundle\n"</font>);
+<a name="line760">760: </a>      } <font color="#4169E1">else</font> {
+<a name="line761">761: </a>        <A href="../../docs/manualpages/Sys/PetscPrintf.html#PetscPrintf">PetscPrintf</A>(comm, <font color="#666666">"viewing CartesianBundle '%s'\n"</font>, name.c_str());
+<a name="line762">762: </a>      }
+<a name="line763">763: </a>      <A href="../../docs/manualpages/Sys/PetscPrintf.html#PetscPrintf">PetscPrintf</A>(comm, <font color="#666666">"  maximum height %d maximum depth %d\n"</font>, this-&gt;height(), this-&gt;depth());
+<a name="line764">764: </a>    };
+<a name="line765">765: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line766">766: </a>    void constructOverlap() {};
+<a name="line767">767: </a>  };
+
+<a name="line769">769: </a>  class CartesianMesh : public CartesianBundle {
+<a name="line770">770: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line771">771: </a>    <font color="#4169E1">typedef</font> int                                point_type;
+<a name="line772">772: </a>    <font color="#4169E1">typedef</font> CartesianBundle::sieve_type        sieve_type;
+<a name="line773">773: </a>    <font color="#4169E1">typedef</font> CartesianBundle::label_sequence    label_sequence;
+<a name="line774">774: </a>    <font color="#4169E1">typedef</font> CartesianBundle::send_overlap_type send_overlap_type;
+<a name="line775">775: </a>    <font color="#4169E1">typedef</font> CartesianBundle::recv_overlap_type recv_overlap_type;
+<a name="line776">776: </a>    <font color="#4169E1">typedef</font> sieve_type::coneSequence           coneSequence;
+<a name="line777">777: </a>    <font color="#4169E1">typedef</font> sieve_type::supportSequence        supportSequence;
+<a name="line778">778: </a><strong><font color="#FF0000">  protected:</font></strong>
+<a name="line779">779: </a>    int                    _dim;
+<a name="line780">780: </a>    // Discretization
+<a name="line781">781: </a>    Obj&lt;Discretization&gt;    _discretization;
+<a name="line782">782: </a>    Obj&lt;BoundaryCondition&gt; _boundaryCondition;
+<a name="line783">783: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line784">784: </a>    CartesianMesh(<A href="../../docs/manualpages/Sys/MPI_Comm.html#MPI_Comm">MPI_Comm</A> comm, int dim, int debug = 0) : CartesianBundle(comm, debug), _dim(dim) {
+<a name="line785">785: </a>      this-&gt;_discretization    = new Discretization(comm, debug);
+<a name="line786">786: </a>      this-&gt;_boundaryCondition = new BoundaryCondition(comm, debug);
+<a name="line787">787: </a>    };
+<a name="line788">788: </a>    virtual ~CartesianMesh() {};
+<a name="line789">789: </a><strong><font color="#FF0000">  public:</font></strong> // Accessors
+<a name="line790">790: </a>    int getDimension() {<font color="#4169E1">return</font> this-&gt;_dim;};
+<a name="line791">791: </a>    const Obj&lt;Discretization&gt;&amp;    getDiscretization() {<font color="#4169E1">return</font> this-&gt;_discretization;};
+<a name="line792">792: </a>    void setDiscretization(const Obj&lt;Discretization&gt;&amp; discretization) {this-&gt;_discretization = discretization;};
+<a name="line793">793: </a>    const Obj&lt;BoundaryCondition&gt;&amp; getBoundaryCondition() {<font color="#4169E1">return</font> this-&gt;_boundaryCondition;};
+<a name="line794">794: </a>    void setBoundaryCondition(const Obj&lt;BoundaryCondition&gt;&amp; boundaryCondition) {this-&gt;_boundaryCondition = boundaryCondition;};
+<a name="line795">795: </a><strong><font color="#FF0000">  public:</font></strong> // Discretization
+<a name="line796">796: </a><font color="#A020F0">#if 0</font>
+<a name="line797">797: </a>    void markBoundaryCells(const std::string&amp; name) {
+<a name="line798">798: </a>      const Obj&lt;label_type&gt;&amp;     label    = this-&gt;getLabel(name);
+<a name="line799">799: </a>      const Obj&lt;label_sequence&gt;&amp; boundary = this-&gt;getLabelStratum(name, 1);
+<a name="line800">800: </a>      const Obj&lt;sieve_type&gt;&amp;     sieve    = this-&gt;getSieve();
+
+<a name="line802">802: </a>      <font color="#4169E1">for</font>(label_sequence::iterator e_iter = boundary-&gt;begin(); e_iter != boundary-&gt;end(); ++e_iter) {
+<a name="line803">803: </a>        <font color="#4169E1">if</font> (this-&gt;height(*e_iter) == 1) {
+<a name="line804">804: </a>          const point_type cell = *sieve-&gt;support(*e_iter)-&gt;begin();
+
+<a name="line806">806: </a>          this-&gt;setValue(label, cell, 2);
+<a name="line807">807: </a>        }
+<a name="line808">808: </a>      }
+<a name="line809">809: </a>    };
+<a name="line810">810: </a><font color="#A020F0">#endif</font>
+<a name="line811">811: </a>    void setupField(const Obj&lt;real_section_type&gt;&amp; s, const bool postponeGhosts = false) {
+<a name="line812">812: </a>      const std::string&amp; name = this-&gt;_boundaryCondition-&gt;getLabelName();
+
+<a name="line814">814: </a>      <font color="#4169E1">for</font>(int d = 0; d &lt;= this-&gt;depth(); ++d) {
+<a name="line815">815: </a>        s-&gt;setFiberDimension(this-&gt;depthStratum(d), this-&gt;_discretization-&gt;getNumDof(d));
+<a name="line816">816: </a>      }
+<a name="line817">817: </a>      <font color="#4169E1">if</font> (!name.empty()) {
+<a name="line818">818: </a>        const Obj&lt;label_sequence&gt;&amp; boundary = this-&gt;getLabelStratum(name, 1);
+
+<a name="line820">820: </a>        <font color="#4169E1">for</font>(label_sequence::iterator e_iter = boundary-&gt;begin(); e_iter != boundary-&gt;end(); ++e_iter) {
+<a name="line821">821: </a>          s-&gt;setFiberDimension(*e_iter, -this-&gt;_discretization-&gt;getNumDof(this-&gt;depth(*e_iter)));
+<a name="line822">822: </a>        }
+<a name="line823">823: </a>      }
+<a name="line824">824: </a>      s-&gt;allocatePoint();
+<a name="line825">825: </a>      <font color="#4169E1">if</font> (!name.empty()) {
+<a name="line826">826: </a><font color="#A020F0">#if 0</font>
+<a name="line827">827: </a>        const Obj&lt;label_sequence&gt;&amp;     boundaryCells = this-&gt;getLabelStratum(name, 2);
+<a name="line828">828: </a>        const Obj&lt;real_section_type&gt;&amp;  coordinates   = this-&gt;getRealSection(<font color="#666666">"coordinates"</font>);
+<a name="line829">829: </a><strong><font color="#FF0000">        real_section_type:</font></strong>:value_type *values        = new real_section_type::value_type[this-&gt;sizeWithBC(s, *boundaryCells-&gt;begin())];
+<a name="line830">830: </a>        double                        *v0            = new double[this-&gt;getDimension()];
+<a name="line831">831: </a>        double                        *J             = new double[this-&gt;getDimension()*this-&gt;getDimension()];
+<a name="line832">832: </a>        double                         detJ;
+
+<a name="line834">834: </a>        <font color="#4169E1">for</font>(label_sequence::iterator c_iter = boundaryCells-&gt;begin(); c_iter != boundaryCells-&gt;end(); ++c_iter) {
+<a name="line835">835: </a>          const Obj&lt;coneArray&gt;      closure = sieve_alg_type::closure(this, this-&gt;getArrowSection(<font color="#666666">"orientation"</font>), *c_iter);
+<a name="line836">836: </a>          const coneArray::iterator end     = closure-&gt;end();
+<a name="line837">837: </a>          int                       v       = 0;
+
+<a name="line839">839: </a>          this-&gt;computeElementGeometry(coordinates, *c_iter, v0, J, NULL, detJ);
+<a name="line840">840: </a>          <font color="#4169E1">for</font>(coneArray::iterator cl_iter = closure-&gt;begin(); cl_iter != end; ++cl_iter) {
+<a name="line841">841: </a>            const int cDim = s-&gt;getConstraintDimension(*cl_iter);
+
+<a name="line843">843: </a>            <font color="#4169E1">if</font> (cDim) {
+<a name="line844">844: </a>              <font color="#4169E1">for</font>(int d = 0; d &lt; cDim; ++d, ++v) {
+<a name="line845">845: </a>                values[v] = this-&gt;_boundaryCondition-&gt;integrateDual(v0, J, v);
+<a name="line846">846: </a>              }
+<a name="line847">847: </a>            } <font color="#4169E1">else</font> {
+<a name="line848">848: </a>              const int dim = s-&gt;getFiberDimension(*cl_iter);
+
+<a name="line850">850: </a>              <font color="#4169E1">for</font>(int d = 0; d &lt; dim; ++d, ++v) {
+<a name="line851">851: </a>                values[v] = 0.0;
+<a name="line852">852: </a>              }
+<a name="line853">853: </a>            }
+<a name="line854">854: </a>          }
+<a name="line855">855: </a>          this-&gt;updateAll(s, *c_iter, values);
+<a name="line856">856: </a>        }
+<a name="line857">857: </a>        delete [] values;
+<a name="line858">858: </a>        delete [] v0;
+<a name="line859">859: </a>        delete [] J;
+<a name="line860">860: </a><font color="#A020F0">#endif</font>
+<a name="line861">861: </a>      }
+<a name="line862">862: </a>    };
+<a name="line863">863: </a><strong><font color="#FF0000">  public:</font></strong> // Size traversal
+<a name="line864">864: </a>    template&lt;typename Section_&gt;
+<a name="line865">865: </a>    int size(const Obj&lt;Section_&gt;&amp; section, const point_type&amp; p) {
+<a name="line866">866: </a>      const typename Section_::chart_type&amp; chart = section-&gt;getChart();
+<a name="line867">867: </a>      const Obj&lt;coneSequence&gt;              cone  = this-&gt;getSieve()-&gt;cone(p);
+<a name="line868">868: </a>      typename coneSequence::iterator      end   = cone-&gt;end();
+<a name="line869">869: </a>      int                                  size  = 0;
+
+<a name="line871">871: </a>      <font color="#4169E1">if</font> (chart.count(p)) {
+<a name="line872">872: </a>        size += section-&gt;getConstrainedFiberDimension(p);
+<a name="line873">873: </a>      }
+<a name="line874">874: </a>      <font color="#4169E1">for</font>(typename coneSequence::iterator c_iter = cone-&gt;begin(); c_iter != end; ++c_iter) {
+<a name="line875">875: </a>        <font color="#4169E1">if</font> (chart.count(*c_iter)) {
+<a name="line876">876: </a>          size += section-&gt;getConstrainedFiberDimension(*c_iter);
+<a name="line877">877: </a>        }
+<a name="line878">878: </a>      }
+<a name="line879">879: </a>      <font color="#4169E1">return</font> size;
+<a name="line880">880: </a>    }
+<a name="line881">881: </a>    template&lt;typename Section_&gt;
+<a name="line882">882: </a>    int sizeWithBC(const Obj&lt;Section_&gt;&amp; section, const point_type&amp; p) {
+<a name="line883">883: </a>      const typename Section_::chart_type&amp; chart = section-&gt;getChart();
+<a name="line884">884: </a>      const Obj&lt;coneSequence&gt;              cone  = this-&gt;getSieve()-&gt;cone(p);
+<a name="line885">885: </a>      typename coneSequence::iterator      end   = cone-&gt;end();
+<a name="line886">886: </a>      int                                  size  = 0;
+
+<a name="line888">888: </a>      <font color="#4169E1">if</font> (chart.count(p)) {
+<a name="line889">889: </a>        size += section-&gt;getFiberDimension(p);
+<a name="line890">890: </a>      }
+<a name="line891">891: </a>      <font color="#4169E1">for</font>(typename coneSequence::iterator c_iter = cone-&gt;begin(); c_iter != end; ++c_iter) {
+<a name="line892">892: </a>        <font color="#4169E1">if</font> (chart.count(*c_iter)) {
+<a name="line893">893: </a>          size += section-&gt;getFiberDimension(*c_iter);
+<a name="line894">894: </a>        }
+<a name="line895">895: </a>      }
+<a name="line896">896: </a>      <font color="#4169E1">return</font> size;
+<a name="line897">897: </a>    }
+<a name="line898">898: </a><strong><font color="#FF0000">  public:</font></strong> // Allocation
+<a name="line899">899: </a>    template&lt;typename Section_&gt;
+<a name="line900">900: </a>    void allocate(const Obj&lt;Section_&gt;&amp; section) {
+<a name="line901">901: </a>      section-&gt;allocatePoint();
+<a name="line902">902: </a>    }
+<a name="line903">903: </a><strong><font color="#FF0000">  public:</font></strong> // Retrieval traversal
+<a name="line904">904: </a>    // Return the values <font color="#4169E1">for</font> the closure of this point
+<a name="line905">905: </a>    //   use a smart pointer?
+<a name="line906">906: </a>    template&lt;typename Section_&gt;
+<a name="line907">907: </a>    const typename Section_::value_type *restrictClosure(const Obj&lt;Section_&gt;&amp; section, const point_type&amp; p) {
+<a name="line908">908: </a>      const int                       size   = this-&gt;sizeWithBC(section, p);
+<a name="line909">909: </a>      typename Section_::value_type  *values = section-&gt;getRawArray(size);
+<a name="line910">910: </a>      int                             j      = -1;
+
+<a name="line912">912: </a>      const int&amp; dim = section-&gt;getFiberDimension(p);
+<a name="line913">913: </a>      const typename Section_::value_type *array = section-&gt;restrictPoint(p);
+
+<a name="line915">915: </a>      <font color="#4169E1">for</font>(int i = 0; i &lt; dim; ++i) {
+<a name="line916">916: </a>        values[++j] = array[i];
+<a name="line917">917: </a>      }
+<a name="line918">918: </a>      const Obj&lt;typename sieve_type::coneSequence&gt;&amp; cone = this-&gt;getSieve()-&gt;cone(p);
+<a name="line919">919: </a>      typename sieve_type::coneSequence::iterator   end  = cone-&gt;end();
+
+<a name="line921">921: </a>      <font color="#4169E1">for</font>(typename sieve_type::coneSequence::iterator p_iter = cone-&gt;begin(); p_iter != end; ++p_iter) {
+<a name="line922">922: </a>        const int&amp; dim = section-&gt;getFiberDimension(*p_iter);
+
+<a name="line924">924: </a>        array = section-&gt;restrictPoint(*p_iter);
+<a name="line925">925: </a>        <font color="#4169E1">for</font>(int i = 0; i &lt; dim; ++i) {
+<a name="line926">926: </a>          values[++j] = array[i];
+<a name="line927">927: </a>        }
+<a name="line928">928: </a>      }
+<a name="line929">929: </a>      <font color="#4169E1">if</font> (j != size-1) {
+<a name="line930">930: </a>        ostringstream txt;
+
+<a name="line932">932: </a>        txt &lt;&lt; <font color="#666666">"Invalid restrictClosure to point "</font> &lt;&lt; p &lt;&lt; std::endl;
+<a name="line933">933: </a>        txt &lt;&lt; <font color="#666666">"  j "</font> &lt;&lt; j &lt;&lt; <font color="#666666">" should be "</font> &lt;&lt; (size-1) &lt;&lt; std::endl;
+<a name="line934">934: </a><strong><font color="#FF0000">        std:</font></strong>:cout &lt;&lt; txt.str();
+<a name="line935">935: </a>        throw ALE::Exception(txt.str().c_str());
+<a name="line936">936: </a>      }
+<a name="line937">937: </a>      <font color="#4169E1">return</font> values;
+<a name="line938">938: </a>    }
+<a name="line939">939: </a>    template&lt;typename Section_&gt;
+<a name="line940">940: </a>    void update(const Obj&lt;Section_&gt;&amp; section, const point_type&amp; p, const typename Section_::value_type v[]) {
+<a name="line941">941: </a>      int j = 0;
+
+<a name="line943">943: </a>      section-&gt;updatePoint(p, &amp;v[j]);
+<a name="line944">944: </a>      j += section-&gt;getFiberDimension(p);
+<a name="line945">945: </a>      const Obj&lt;typename sieve_type::coneSequence&gt;&amp; cone = this-&gt;getSieve()-&gt;cone(p);
+
+<a name="line947">947: </a>      <font color="#4169E1">for</font>(typename sieve_type::coneSequence::iterator p_iter = cone-&gt;begin(); p_iter != cone-&gt;end(); ++p_iter) {
+<a name="line948">948: </a>        section-&gt;updatePoint(*p_iter, &amp;v[j]);
+<a name="line949">949: </a>        j += section-&gt;getFiberDimension(*p_iter);
+<a name="line950">950: </a>      }
+<a name="line951">951: </a>    }
+<a name="line952">952: </a>    template&lt;typename Section_&gt;
+<a name="line953">953: </a>    void updateAdd(const Obj&lt;Section_&gt;&amp; section, const point_type&amp; p, const typename Section_::value_type v[]) {
+<a name="line954">954: </a>      int j = 0;
+
+<a name="line956">956: </a>      section-&gt;updateAddPoint(p, &amp;v[j]);
+<a name="line957">957: </a>      j += section-&gt;getFiberDimension(p);
+<a name="line958">958: </a>      const Obj&lt;typename sieve_type::coneSequence&gt;&amp; cone = this-&gt;getSieve()-&gt;cone(p);
+
+<a name="line960">960: </a>      <font color="#4169E1">for</font>(typename sieve_type::coneSequence::iterator p_iter = cone-&gt;begin(); p_iter != cone-&gt;end(); ++p_iter) {
+<a name="line961">961: </a>        section-&gt;updateAddPoint(*p_iter, &amp;v[j]);
+<a name="line962">962: </a>        j += section-&gt;getFiberDimension(*p_iter);
+<a name="line963">963: </a>      }
+<a name="line964">964: </a>    }
+<a name="line965">965: </a>    template&lt;typename Section_&gt;
+<a name="line966">966: </a>    void updateBC(const Obj&lt;Section_&gt;&amp; section, const point_type&amp; p, const typename Section_::value_type v[]) {
+<a name="line967">967: </a>      int j = 0;
+
+<a name="line969">969: </a>      section-&gt;updatePointBC(p, &amp;v[j]);
+<a name="line970">970: </a>      j += section-&gt;getFiberDimension(p);
+<a name="line971">971: </a>      const Obj&lt;typename sieve_type::coneSequence&gt;&amp; cone = this-&gt;getSieve()-&gt;cone(p);
+
+<a name="line973">973: </a>      <font color="#4169E1">for</font>(typename sieve_type::coneSequence::iterator p_iter = cone-&gt;begin(); p_iter != cone-&gt;end(); ++p_iter) {
+<a name="line974">974: </a>        section-&gt;updatePointBC(*p_iter, &amp;v[j]);
+<a name="line975">975: </a>        j += section-&gt;getFiberDimension(*p_iter);
+<a name="line976">976: </a>      }
+<a name="line977">977: </a>    }
+<a name="line978">978: </a>    template&lt;typename Section_&gt;
+<a name="line979">979: </a>    void updateAll(const Obj&lt;Section_&gt;&amp; section, const point_type&amp; p, const typename Section_::value_type v[]) {
+<a name="line980">980: </a>      int j = 0;
+
+<a name="line982">982: </a>      section-&gt;updatePointBC(p, &amp;v[j]);
+<a name="line983">983: </a>      j += section-&gt;getFiberDimension(p);
+<a name="line984">984: </a>      const Obj&lt;typename sieve_type::coneSequence&gt;&amp; cone = this-&gt;getSieve()-&gt;cone(p);
+
+<a name="line986">986: </a>      <font color="#4169E1">for</font>(typename sieve_type::coneSequence::iterator p_iter = cone-&gt;begin(); p_iter != cone-&gt;end(); ++p_iter) {
+<a name="line987">987: </a>        section-&gt;updatePointAll(*p_iter, &amp;v[j]);
+<a name="line988">988: </a>        j += section-&gt;getFiberDimension(*p_iter);
+<a name="line989">989: </a>      }
+<a name="line990">990: </a>    }
+<a name="line991">991: </a><strong><font color="#FF0000">  public:</font></strong> // Mesh geometry
+<a name="line992">992: </a>    void computeElementGeometry(const Obj&lt;real_section_type&gt;&amp; coordinates, const point_type&amp; e, double v0[], double J[], double invJ[], double&amp; detJ) {
+<a name="line993">993: </a>      const double *coords = this-&gt;restrictClosure(coordinates, e);
+<a name="line994">994: </a>      const int     dim    = this-&gt;_dim;
+<a name="line995">995: </a>      const int     last   = 1 &lt;&lt; dim;
+
+<a name="line997">997: </a>      <font color="#4169E1">if</font> (v0) {
+<a name="line998">998: </a>        <font color="#4169E1">for</font>(int d = 0; d &lt; dim; d++) {
+<a name="line999">999: </a>          v0[d] = coords[d];
+<a name="line1000">1000: </a>        }
+<a name="line1001">1001: </a>      }
+<a name="line1002">1002: </a>      <font color="#4169E1">for</font>(int d = 0; d &lt; dim; ++d) {
+<a name="line1003">1003: </a>        <font color="#4169E1">if</font> (J) {
+<a name="line1004">1004: </a>          J[d] = 0.5*(coords[last*dim+d] - v0[d]);
+<a name="line1005">1005: </a>        }
+<a name="line1006">1006: </a>        <font color="#4169E1">if</font> (invJ) {
+<a name="line1007">1007: </a>          invJ[d] = 1.0/J[d];
+<a name="line1008">1008: </a>        }
+<a name="line1009">1009: </a>      }
+<a name="line1010">1010: </a>    }
+<a name="line1011">1011: </a><strong><font color="#FF0000">  public:</font></strong> // Viewers
+<a name="line1012">1012: </a>    void view(const std::string&amp; name, <A href="../../docs/manualpages/Sys/MPI_Comm.html#MPI_Comm">MPI_Comm</A> comm = MPI_COMM_NULL) {
+<a name="line1013">1013: </a>      <font color="#4169E1">if</font> (comm == MPI_COMM_NULL) {
+<a name="line1014">1014: </a>        comm = this-&gt;comm();
+<a name="line1015">1015: </a>      }
+<a name="line1016">1016: </a>      <font color="#4169E1">if</font> (name == <font color="#666666">""</font>) {
+<a name="line1017">1017: </a>        <A href="../../docs/manualpages/Sys/PetscPrintf.html#PetscPrintf">PetscPrintf</A>(comm, <font color="#666666">"viewing a CartesianMesh\n"</font>);
+<a name="line1018">1018: </a>      } <font color="#4169E1">else</font> {
+<a name="line1019">1019: </a>        <A href="../../docs/manualpages/Sys/PetscPrintf.html#PetscPrintf">PetscPrintf</A>(comm, <font color="#666666">"viewing CartesianMesh '%s'\n"</font>, name.c_str());
+<a name="line1020">1020: </a>      }
+<a name="line1021">1021: </a>      this-&gt;getSieve()-&gt;view(<font color="#666666">"mesh sieve"</font>);
+<a name="line1022">1022: </a>    }
+<a name="line1023">1023: </a>  };
+
+<a name="line1025">1025: </a>  class CartesianMeshBuilder {
+<a name="line1026">1026: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line1027">1027: </a>    static Obj&lt;CartesianMesh&gt; createCartesianMesh(const <A href="../../docs/manualpages/Sys/MPI_Comm.html#MPI_Comm">MPI_Comm</A> comm, const int dim, const int numCells[], const int partitions[], const int debug = 0) {
+
+<a name="line1029">1029: </a>      // Steal PETSc code that calculates partitions
+<a name="line1030">1030: </a>      //   We could conceivably allow multiple patches per partition
+<a name="line1031">1031: </a>      int size, rank;
+<a name="line1032">1032: </a>      int totalPartitions = 1;
+
+<a name="line1035">1035: </a>      <A href="http://www.mcs.anl.gov/mpi/www/www3/MPI_Comm_size.html#MPI_Comm_size">MPI_Comm_size</A>(comm, &amp;size);<A href="../../docs/manualpages/Sys/CHKERRXX.html#CHKERRXX">CHKERRXX</A>(ierr);
+<a name="line1036">1036: </a>      <A href="http://www.mcs.anl.gov/mpi/www/www3/MPI_Comm_rank.html#MPI_Comm_rank">MPI_Comm_rank</A>(comm, &amp;rank);<A href="../../docs/manualpages/Sys/CHKERRXX.html#CHKERRXX">CHKERRXX</A>(ierr);
+<a name="line1037">1037: </a>      <font color="#4169E1">for</font>(int d = 0; d &lt; dim; ++d) totalPartitions *= partitions[d];
+<a name="line1038">1038: </a>      <font color="#4169E1">if</font> (size != totalPartitions) throw ALE::Exception(<font color="#666666">"Invalid partitioning"</font>);
+<a name="line1039">1039: </a>      // Determine local sizes
+<a name="line1040">1040: </a>      int *numLocalCells       = new int[dim];
+<a name="line1041">1041: </a>      int *numNeighborVertices = new int[dim];
+<a name="line1042">1042: </a>      int *numLocalVertices    = new int[dim];
+
+<a name="line1044">1044: </a>      <font color="#4169E1">for</font>(int d = 0; d &lt; dim; ++d) {
+<a name="line1045">1045: </a>        numLocalCells[d]    = numCells[d]/partitions[d] + (rank &lt; numCells[d]%partitions[d]);
+<a name="line1046">1046: </a>        numLocalVertices[d] = numLocalCells[d]+1;
+<a name="line1047">1047: </a>      }
+<a name="line1048">1048: </a>      // Create mesh
+<a name="line1049">1049: </a>      const Obj&lt;CartesianMesh&gt;             mesh  = new CartesianMesh(comm, dim, debug);
+<a name="line1050">1050: </a>      const Obj&lt;CartesianMesh::sieve_type&gt; sieve = new CartesianMesh::sieve_type(comm, dim, numLocalCells, debug);
+
+<a name="line1052">1052: </a>      mesh-&gt;setSieve(sieve);
+<a name="line1053">1053: </a>      mesh-&gt;stratify();
+<a name="line1054">1054: </a>      delete [] numLocalCells;
+<a name="line1055">1055: </a>      // Create overlaps
+<a name="line1056">1056: </a>      //   We overlap anyone within 1 index of us <font color="#4169E1">for</font> the entire boundary
+<a name="line1057">1057: </a>      const Obj&lt;CartesianMesh::send_overlap_type&gt;&amp; sendOverlap = mesh-&gt;getSendOverlap();
+<a name="line1058">1058: </a>      const Obj&lt;CartesianMesh::recv_overlap_type&gt;&amp; recvOverlap = mesh-&gt;getRecvOverlap();
+<a name="line1059">1059: </a>      int *indices  = new int[dim];
+<a name="line1060">1060: </a>      int *code     = new int[dim];
+<a name="line1061">1061: </a>      int *zeroCode = new int[dim];
+<a name="line1062">1062: </a>      int *vIndices = new int[dim];
+<a name="line1063">1063: </a>      int numNeighborCells;
+
+<a name="line1065">1065: </a><strong><font color="#FF0000">      ALE:</font></strong>:CartesianSieveDef::getIndices(dim, partitions, rank, indices);
+<a name="line1066">1066: </a>      <font color="#4169E1">for</font>(int e = 0; e &lt; dim; ++e) zeroCode[e] = 0;
+<a name="line1067">1067: </a>      <font color="#4169E1">for</font>(int d = 0; d &lt; dim; ++d) {
+<a name="line1068">1068: </a>        <font color="#4169E1">if</font> (indices[d] &gt; 0) {
+<a name="line1069">1069: </a>          <font color="#4169E1">for</font>(int e = 0; e &lt; dim; ++e) code[e] = 1;
+<a name="line1070">1070: </a>          code[d] = 0;
+<a name="line1071">1071: </a>          int neighborRank = ALE::CartesianSieveDef::getValue(dim, partitions, indices, code, false);
+<a name="line1072">1072: </a>          numNeighborCells = 1;
+<a name="line1073">1073: </a>          <font color="#4169E1">for</font>(int e = 0; e &lt; dim; ++e) {
+<a name="line1074">1074: </a>            numNeighborCells      *= (numCells[e]/partitions[e] + (neighborRank &lt; numCells[e]%partitions[e]));
+<a name="line1075">1075: </a>            numNeighborVertices[e] = (numCells[e]/partitions[e] + (neighborRank &lt; numCells[e]%partitions[e]))+1;
+<a name="line1076">1076: </a>          }
+
+<a name="line1078">1078: </a>          // Add the whole d-1 face on the left edge of dimension d
+<a name="line1079">1079: </a>          <font color="#4169E1">for</font>(int v = sieve-&gt;getNumCells(); v &lt; sieve-&gt;getNumCells()+sieve-&gt;getNumVertices(); ++v) {
+<a name="line1080">1080: </a><strong><font color="#FF0000">            ALE:</font></strong>:CartesianSieveDef::getIndices(dim, numLocalVertices, v - sieve-&gt;getNumCells(), vIndices);
+<a name="line1081">1081: </a>            <font color="#4169E1">if</font> (vIndices[d] == 0) {
+<a name="line1082">1082: </a>              vIndices[d]   = numNeighborVertices[d]-1;
+<a name="line1083">1083: </a>              int neighborV = ALE::CartesianSieveDef::getValue(dim, numNeighborVertices, vIndices, zeroCode) + numNeighborCells;
+
+<a name="line1085">1085: </a>              sendOverlap-&gt;addCone(v, neighborRank, neighborV);
+<a name="line1086">1086: </a>              recvOverlap-&gt;addCone(neighborRank, v, neighborV);
+<a name="line1087">1087: </a>            }
+<a name="line1088">1088: </a>          }
+<a name="line1089">1089: </a>        }
+<a name="line1090">1090: </a>        <font color="#4169E1">if</font> (indices[d] &lt; partitions[d]-1) {
+<a name="line1091">1091: </a>          <font color="#4169E1">for</font>(int e = 0; e &lt; dim; ++e) code[e] = 0;
+<a name="line1092">1092: </a>          code[d] = 1;
+<a name="line1093">1093: </a>          int neighborRank = ALE::CartesianSieveDef::getValue(dim, partitions, indices, code);
+<a name="line1094">1094: </a>          numNeighborCells = 1;
+<a name="line1095">1095: </a>          <font color="#4169E1">for</font>(int e = 0; e &lt; dim; ++e) {
+<a name="line1096">1096: </a>            numNeighborCells      *= (numCells[e]/partitions[e] + (neighborRank &lt; numCells[e]%partitions[e]));
+<a name="line1097">1097: </a>            numNeighborVertices[e] = (numCells[e]/partitions[e] + (neighborRank &lt; numCells[e]%partitions[e]))+1;
+<a name="line1098">1098: </a>          }
+
+<a name="line1100">1100: </a>          // Add the whole d-1 face on the right edge of dimension d
+<a name="line1101">1101: </a>          <font color="#4169E1">for</font>(int v = sieve-&gt;getNumCells(); v &lt; sieve-&gt;getNumCells()+sieve-&gt;getNumVertices(); ++v) {
+<a name="line1102">1102: </a><strong><font color="#FF0000">            ALE:</font></strong>:CartesianSieveDef::getIndices(dim, numLocalVertices, v - sieve-&gt;getNumCells(), vIndices);
+<a name="line1103">1103: </a>            <font color="#4169E1">if</font> (vIndices[d] == numLocalVertices[d]-1) {
+<a name="line1104">1104: </a>              vIndices[d]   = 0;
+<a name="line1105">1105: </a>              int neighborV = ALE::CartesianSieveDef::getValue(dim, numNeighborVertices, vIndices, zeroCode) + numNeighborCells;
+
+<a name="line1107">1107: </a>              sendOverlap-&gt;addCone(v, neighborRank, neighborV);
+<a name="line1108">1108: </a>              recvOverlap-&gt;addCone(neighborRank, v, neighborV);
+<a name="line1109">1109: </a>            }
+<a name="line1110">1110: </a>          }
+<a name="line1111">1111: </a>        }
+<a name="line1112">1112: </a>      }
+<a name="line1113">1113: </a>      <font color="#4169E1">if</font> (debug) {
+<a name="line1114">1114: </a>        sendOverlap-&gt;view(<font color="#666666">"Send Overlap"</font>);
+<a name="line1115">1115: </a>        recvOverlap-&gt;view(<font color="#666666">"Receive Overlap"</font>);
+<a name="line1116">1116: </a>      }
+<a name="line1117">1117: </a>      delete [] numLocalVertices;
+<a name="line1118">1118: </a>      delete [] numNeighborVertices;
+<a name="line1119">1119: </a>      delete [] indices;
+<a name="line1120">1120: </a>      delete [] code;
+<a name="line1121">1121: </a>      delete [] zeroCode;
+<a name="line1122">1122: </a>      delete [] vIndices;
+<a name="line1123">1123: </a>      // Create coordinates
+<a name="line1124">1124: </a>      <font color="#4169E1">return</font> mesh;
+<a name="line1125">1125: </a>    };
+<a name="line1126">1126: </a>  };
+<a name="line1127">1127: </a>}
+
+<a name="line1129">1129: </a><font color="#A020F0">#endif</font>
+</pre>
+</body>
+
+</html>

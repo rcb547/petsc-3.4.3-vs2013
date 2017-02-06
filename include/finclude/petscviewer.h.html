@@ -1,0 +1,106 @@
+<center><a href="petscviewer.h">Actual source code: petscviewer.h</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="http://www.mcs.anl.gov/petsc/petsc-current/include/finclude/petscviewer.h.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2013-10-15T17:08:22+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>petsc-3.4.3 2013-10-15</b></div>
+<pre width="80"><a name="line1">  1: </a>!
+<a name="line2">  2: </a>!  Include file <font color="#4169E1">for</font> Fortran use of the <A href="../../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A> package in PETSc
+<a name="line3">  3: </a>!
+<a name="line4"> 4: </a> #include <A href="../../include/finclude/petscviewerdef.h.html">finclude/petscviewerdef.h</A>
+
+<a name="line6">  6: </a><font color="#A020F0">#if !defined(PETSC_USE_FORTRAN_DATATYPES)</font>
+<a name="line7">  7: </a>      <A href="../../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A> <A href="../../docs/manualpages/Viewer/PETSC_VIEWER_STDOUT_.html#PETSC_VIEWER_STDOUT_">PETSC_VIEWER_STDOUT_</A>
+<a name="line8">  8: </a>      external <A href="../../docs/manualpages/Viewer/PETSC_VIEWER_STDOUT_.html#PETSC_VIEWER_STDOUT_">PETSC_VIEWER_STDOUT_</A>
+<a name="line9">  9: </a><font color="#A020F0">#endif</font>
+<a name="line10"> 10: </a>!
+<a name="line11"> 11: </a>!  Flags <font color="#4169E1">for</font> binary I/O
+<a name="line12"> 12: </a>!
+<a name="line13"> 13: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> FILE_MODE_READ
+<a name="line14"> 14: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> FILE_MODE_WRITE
+<a name="line15"> 15: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> FILE_MODE_APPEND
+<a name="line16"> 16: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> FILE_MODE_UPDATE
+<a name="line17"> 17: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> FILE_MODE_APPEND_UPDATE
+
+<a name="line19"> 19: </a>      parameter (FILE_MODE_READ = 0)
+<a name="line20"> 20: </a>      parameter (FILE_MODE_WRITE = 1)
+<a name="line21"> 21: </a>      parameter (FILE_MODE_APPEND = 2)
+<a name="line22"> 22: </a>      parameter (FILE_MODE_UPDATE = 3)
+<a name="line23"> 23: </a>      parameter (FILE_MODE_APPEND_UPDATE = 4)
+
+<a name="line25"> 25: </a>!
+<a name="line26"> 26: </a>!  <A href="../../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A> formats
+<a name="line27"> 27: </a>!
+<a name="line28"> 28: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PETSC_VIEWER_DEFAULT
+<a name="line29"> 29: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PETSC_VIEWER_ASCII_MATLAB
+<a name="line30"> 30: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PETSC_VIEWER_ASCII_MATHEMATICA
+<a name="line31"> 31: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PETSC_VIEWER_ASCII_IMPL
+<a name="line32"> 32: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PETSC_VIEWER_ASCII_INFO
+<a name="line33"> 33: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PETSC_VIEWER_ASCII_INFO_DETAIL
+<a name="line34"> 34: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PETSC_VIEWER_ASCII_COMMON
+<a name="line35"> 35: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PETSC_VIEWER_ASCII_SYMMODU
+<a name="line36"> 36: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PETSC_VIEWER_ASCII_INDEX
+<a name="line37"> 37: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PETSC_VIEWER_ASCII_DENSE
+<a name="line38"> 38: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PETSC_VIEWER_ASCII_MATRIXMARKET
+<a name="line39"> 39: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PETSC_VIEWER_ASCII_VTK
+<a name="line40"> 40: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PETSC_VIEWER_ASCII_VTK_CELL
+<a name="line41"> 41: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PETSC_VIEWER_ASCII_VTK_COORDS
+<a name="line42"> 42: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PETSC_VIEWER_ASCII_PCICE
+<a name="line43"> 43: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PETSC_VIEWER_ASCII_PYTHON
+<a name="line44"> 44: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PETSC_VIEWER_ASCII_FACTOR_INFO
+<a name="line45"> 45: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PETSC_VIEWER_ASCII_LATEX
+<a name="line46"> 46: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PETSC_VIEWER_DRAW_BASIC
+<a name="line47"> 47: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PETSC_VIEWER_DRAW_LG
+<a name="line48"> 48: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PETSC_VIEWER_DRAW_CONTOUR
+<a name="line49"> 49: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PETSC_VIEWER_DRAW_PORTS
+<a name="line50"> 50: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PETSC_VIEWER_VTK_VTS
+<a name="line51"> 51: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PETSC_VIEWER_VTK_VTU
+<a name="line52"> 52: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PETSC_VIEWER_BINARY_MATLAB
+<a name="line53"> 53: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PETSC_VIEWER_NATIVE
+<a name="line54"> 54: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PETSC_VIEWER_NOFORMAT
+
+<a name="line56"> 56: </a>      parameter (PETSC_VIEWER_DEFAULT = 0)
+<a name="line57"> 57: </a>      parameter (PETSC_VIEWER_ASCII_MATLAB = 1)
+<a name="line58"> 58: </a>      parameter (PETSC_VIEWER_ASCII_MATHEMATICA = 2)
+<a name="line59"> 59: </a>      parameter (PETSC_VIEWER_ASCII_IMPL = 3)
+<a name="line60"> 60: </a>      parameter (PETSC_VIEWER_ASCII_INFO = 4)
+<a name="line61"> 61: </a>      parameter (PETSC_VIEWER_ASCII_INFO_DETAIL = 5)
+<a name="line62"> 62: </a>      parameter (PETSC_VIEWER_ASCII_COMMON = 6)
+<a name="line63"> 63: </a>      parameter (PETSC_VIEWER_ASCII_SYMMODU = 7)
+<a name="line64"> 64: </a>      parameter (PETSC_VIEWER_ASCII_INDEX = 8)
+<a name="line65"> 65: </a>      parameter (PETSC_VIEWER_ASCII_DENSE = 9)
+<a name="line66"> 66: </a>      parameter (PETSC_VIEWER_ASCII_MATRIXMARKET = 10)
+<a name="line67"> 67: </a>      parameter (PETSC_VIEWER_ASCII_VTK = 11)
+<a name="line68"> 68: </a>      parameter (PETSC_VIEWER_ASCII_VTK_CELL = 12)
+<a name="line69"> 69: </a>      parameter (PETSC_VIEWER_ASCII_VTK_COORDS = 13)
+<a name="line70"> 70: </a>      parameter (PETSC_VIEWER_ASCII_PCICE = 14)
+<a name="line71"> 71: </a>      parameter (PETSC_VIEWER_ASCII_PYTHON = 15)
+<a name="line72"> 72: </a>      parameter (PETSC_VIEWER_ASCII_FACTOR_INFO = 16)
+<a name="line73"> 73: </a>      parameter (PETSC_VIEWER_ASCII_LATEX = 17)
+<a name="line74"> 74: </a>      parameter (PETSC_VIEWER_DRAW_BASIC = 18)
+<a name="line75"> 75: </a>      parameter (PETSC_VIEWER_DRAW_LG = 19)
+<a name="line76"> 76: </a>      parameter (PETSC_VIEWER_DRAW_CONTOUR = 20)
+<a name="line77"> 77: </a>      parameter (PETSC_VIEWER_DRAW_PORTS = 21)
+<a name="line78"> 78: </a>      parameter (PETSC_VIEWER_VTK_VTS = 22)
+<a name="line79"> 79: </a>      parameter (PETSC_VIEWER_VTK_VTU = 23)
+<a name="line80"> 80: </a>      parameter (PETSC_VIEWER_BINARY_MATLAB = 24)
+<a name="line81"> 81: </a>      parameter (PETSC_VIEWER_NATIVE = 25)
+<a name="line82"> 82: </a>      parameter (PETSC_VIEWER_NOFORMAT = 26)
+<a name="line83"> 83: </a>!
+<a name="line84"> 84: </a>!  End of Fortran include file <font color="#4169E1">for</font> the <A href="../../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A> package in PETSc
+
+
+
+
+
+
+
+</pre>
+</body>
+
+</html>

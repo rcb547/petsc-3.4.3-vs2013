@@ -1,0 +1,69 @@
+<center><a href="petsc-pcimpl.h">Actual source code: petsc-pcimpl.h</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="http://www.mcs.anl.gov/petsc/petsc-current/include/petsc-private/pcimpl.h.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2013-10-15T17:02:39+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>petsc-3.4.3 2013-10-15</b></div>
+<pre width="80">
+<a name="line2">  2: </a><font color="#A020F0">#ifndef _PCIMPL_H</font>
+<a name="line3">  3: </a><strong><font color="#228B22">#define _PCIMPL_H</font></strong>
+
+<a name="line5">  5: </a><font color="#A020F0">#include &lt;petscksp.h&gt;</font>
+<a name="line6">  6: </a><font color="#A020F0">#include &lt;petscpc.h&gt;</font>
+<a name="line7">  7: </a><font color="#A020F0">#include &lt;petsc-private/petscimpl.h&gt;</font>
+
+<a name="line9">  9: </a><font color="#4169E1">typedef struct _PCOps *PCOps;</font>
+<a name="line10"> 10: </a><font color="#4169E1"><a name="_PCOps"></a>struct _PCOps </font>{
+<a name="line11"> 11: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*setup)(<A href="../docs/manualpages/PC/PC.html#PC">PC</A>);
+<a name="line12"> 12: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*apply)(<A href="../docs/manualpages/PC/PC.html#PC">PC</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>);
+<a name="line13"> 13: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*applyrichardson)(<A href="../docs/manualpages/PC/PC.html#PC">PC</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>,<A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>,<A href="../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A> ,<A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>*,<A href="../docs/manualpages/PC/PCRichardsonConvergedReason.html#PCRichardsonConvergedReason">PCRichardsonConvergedReason</A>*);
+<a name="line14"> 14: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*applyBA)(<A href="../docs/manualpages/PC/PC.html#PC">PC</A>,<A href="../docs/manualpages/PC/PCSide.html#PCSide">PCSide</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>);
+<a name="line15"> 15: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*applytranspose)(<A href="../docs/manualpages/PC/PC.html#PC">PC</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>);
+<a name="line16"> 16: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*applyBAtranspose)(<A href="../docs/manualpages/PC/PC.html#PC">PC</A>,<A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>);
+<a name="line17"> 17: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*setfromoptions)(<A href="../docs/manualpages/PC/PC.html#PC">PC</A>);
+<a name="line18"> 18: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*presolve)(<A href="../docs/manualpages/PC/PC.html#PC">PC</A>,<A href="../docs/manualpages/KSP/KSP.html#KSP">KSP</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>);
+<a name="line19"> 19: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*postsolve)(<A href="../docs/manualpages/PC/PC.html#PC">PC</A>,<A href="../docs/manualpages/KSP/KSP.html#KSP">KSP</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>);
+<a name="line20"> 20: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*getfactoredmatrix)(<A href="../docs/manualpages/PC/PC.html#PC">PC</A>,<A href="../docs/manualpages/Mat/Mat.html#Mat">Mat</A>*);
+<a name="line21"> 21: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*applysymmetricleft)(<A href="../docs/manualpages/PC/PC.html#PC">PC</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>);
+<a name="line22"> 22: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*applysymmetricright)(<A href="../docs/manualpages/PC/PC.html#PC">PC</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>,<A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>);
+<a name="line23"> 23: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*setuponblocks)(<A href="../docs/manualpages/PC/PC.html#PC">PC</A>);
+<a name="line24"> 24: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*destroy)(<A href="../docs/manualpages/PC/PC.html#PC">PC</A>);
+<a name="line25"> 25: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*view)(<A href="../docs/manualpages/PC/PC.html#PC">PC</A>,<A href="../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A>);
+<a name="line26"> 26: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*reset)(<A href="../docs/manualpages/PC/PC.html#PC">PC</A>);
+<a name="line27"> 27: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*load)(<A href="../docs/manualpages/PC/PC.html#PC">PC</A>,<A href="../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A>);
+<a name="line28"> 28: </a>};
+
+<a name="line30"> 30: </a><font color="#B22222">/*</font>
+<a name="line31"> 31: </a><font color="#B22222">   Preconditioner context</font>
+<a name="line32"> 32: </a><font color="#B22222">*/</font>
+<a name="line33"> 33: </a><font color="#4169E1"><a name="_p_PC"></a>struct _p_PC </font>{
+<a name="line34"> 34: </a>  PETSCHEADER(<font color="#4169E1">struct _PCOps</font>);
+<a name="line35"> 35: </a>  DM             dm;
+<a name="line36"> 36: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>       setupcalled;
+<a name="line37"> 37: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>       setfromoptionscalled;
+<a name="line38"> 38: </a>  <A href="../docs/manualpages/Mat/MatStructure.html#MatStructure">MatStructure</A>   flag;
+<a name="line39"> 39: </a>  <A href="../docs/manualpages/Mat/Mat.html#Mat">Mat</A>            mat,pmat;
+<a name="line40"> 40: </a>  <A href="../docs/manualpages/Vec/Vec.html#Vec">Vec</A>            diagonalscaleright,diagonalscaleleft; <font color="#B22222">/* used for time integration scaling */</font>
+<a name="line41"> 41: </a>  <A href="../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A>      diagonalscale;
+<a name="line42"> 42: </a>  <A href="../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A>      nonzero_guess; <font color="#B22222">/* used by <A href="../docs/manualpages/PC/PCKSP.html#PCKSP">PCKSP</A>, <A href="../docs/manualpages/PC/PCREDUNDANT.html#PCREDUNDANT">PCREDUNDANT</A> and <A href="../docs/manualpages/PC/PCHMPI.html#PCHMPI">PCHMPI</A> */</font>
+<a name="line43"> 43: </a>  <A href="../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A>      useAmat; <font color="#B22222">/* used by several <A href="../docs/manualpages/PC/PC.html#PC">PC</A> that including applying the operator inside the preconditioner */</font>
+<a name="line44"> 44: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*modifysubmatrices)(<A href="../docs/manualpages/PC/PC.html#PC">PC</A>,<A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>,const <A href="../docs/manualpages/IS/IS.html#IS">IS</A>[],const <A href="../docs/manualpages/IS/IS.html#IS">IS</A>[],<A href="../docs/manualpages/Mat/Mat.html#Mat">Mat</A>[],void*); <font color="#B22222">/* user provided routine */</font>
+<a name="line45"> 45: </a>  void           *modifysubmatricesP; <font color="#B22222">/* context for user routine */</font>
+<a name="line46"> 46: </a>  void           *data;
+<a name="line47"> 47: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>       presolvedone;  <font color="#B22222">/* has <A href="../docs/manualpages/PC/PCPreSolve.html#PCPreSolve">PCPreSolve</A>() already been run */</font>
+<a name="line48"> 48: </a>  void           *user;             <font color="#B22222">/* optional user-defined context */</font>
+<a name="line49"> 49: </a>};
+
+<a name="line51"> 51: </a>PETSC_EXTERN <A href="../docs/manualpages/Profiling/PetscLogEvent.html#PetscLogEvent">PetscLogEvent</A> PC_SetUp, PC_SetUpOnBlocks, PC_Apply, PC_ApplyCoarse, PC_ApplyMultiple, PC_ApplySymmetricLeft;
+<a name="line52"> 52: </a>PETSC_EXTERN <A href="../docs/manualpages/Profiling/PetscLogEvent.html#PetscLogEvent">PetscLogEvent</A> PC_ApplySymmetricRight, PC_ModifySubMatrices, PC_ApplyOnBlocks, PC_ApplyTransposeOnBlocks, PC_ApplyOnMproc;
+
+<a name="line54"> 54: </a><font color="#A020F0">#endif</font>
+</pre>
+</body>
+
+</html>

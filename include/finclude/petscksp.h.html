@@ -1,0 +1,103 @@
+<center><a href="petscksp.h">Actual source code: petscksp.h</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="http://www.mcs.anl.gov/petsc/petsc-current/include/finclude/petscksp.h.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2013-10-15T17:08:22+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>petsc-3.4.3 2013-10-15</b></div>
+<pre width="80"><a name="line1">  1: </a>!
+<a name="line2">  2: </a>!
+<a name="line3">  3: </a>!  Include file <font color="#4169E1">for</font> Fortran use of the <A href="../../docs/manualpages/KSP/KSP.html#KSP">KSP</A> package in PETSc
+<a name="line4">  4: </a>!
+<a name="line5"> 5: </a> #include <A href="../../include/finclude/petsckspdef.h.html">finclude/petsckspdef.h</A>
+
+<a name="line7">  7: </a>!
+<a name="line8">  8: </a>!  CG Types
+<a name="line9">  9: </a>!
+<a name="line10"> 10: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> KSP_CG_SYMMETRIC
+<a name="line11"> 11: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> KSP_CG_HERMITIAN
+
+<a name="line13"> 13: </a>      parameter (KSP_CG_SYMMETRIC=0,KSP_CG_HERMITIAN=1)
+
+<a name="line15"> 15: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> <A href="../../docs/manualpages/KSP/KSP_CONVERGED_RTOL.html#KSP_CONVERGED_RTOL">KSP_CONVERGED_RTOL</A>
+<a name="line16"> 16: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> <A href="../../docs/manualpages/KSP/KSP_CONVERGED_ATOL.html#KSP_CONVERGED_ATOL">KSP_CONVERGED_ATOL</A>
+<a name="line17"> 17: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> <A href="../../docs/manualpages/KSP/KSP_CONVERGED_ITS.html#KSP_CONVERGED_ITS">KSP_CONVERGED_ITS</A>
+<a name="line18"> 18: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> KSP_DIVERGED_NULL
+<a name="line19"> 19: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> <A href="../../docs/manualpages/KSP/KSP_DIVERGED_ITS.html#KSP_DIVERGED_ITS">KSP_DIVERGED_ITS</A>
+<a name="line20"> 20: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> <A href="../../docs/manualpages/KSP/KSP_DIVERGED_DTOL.html#KSP_DIVERGED_DTOL">KSP_DIVERGED_DTOL</A>
+<a name="line21"> 21: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> <A href="../../docs/manualpages/KSP/KSP_DIVERGED_BREAKDOWN.html#KSP_DIVERGED_BREAKDOWN">KSP_DIVERGED_BREAKDOWN</A>
+<a name="line22"> 22: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> <A href="../../docs/manualpages/KSP/KSP_CONVERGED_ITERATING.html#KSP_CONVERGED_ITERATING">KSP_CONVERGED_ITERATING</A>
+<a name="line23"> 23: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> KSP_CONVERGED_CG_NEG_CURVE
+<a name="line24"> 24: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> KSP_CONVERGED_CG_CONSTRAINED
+<a name="line25"> 25: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> KSP_CONVERGED_STEP_LENGTH
+<a name="line26"> 26: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> KSP_CONVERGED_HAPPY_BREAKDOWN
+<a name="line27"> 27: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> <A href="../../docs/manualpages/KSP/KSP_DIVERGED_BREAKDOWN_BICG.html#KSP_DIVERGED_BREAKDOWN_BICG">KSP_DIVERGED_BREAKDOWN_BICG</A>
+<a name="line28"> 28: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> <A href="../../docs/manualpages/KSP/KSP_DIVERGED_NONSYMMETRIC.html#KSP_DIVERGED_NONSYMMETRIC">KSP_DIVERGED_NONSYMMETRIC</A>
+<a name="line29"> 29: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> <A href="../../docs/manualpages/KSP/KSP_DIVERGED_INDEFINITE_PC.html#KSP_DIVERGED_INDEFINITE_PC">KSP_DIVERGED_INDEFINITE_PC</A>
+<a name="line30"> 30: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> KSP_DIVERGED_NANORINF
+<a name="line31"> 31: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> KSP_DIVERGED_INDEFINITE_MAT
+
+<a name="line33"> 33: </a>      parameter (<A href="../../docs/manualpages/KSP/KSP_CONVERGED_RTOL.html#KSP_CONVERGED_RTOL">KSP_CONVERGED_RTOL</A>            = 2)
+<a name="line34"> 34: </a>      parameter (<A href="../../docs/manualpages/KSP/KSP_CONVERGED_ATOL.html#KSP_CONVERGED_ATOL">KSP_CONVERGED_ATOL</A>            = 3)
+<a name="line35"> 35: </a>      parameter (<A href="../../docs/manualpages/KSP/KSP_CONVERGED_ITS.html#KSP_CONVERGED_ITS">KSP_CONVERGED_ITS</A>             = 4)
+<a name="line36"> 36: </a>      parameter (KSP_CONVERGED_CG_NEG_CURVE    = 5)
+<a name="line37"> 37: </a>      parameter (KSP_CONVERGED_CG_CONSTRAINED  = 6)
+<a name="line38"> 38: </a>      parameter (KSP_CONVERGED_STEP_LENGTH     = 7)
+<a name="line39"> 39: </a>      parameter (KSP_CONVERGED_HAPPY_BREAKDOWN = 8)
+
+<a name="line41"> 41: </a>      parameter (KSP_DIVERGED_NULL           = -2)
+<a name="line42"> 42: </a>      parameter (<A href="../../docs/manualpages/KSP/KSP_DIVERGED_ITS.html#KSP_DIVERGED_ITS">KSP_DIVERGED_ITS</A>            = -3)
+<a name="line43"> 43: </a>      parameter (<A href="../../docs/manualpages/KSP/KSP_DIVERGED_DTOL.html#KSP_DIVERGED_DTOL">KSP_DIVERGED_DTOL</A>           = -4)
+<a name="line44"> 44: </a>      parameter (<A href="../../docs/manualpages/KSP/KSP_DIVERGED_BREAKDOWN.html#KSP_DIVERGED_BREAKDOWN">KSP_DIVERGED_BREAKDOWN</A>      = -5)
+<a name="line45"> 45: </a>      parameter (<A href="../../docs/manualpages/KSP/KSP_DIVERGED_BREAKDOWN_BICG.html#KSP_DIVERGED_BREAKDOWN_BICG">KSP_DIVERGED_BREAKDOWN_BICG</A> = -6)
+<a name="line46"> 46: </a>      parameter (<A href="../../docs/manualpages/KSP/KSP_DIVERGED_NONSYMMETRIC.html#KSP_DIVERGED_NONSYMMETRIC">KSP_DIVERGED_NONSYMMETRIC</A>   = -7)
+<a name="line47"> 47: </a>      parameter (<A href="../../docs/manualpages/KSP/KSP_DIVERGED_INDEFINITE_PC.html#KSP_DIVERGED_INDEFINITE_PC">KSP_DIVERGED_INDEFINITE_PC</A>  = -8)
+<a name="line48"> 48: </a>      parameter (KSP_DIVERGED_NANORINF       = -9)
+<a name="line49"> 49: </a>      parameter (KSP_DIVERGED_INDEFINITE_MAT = -10)
+
+<a name="line51"> 51: </a>      parameter (<A href="../../docs/manualpages/KSP/KSP_CONVERGED_ITERATING.html#KSP_CONVERGED_ITERATING">KSP_CONVERGED_ITERATING</A> = 0)
+<a name="line52"> 52: </a>!
+<a name="line53"> 53: </a>!  Possible arguments to <A href="../../docs/manualpages/KSP/KSPSetNormType.html#KSPSetNormType">KSPSetNormType</A>()
+<a name="line54"> 54: </a>!
+<a name="line55"> 55: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> <A href="../../docs/manualpages/KSP/KSP_NORM_NONE.html#KSP_NORM_NONE">KSP_NORM_NONE</A>
+<a name="line56"> 56: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> <A href="../../docs/manualpages/KSP/KSP_NORM_PRECONDITIONED.html#KSP_NORM_PRECONDITIONED">KSP_NORM_PRECONDITIONED</A>
+<a name="line57"> 57: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> <A href="../../docs/manualpages/KSP/KSP_NORM_UNPRECONDITIONED.html#KSP_NORM_UNPRECONDITIONED">KSP_NORM_UNPRECONDITIONED</A>
+<a name="line58"> 58: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> <A href="../../docs/manualpages/KSP/KSP_NORM_NATURAL.html#KSP_NORM_NATURAL">KSP_NORM_NATURAL</A>
+
+<a name="line60"> 60: </a>      parameter (<A href="../../docs/manualpages/KSP/KSP_NORM_NONE.html#KSP_NORM_NONE">KSP_NORM_NONE</A>=0)
+<a name="line61"> 61: </a>      parameter (<A href="../../docs/manualpages/KSP/KSP_NORM_PRECONDITIONED.html#KSP_NORM_PRECONDITIONED">KSP_NORM_PRECONDITIONED</A>=1)
+<a name="line62"> 62: </a>      parameter (<A href="../../docs/manualpages/KSP/KSP_NORM_UNPRECONDITIONED.html#KSP_NORM_UNPRECONDITIONED">KSP_NORM_UNPRECONDITIONED</A>=2)
+<a name="line63"> 63: </a>      parameter (<A href="../../docs/manualpages/KSP/KSP_NORM_NATURAL.html#KSP_NORM_NATURAL">KSP_NORM_NATURAL</A>=3)
+<a name="line64"> 64: </a>!
+<a name="line65"> 65: </a>!   Possible arguments to <A href="../../docs/manualpages/KSP/KSPMonitorSet.html#KSPMonitorSet">KSPMonitorSet</A>()
+<a name="line66"> 66: </a>!
+<a name="line67"> 67: </a>      external KSPDEFAULTCONVERGED
+<a name="line68"> 68: </a>      external KSPMONITORDEFAULT
+<a name="line69"> 69: </a>      external KSPMONITORTRUERESIDUALNORM
+<a name="line70"> 70: </a>      external KSPMONITORLGRESIDUALNORM
+<a name="line71"> 71: </a>      external KSPMONITORLGTRUERESIDUALNORM
+<a name="line72"> 72: </a>      external KSPMONITORSOLUTION
+<a name="line73"> 73: </a>      external KSPMONITORSINGULARVALUE
+<a name="line74"> 74: </a>      external KSPGMRESMONITORKRYLOV
+<a name="line75"> 75: </a>!
+<a name="line76"> 76: </a>!   Possible arguments to KSPGMRESSetRefinementType()
+<a name="line77"> 77: </a>!
+<a name="line78"> 78: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> <A href="../../docs/manualpages/KSP/KSP_GMRES_CGS_REFINE_NEVER.html#KSP_GMRES_CGS_REFINE_NEVER">KSP_GMRES_CGS_REFINE_NEVER</A>
+<a name="line79"> 79: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> <A href="../../docs/manualpages/KSP/KSP_GMRES_CGS_REFINE_IFNEEDED.html#KSP_GMRES_CGS_REFINE_IFNEEDED">KSP_GMRES_CGS_REFINE_IFNEEDED</A>
+<a name="line80"> 80: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> KSP_GMRES_CGS_REFINE_ALWAYS
+<a name="line81"> 81: </a>!
+<a name="line82"> 82: </a>      parameter (<A href="../../docs/manualpages/KSP/KSP_GMRES_CGS_REFINE_NEVER.html#KSP_GMRES_CGS_REFINE_NEVER">KSP_GMRES_CGS_REFINE_NEVER</A> = 0)
+<a name="line83"> 83: </a>      parameter (<A href="../../docs/manualpages/KSP/KSP_GMRES_CGS_REFINE_IFNEEDED.html#KSP_GMRES_CGS_REFINE_IFNEEDED">KSP_GMRES_CGS_REFINE_IFNEEDED</A> = 1)
+<a name="line84"> 84: </a>      parameter (KSP_GMRES_CGS_REFINE_ALWAYS = 2)
+<a name="line85"> 85: </a>!
+<a name="line86"> 86: </a>!  End of Fortran include file <font color="#4169E1">for</font> the <A href="../../docs/manualpages/KSP/KSP.html#KSP">KSP</A> package in PETSc
+<a name="line87"> 87: </a>!
+
+</pre>
+</body>
+
+</html>

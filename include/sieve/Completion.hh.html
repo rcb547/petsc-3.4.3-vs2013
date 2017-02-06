@@ -1,0 +1,377 @@
+<center><a href="Completion.hh">Actual source code: Completion.hh</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="http://www.mcs.anl.gov/petsc/petsc-current/include/sieve/Completion.hh.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2013-10-15T17:08:50+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>petsc-3.4.3 2013-10-15</b></div>
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#ifndef included_ALE_Completion_hh</font>
+<a name="line2">  2: </a><strong><font color="#228B22">#define included_ALE_Completion_hh</font></strong>
+
+<a name="line4">  4: </a><font color="#A020F0">#ifndef  included_ALE_Sections_hh</font>
+<a name="line5">  5: </a><font color="#A020F0">#include &lt;sieve/Sections.hh&gt;</font>
+<a name="line6">  6: </a><font color="#A020F0">#endif</font>
+
+<a name="line8">  8: </a><font color="#A020F0">#ifndef  included_ALE_SectionCompletion_hh</font>
+<a name="line9">  9: </a><font color="#A020F0">#include &lt;sieve/SectionCompletion.hh&gt;</font>
+<a name="line10"> 10: </a><font color="#A020F0">#endif</font>
+
+<a name="line12"> 12: </a><font color="#A020F0">#ifndef  included_ALE_ParallelMapping_hh</font>
+<a name="line13"> 13: </a><font color="#A020F0">#include &lt;sieve/ParallelMapping.hh&gt;</font>
+<a name="line14"> 14: </a><font color="#A020F0">#endif</font>
+
+<a name="line16"> 16: </a><font color="#A020F0">#include &lt;iostream&gt;</font>
+<a name="line17"> 17: </a><font color="#A020F0">#include &lt;fstream&gt;</font>
+
+<a name="line19"> 19: </a>namespace ALE {
+<a name="line20"> 20: </a>  class Completion {
+<a name="line21"> 21: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line22"> 22: </a>    template&lt;typename SendOverlap, typename RecvOverlap, typename SendSection, typename RecvSection&gt;
+<a name="line23"> 23: </a>    static void completeSection(const Obj&lt;SendOverlap&gt;&amp; sendOverlap, const Obj&lt;RecvOverlap&gt;&amp; recvOverlap, const Obj&lt;SendSection&gt;&amp; sendSection, const Obj&lt;RecvSection&gt;&amp; recvSection) {
+<a name="line24"> 24: </a>      <font color="#4169E1">typedef</font> ALE::Section&lt;ALE::Pair&lt;int, typename SendOverlap::source_type&gt;, typename SendSection::value_type&gt; OverlapSection;
+<a name="line25"> 25: </a>      //<font color="#4169E1">typedef</font> ALE::Section&lt;typename SendSection::point_type, typename SendSection::value_type&gt; OverlapSection;
+<a name="line26"> 26: </a>      Obj&lt;OverlapSection&gt; overlapSection = new OverlapSection(sendSection-&gt;comm(), sendSection-&gt;debug());
+
+<a name="line28"> 28: </a>      <font color="#4169E1">if</font> (sendSection-&gt;debug()) {sendSection-&gt;view(<font color="#666666">"Send Section"</font>);}
+<a name="line29"> 29: </a><strong><font color="#FF0000">      ALE:</font></strong>:Pullback::SimpleCopy::copy(sendOverlap, recvOverlap, sendSection, overlapSection);
+<a name="line30"> 30: </a>      <font color="#4169E1">if</font> (overlapSection-&gt;debug()) {overlapSection-&gt;view(<font color="#666666">"Overlap Section"</font>);}
+<a name="line31"> 31: </a><strong><font color="#FF0000">      ALE:</font></strong>:Pullback::InsertionBinaryFusion::fuse(overlapSection, recvOverlap, recvSection);
+<a name="line32"> 32: </a>      <font color="#4169E1">if</font> (recvSection-&gt;debug()) {recvSection-&gt;view(<font color="#666666">"Receieve Section"</font>);}
+<a name="line33"> 33: </a>    }
+<a name="line34"> 34: </a>    template&lt;typename SendOverlap, typename RecvOverlap, typename SendSection, typename RecvSection&gt;
+<a name="line35"> 35: </a>    static void completeSectionAdd(const Obj&lt;SendOverlap&gt;&amp; sendOverlap, const Obj&lt;RecvOverlap&gt;&amp; recvOverlap, const Obj&lt;SendSection&gt;&amp; sendSection, const Obj&lt;RecvSection&gt;&amp; recvSection) {
+<a name="line36"> 36: </a>      <font color="#4169E1">typedef</font> ALE::Section&lt;ALE::Pair&lt;int, typename SendOverlap::source_type&gt;, typename SendSection::value_type&gt; OverlapSection;
+<a name="line37"> 37: </a>      Obj&lt;OverlapSection&gt; overlapSection = new OverlapSection(sendSection-&gt;comm(), sendSection-&gt;debug());
+
+<a name="line39"> 39: </a>      <font color="#4169E1">if</font> (sendSection-&gt;debug()) {sendSection-&gt;view(<font color="#666666">"Send Section"</font>);}
+<a name="line40"> 40: </a><strong><font color="#FF0000">      ALE:</font></strong>:Pullback::SimpleCopy::copy(sendOverlap, recvOverlap, sendSection, overlapSection);
+<a name="line41"> 41: </a>      <font color="#4169E1">if</font> (overlapSection-&gt;debug()) {overlapSection-&gt;view(<font color="#666666">"Overlap Section"</font>);}
+<a name="line42"> 42: </a><strong><font color="#FF0000">      ALE:</font></strong>:Pullback::AdditiveBinaryFusion::fuse(overlapSection, recvOverlap, recvSection);
+<a name="line43"> 43: </a>      <font color="#4169E1">if</font> (recvSection-&gt;debug()) {recvSection-&gt;view(<font color="#666666">"Receieve Section"</font>);}
+<a name="line44"> 44: </a>    }
+<a name="line45"> 45: </a>    template&lt;typename SendOverlap, typename RecvOverlap, typename SendSection, typename RecvSection, typename OverlapSection&gt;
+<a name="line46"> 46: </a>    static void completeSectionAdd(const Obj&lt;SendOverlap&gt;&amp; sendOverlap, const Obj&lt;RecvOverlap&gt;&amp; recvOverlap, const Obj&lt;SendSection&gt;&amp; sendSection, const Obj&lt;RecvSection&gt;&amp; recvSection, const Obj&lt;OverlapSection&gt;&amp; overlapSection) {
+<a name="line47"> 47: </a>      <font color="#4169E1">if</font> (sendSection-&gt;debug()) {sendSection-&gt;view(<font color="#666666">"Send Section"</font>);}
+<a name="line48"> 48: </a><strong><font color="#FF0000">      ALE:</font></strong>:Pullback::SimpleCopy::copy(sendOverlap, recvOverlap, sendSection, overlapSection);
+<a name="line49"> 49: </a>      <font color="#4169E1">if</font> (overlapSection-&gt;debug()) {overlapSection-&gt;view(<font color="#666666">"Overlap Section"</font>);}
+<a name="line50"> 50: </a><strong><font color="#FF0000">      ALE:</font></strong>:Pullback::AdditiveBinaryFusion::fuse(overlapSection, recvOverlap, recvSection);
+<a name="line51"> 51: </a>      <font color="#4169E1">if</font> (recvSection-&gt;debug()) {recvSection-&gt;view(<font color="#666666">"Receieve Section"</font>);}
+<a name="line52"> 52: </a>    }
+<a name="line53"> 53: </a>  };
+<a name="line54"> 54: </a>  namespace New {
+<a name="line55"> 55: </a>    template&lt;typename Bundle_, typename Value_, typename Alloc_ = malloc_allocator&lt;typename Bundle_::point_type&gt; &gt;
+<a name="line56"> 56: </a>    class Completion {
+<a name="line57"> 57: </a><strong><font color="#FF0000">    public:</font></strong>
+<a name="line58"> 58: </a>      <font color="#4169E1">typedef</font> int                                                                         point_type;
+<a name="line59"> 59: </a>      <font color="#4169E1">typedef</font> Value_                                                                      value_type;
+<a name="line60"> 60: </a>      <font color="#4169E1">typedef</font> Bundle_                                                                     bundle_type;
+<a name="line61"> 61: </a>      <font color="#4169E1">typedef</font> Alloc_                                                                      alloc_type;
+<a name="line62"> 62: </a>      <font color="#4169E1">typedef</font> typename alloc_type::template rebind&lt;int&gt;::other                            int_alloc_type;
+<a name="line63"> 63: </a>      <font color="#4169E1">typedef</font> typename alloc_type::template rebind&lt;value_type&gt;::other                     value_alloc_type;
+<a name="line64"> 64: </a>      <font color="#4169E1">typedef</font> typename bundle_type::sieve_type                                            sieve_type;
+<a name="line65"> 65: </a>      <font color="#4169E1">typedef</font> typename ALE::DiscreteSieve&lt;point_type, alloc_type&gt;                         dsieve_type;
+<a name="line66"> 66: </a>      <font color="#4169E1">typedef</font> typename ALE::Topology&lt;int, dsieve_type, alloc_type&gt;                        topology_type;
+<a name="line67"> 67: </a>      <font color="#4169E1">typedef</font> typename bundle_type::rank_type                                             rank_type;
+<a name="line68"> 68: </a>      <font color="#4169E1">typedef</font> typename ALE::Sifter&lt;point_type, rank_type, point_type&gt;                     send_overlap_type;
+<a name="line69"> 69: </a>      <font color="#4169E1">typedef</font> typename ALE::Sifter&lt;rank_type, point_type, point_type&gt;                     recv_overlap_type;
+<a name="line70"> 70: </a>      <font color="#4169E1">typedef</font> typename ALE::Field&lt;send_overlap_type, int, ALE::Section&lt;point_type, int, int_alloc_type&gt; &gt; send_sizer_type;
+<a name="line71"> 71: </a>      <font color="#4169E1">typedef</font> typename ALE::Field&lt;recv_overlap_type, int, ALE::Section&lt;point_type, int, int_alloc_type&gt; &gt; recv_sizer_type;
+<a name="line72"> 72: </a>      <font color="#4169E1">typedef</font> typename ALE::New::ConeSizeSection&lt;bundle_type, sieve_type&gt;                 cone_size_section;
+<a name="line73"> 73: </a>      <font color="#4169E1">typedef</font> typename ALE::New::ConeSection&lt;sieve_type&gt;                                  cone_section;
+<a name="line74"> 74: </a>      <font color="#4169E1">typedef</font> typename ALE::New::SectionCompletion&lt;bundle_type, value_type, alloc_type&gt;   completion;
+<a name="line75"> 75: </a><strong><font color="#FF0000">    public:</font></strong>
+<a name="line76"> 76: </a>      template&lt;typename PartitionType&gt;
+<a name="line77"> 77: </a>      static void scatterSieve(const Obj&lt;bundle_type&gt;&amp; bundle, const Obj&lt;sieve_type&gt;&amp; sieve, const int dim, const Obj&lt;sieve_type&gt;&amp; sieveNew, const Obj&lt;send_overlap_type&gt;&amp; sendOverlap, const Obj&lt;recv_overlap_type&gt;&amp; recvOverlap, const int height, const int numCells, PartitionType assignment[]) {
+<a name="line78"> 78: </a>        <font color="#4169E1">typedef</font> typename ALE::Field&lt;send_overlap_type, int, ALE::Section&lt;point_type, value_type, value_alloc_type&gt; &gt; send_section_type;
+<a name="line79"> 79: </a>        <font color="#4169E1">typedef</font> typename ALE::Field&lt;recv_overlap_type, int, ALE::Section&lt;point_type, value_type, value_alloc_type&gt; &gt; recv_section_type;
+<a name="line80"> 80: </a>        int rank  = sieve-&gt;commRank();
+<a name="line81"> 81: </a>        int debug = sieve-&gt;debug();
+
+<a name="line83"> 83: </a>        // Create local sieve
+<a name="line84"> 84: </a>        const Obj&lt;typename bundle_type::label_sequence&gt;&amp; cells = bundle-&gt;heightStratum(height);
+<a name="line85"> 85: </a>        int e = 0;
+
+<a name="line87"> 87: </a>        <font color="#4169E1">if</font> (sieve-&gt;debug()) {
+<a name="line88"> 88: </a>          int e2 = 0;
+<a name="line89"> 89: </a>          <font color="#4169E1">for</font>(typename bundle_type::label_sequence::iterator e_iter = cells-&gt;begin(); e_iter != cells-&gt;end(); ++e_iter) {
+<a name="line90"> 90: </a><strong><font color="#FF0000">            std:</font></strong>:cout &lt;&lt; <font color="#666666">"assignment["</font>&lt;&lt;*e_iter&lt;&lt;<font color="#666666">"]"</font> &lt;&lt; assignment[e2++] &lt;&lt; std::endl;
+<a name="line91"> 91: </a>          }
+<a name="line92"> 92: </a>        }
+<a name="line93"> 93: </a>        <A href="../../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A>  flg;
+<a name="line94"> 94: </a>        <A href="../../docs/manualpages/Sys/PetscOptionsHasName.html#PetscOptionsHasName">PetscOptionsHasName</A>(NULL, <font color="#666666">"-output_partition"</font>, &amp;flg);
+<a name="line95"> 95: </a>        <font color="#4169E1">if</font> (flg) {
+<a name="line96"> 96: </a>          ostringstream fname;
+<a name="line97"> 97: </a>          fname &lt;&lt; <font color="#666666">"part."</font> &lt;&lt; sieve-&gt;commSize() &lt;&lt; <font color="#666666">".dat"</font>;
+<a name="line98"> 98: </a><strong><font color="#FF0000">          std:</font></strong>:ofstream f(fname.str().c_str());
+<a name="line99"> 99: </a>          int e2 = 0;
+<a name="line100">100: </a>          f &lt;&lt; sieve-&gt;commSize() &lt;&lt; std::endl;
+<a name="line101">101: </a>          <font color="#4169E1">for</font>(typename bundle_type::label_sequence::iterator e_iter = cells-&gt;begin(); e_iter != cells-&gt;end(); ++e_iter) {
+<a name="line102">102: </a>            f &lt;&lt; assignment[e2++] &lt;&lt; std::endl;
+<a name="line103">103: </a>          }
+<a name="line104">104: </a>        }
+<a name="line105">105: </a>        <font color="#4169E1">for</font>(typename bundle_type::label_sequence::iterator e_iter = cells-&gt;begin(); e_iter != cells-&gt;end(); ++e_iter) {
+<a name="line106">106: </a>          <font color="#4169E1">if</font> (assignment[e] == rank) {
+<a name="line107">107: </a>            Obj&lt;typename sieve_type::coneSet&gt; current = new typename sieve_type::coneSet();
+<a name="line108">108: </a>            Obj&lt;typename sieve_type::coneSet&gt; next    = new typename sieve_type::coneSet();
+<a name="line109">109: </a>            Obj&lt;typename sieve_type::coneSet&gt; tmp;
+
+<a name="line111">111: </a>            current-&gt;insert(*e_iter);
+<a name="line112">112: </a>            <font color="#4169E1">while</font>(current-&gt;size()) {
+<a name="line113">113: </a>              <font color="#4169E1">for</font>(typename sieve_type::coneSet::const_iterator p_iter = current-&gt;begin(); p_iter != current-&gt;end(); ++p_iter) {
+<a name="line114">114: </a>                const Obj&lt;typename sieve_type::traits::coneSequence&gt;&amp; cone = sieve-&gt;cone(*p_iter);
+
+<a name="line116">116: </a>                <font color="#4169E1">for</font>(typename sieve_type::traits::coneSequence::iterator c_iter = cone-&gt;begin(); c_iter != cone-&gt;end(); ++c_iter) {
+<a name="line117">117: </a>                  sieveNew-&gt;addArrow(*c_iter, *p_iter, c_iter.color());
+<a name="line118">118: </a>                  next-&gt;insert(*c_iter);
+<a name="line119">119: </a>                }
+<a name="line120">120: </a>              }
+<a name="line121">121: </a>              tmp = current; current = next; next = tmp;
+<a name="line122">122: </a>              next-&gt;clear();
+<a name="line123">123: </a>            }
+<a name="line124">124: </a>            <font color="#4169E1">if</font> (height) {
+<a name="line125">125: </a>              current-&gt;insert(*e_iter);
+<a name="line126">126: </a>              <font color="#4169E1">while</font>(current-&gt;size()) {
+<a name="line127">127: </a>                <font color="#4169E1">for</font>(typename sieve_type::coneSet::const_iterator p_iter = current-&gt;begin(); p_iter != current-&gt;end(); ++p_iter) {
+<a name="line128">128: </a>                  const Obj&lt;typename sieve_type::traits::supportSequence&gt;&amp; support = sieve-&gt;support(*p_iter);
+
+<a name="line130">130: </a>                  <font color="#4169E1">for</font>(typename sieve_type::traits::supportSequence::iterator s_iter = support-&gt;begin(); s_iter != support-&gt;end(); ++s_iter) {
+<a name="line131">131: </a>                    sieveNew-&gt;addArrow(*p_iter, *s_iter, s_iter.color());
+<a name="line132">132: </a>                    next-&gt;insert(*s_iter);
+<a name="line133">133: </a>                  }
+<a name="line134">134: </a>                }
+<a name="line135">135: </a>                tmp = current; current = next; next = tmp;
+<a name="line136">136: </a>                next-&gt;clear();
+<a name="line137">137: </a>              }
+<a name="line138">138: </a>            }
+<a name="line139">139: </a>          }
+<a name="line140">140: </a>          e++;
+<a name="line141">141: </a>        }
+<a name="line142">142: </a>        // Complete sizer section
+<a name="line143">143: </a>        <font color="#4169E1">typedef</font> typename ALE::New::PartitionSizeSection&lt;bundle_type, PartitionType&gt; partition_size_section;
+<a name="line144">144: </a>        <font color="#4169E1">typedef</font> typename ALE::New::PartitionSection&lt;bundle_type, PartitionType&gt;     partition_section;
+<a name="line145">145: </a>        Obj&lt;topology_type&gt;          secTopology          = completion::createSendTopology(sendOverlap);
+<a name="line146">146: </a>        Obj&lt;partition_size_section&gt; partitionSizeSection = new partition_size_section(bundle, height, numCells, assignment);
+<a name="line147">147: </a>        Obj&lt;partition_section&gt;      partitionSection     = new partition_section(bundle, height, numCells, assignment);
+<a name="line148">148: </a>        Obj&lt;send_section_type&gt;      sendSection          = new send_section_type(sieve-&gt;comm(), sieve-&gt;debug());
+<a name="line149">149: </a>        Obj&lt;recv_section_type&gt;      recvSection          = new recv_section_type(sieve-&gt;comm(), sendSection-&gt;getTag(), sieve-&gt;debug());
+
+<a name="line151">151: </a><strong><font color="#FF0000">        completion:</font></strong>:completeSection(sendOverlap, recvOverlap, partitionSizeSection, partitionSection, sendSection, recvSection);
+<a name="line152">152: </a>        // Unpack the section into the overlap
+<a name="line153">153: </a>        sendOverlap-&gt;clear();
+<a name="line154">154: </a>        recvOverlap-&gt;clear();
+<a name="line155">155: </a>        const typename send_section_type::sheaf_type&amp; sendPatches = sendSection-&gt;getPatches();
+
+<a name="line157">157: </a>        <font color="#4169E1">for</font>(typename send_section_type::sheaf_type::const_iterator p_iter = sendPatches.begin(); p_iter != sendPatches.end(); ++p_iter) {
+<a name="line158">158: </a>          const typename send_section_type::patch_type               rank    = p_iter-&gt;first;
+<a name="line159">159: </a>          const Obj&lt;typename send_section_type::section_type&gt;&amp;       section = p_iter-&gt;second;
+<a name="line160">160: </a>          const typename send_section_type::section_type::chart_type chart   = section-&gt;getChart();
+
+<a name="line162">162: </a>          <font color="#4169E1">for</font>(typename send_section_type::section_type::chart_type::iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+<a name="line163">163: </a>            const typename send_section_type::value_type *points = section-&gt;restrictPoint(*c_iter);
+<a name="line164">164: </a>            int                                           size   = section-&gt;getFiberDimension(*c_iter);
+
+<a name="line166">166: </a>            <font color="#4169E1">for</font>(int p = 0; p &lt; size; p++) {
+<a name="line167">167: </a>              sendOverlap-&gt;addArrow(points[p], rank, points[p]);
+<a name="line168">168: </a>            }
+<a name="line169">169: </a>          }
+<a name="line170">170: </a>        }
+<a name="line171">171: </a>        const typename recv_section_type::sheaf_type&amp; recvPatches = recvSection-&gt;getPatches();
+
+<a name="line173">173: </a>        <font color="#4169E1">for</font>(typename recv_section_type::sheaf_type::const_iterator p_iter = recvPatches.begin(); p_iter != recvPatches.end(); ++p_iter) {
+<a name="line174">174: </a>          const typename send_section_type::patch_type               rank    = p_iter-&gt;first;
+<a name="line175">175: </a>          const Obj&lt;typename send_section_type::section_type&gt;&amp;       section = p_iter-&gt;second;
+<a name="line176">176: </a>          const typename send_section_type::section_type::chart_type chart   = section-&gt;getChart();
+
+<a name="line178">178: </a>          <font color="#4169E1">for</font>(typename recv_section_type::section_type::chart_type::iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+<a name="line179">179: </a>            const typename recv_section_type::value_type *points = section-&gt;restrictPoint(*c_iter);
+<a name="line180">180: </a>            int                                           size   = section-&gt;getFiberDimension(*c_iter);
+
+<a name="line182">182: </a>            <font color="#4169E1">for</font>(int p = 0; p &lt; size; p++) {
+<a name="line183">183: </a>              recvOverlap-&gt;addArrow(rank, points[p], points[p]);
+<a name="line184">184: </a>            }
+<a name="line185">185: </a>          }
+<a name="line186">186: </a>        }
+<a name="line187">187: </a>        <font color="#4169E1">if</font> (debug) {
+<a name="line188">188: </a>          sendOverlap-&gt;view(std::cout, <font color="#666666">"Send overlap for points"</font>);
+<a name="line189">189: </a>          recvOverlap-&gt;view(std::cout, <font color="#666666">"Receive overlap for points"</font>);
+<a name="line190">190: </a>        }
+<a name="line191">191: </a>        // Receive the point section
+<a name="line192">192: </a><strong><font color="#FF0000">        ALE:</font></strong>:New::Completion&lt;bundle_type, value_type&gt;::scatterCones(sieve, sieveNew, sendOverlap, recvOverlap, bundle, height);
+<a name="line193">193: </a>        <font color="#4169E1">if</font> (height) {
+<a name="line194">194: </a><strong><font color="#FF0000">          ALE:</font></strong>:New::Completion&lt;bundle_type, value_type&gt;::scatterSupports(sieve, sieveNew, sendOverlap, recvOverlap, bundle, bundle-&gt;depth()-height);
+<a name="line195">195: </a>        }
+<a name="line196">196: </a>      }
+<a name="line197">197: </a>      template&lt;typename SifterType&gt;
+<a name="line198">198: </a>      static void scatterCones(const Obj&lt;SifterType&gt;&amp; sifter, const Obj&lt;SifterType&gt;&amp; sifterNew, const Obj&lt;send_overlap_type&gt;&amp; sendOverlap, const Obj&lt;recv_overlap_type&gt;&amp; recvOverlap, const Obj&lt;bundle_type&gt;&amp; bundle = NULL, const int minimumHeight = 0) {
+<a name="line199">199: </a>        <font color="#4169E1">typedef</font> typename ALE::New::ConeSizeSection&lt;bundle_type, SifterType&gt; cone_size_section;
+<a name="line200">200: </a>        <font color="#4169E1">typedef</font> typename ALE::New::ConeSection&lt;SifterType&gt;                  cone_section;
+<a name="line201">201: </a>        <font color="#4169E1">typedef</font> typename ALE::Field&lt;send_overlap_type, int, ALE::Section&lt;point_type, value_type, value_alloc_type&gt; &gt; send_section_type;
+<a name="line202">202: </a>        <font color="#4169E1">typedef</font> typename ALE::Field&lt;recv_overlap_type, int, ALE::Section&lt;point_type, value_type, value_alloc_type&gt; &gt; recv_section_type;
+<a name="line203">203: </a>        Obj&lt;topology_type&gt;     secTopology     = completion::createSendTopology(sendOverlap);
+<a name="line204">204: </a>        Obj&lt;cone_size_section&gt; coneSizeSection = new cone_size_section(bundle, sifter, minimumHeight);
+<a name="line205">205: </a>        Obj&lt;cone_section&gt;      coneSection     = new cone_section(sifter);
+<a name="line206">206: </a>        Obj&lt;send_section_type&gt; sendSection     = new send_section_type(sifter-&gt;comm(), sifter-&gt;debug());
+<a name="line207">207: </a>        Obj&lt;recv_section_type&gt; recvSection     = new recv_section_type(sifter-&gt;comm(), sendSection-&gt;getTag(), sifter-&gt;debug());
+
+<a name="line209">209: </a><strong><font color="#FF0000">        completion:</font></strong>:completeSection(sendOverlap, recvOverlap, coneSizeSection, coneSection, sendSection, recvSection);
+<a name="line210">210: </a>        // Unpack the section into the sieve
+<a name="line211">211: </a>        const typename recv_section_type::sheaf_type&amp; patches = recvSection-&gt;getPatches();
+
+<a name="line213">213: </a>        <font color="#4169E1">for</font>(typename recv_section_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
+<a name="line214">214: </a>          const Obj&lt;typename recv_section_type::section_type&gt;&amp;        section = p_iter-&gt;second;
+<a name="line215">215: </a>          const typename recv_section_type::section_type::chart_type&amp; chart   = section-&gt;getChart();
+
+<a name="line217">217: </a>          <font color="#4169E1">for</font>(typename recv_section_type::section_type::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+<a name="line218">218: </a>            const typename recv_section_type::value_type *points = section-&gt;restrictPoint(*c_iter);
+<a name="line219">219: </a>            int size = section-&gt;getFiberDimension(*c_iter);
+<a name="line220">220: </a>            int c    = 0;
+
+<a name="line222">222: </a>            <font color="#4169E1">for</font>(int p = 0; p &lt; size; p++) {
+<a name="line223">223: </a>              sifterNew-&gt;addArrow(points[p], *c_iter, c++);
+<a name="line224">224: </a>            }
+<a name="line225">225: </a>          }
+<a name="line226">226: </a>        }
+<a name="line227">227: </a>      }
+<a name="line228">228: </a>      template&lt;typename SifterType, typename Renumbering&gt;
+<a name="line229">229: </a>      static void scatterCones(const Obj&lt;SifterType&gt;&amp; sifter, const Obj&lt;SifterType&gt;&amp; sifterNew, const Obj&lt;send_overlap_type&gt;&amp; sendOverlap, const Obj&lt;recv_overlap_type&gt;&amp; recvOverlap, Renumbering&amp; renumbering, const Obj&lt;bundle_type&gt;&amp; bundle = NULL) {
+<a name="line230">230: </a><strong><font color="#FF0000">        PETSc:</font></strong>:Log::Event(<font color="#666666">"ScatterCones"</font>).begin();
+<a name="line231">231: </a>        <font color="#4169E1">typedef</font> typename ALE::New::ConeSizeSection&lt;bundle_type, SifterType&gt; cone_size_section;
+<a name="line232">232: </a>        <font color="#4169E1">typedef</font> typename ALE::New::ConeSection&lt;SifterType&gt;                  cone_section;
+<a name="line233">233: </a>        <font color="#4169E1">typedef</font> typename ALE::Field&lt;send_overlap_type, int, ALE::Section&lt;point_type, value_type, value_alloc_type&gt; &gt; send_section_type;
+<a name="line234">234: </a>        <font color="#4169E1">typedef</font> typename ALE::Field&lt;recv_overlap_type, int, ALE::Section&lt;point_type, value_type, value_alloc_type&gt; &gt; recv_section_type;
+<a name="line235">235: </a>        Obj&lt;topology_type&gt;     secTopology     = completion::createSendTopology(sendOverlap);
+<a name="line236">236: </a>        Obj&lt;cone_size_section&gt; coneSizeSection = new cone_size_section(bundle, sifter);
+<a name="line237">237: </a>        Obj&lt;cone_section&gt;      coneSection     = new cone_section(sifter);
+<a name="line238">238: </a>        Obj&lt;send_section_type&gt; sendSection     = new send_section_type(sifter-&gt;comm(), sifter-&gt;debug());
+<a name="line239">239: </a>        Obj&lt;recv_section_type&gt; recvSection     = new recv_section_type(sifter-&gt;comm(), sendSection-&gt;getTag(), sifter-&gt;debug());
+
+<a name="line241">241: </a><strong><font color="#FF0000">        PETSc:</font></strong>:Log::Event(<font color="#666666">"ScatterConesComplete"</font>).begin();
+<a name="line242">242: </a><strong><font color="#FF0000">        completion:</font></strong>:completeSection(sendOverlap, recvOverlap, coneSizeSection, coneSection, sendSection, recvSection);
+<a name="line243">243: </a><strong><font color="#FF0000">        PETSc:</font></strong>:Log::Event(<font color="#666666">"ScatterConesComplete"</font>).end();
+<a name="line244">244: </a><strong><font color="#FF0000">        PETSc:</font></strong>:Log::Event(<font color="#666666">"ScatterConesUpdate"</font>).begin();
+<a name="line245">245: </a>        // Unpack the section into the sieve
+<a name="line246">246: </a>        const typename recv_section_type::sheaf_type&amp; patches = recvSection-&gt;getPatches();
+
+<a name="line248">248: </a>        <font color="#4169E1">for</font>(typename recv_section_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
+<a name="line249">249: </a>          const Obj&lt;typename recv_section_type::section_type&gt;&amp;        section = p_iter-&gt;second;
+<a name="line250">250: </a>          const typename recv_section_type::section_type::chart_type&amp; chart   = section-&gt;getChart();
+
+<a name="line252">252: </a>          <font color="#4169E1">for</font>(typename recv_section_type::section_type::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+<a name="line253">253: </a>            const typename recv_section_type::value_type *points = section-&gt;restrictPoint(*c_iter);
+<a name="line254">254: </a>            int size = section-&gt;getFiberDimension(*c_iter);
+<a name="line255">255: </a>            int c    = 0;
+
+<a name="line257">257: </a>            <font color="#4169E1">for</font>(int p = 0; p &lt; size; p++) {
+<a name="line258">258: </a>              sifterNew-&gt;addArrow(points[p], renumbering[*c_iter], c++);
+<a name="line259">259: </a>            }
+<a name="line260">260: </a>          }
+<a name="line261">261: </a>        }
+<a name="line262">262: </a><strong><font color="#FF0000">        PETSc:</font></strong>:Log::Event(<font color="#666666">"ScatterConesUpdate"</font>).end();
+<a name="line263">263: </a><strong><font color="#FF0000">        PETSc:</font></strong>:Log::Event(<font color="#666666">"ScatterCones"</font>).end();
+<a name="line264">264: </a>      }
+<a name="line265">265: </a>      template&lt;typename SifterType&gt;
+<a name="line266">266: </a>      static void scatterSupports(const Obj&lt;SifterType&gt;&amp; sifter, const Obj&lt;SifterType&gt;&amp; sifterNew, const Obj&lt;send_overlap_type&gt;&amp; sendOverlap, const Obj&lt;recv_overlap_type&gt;&amp; recvOverlap, const Obj&lt;bundle_type&gt;&amp; bundle = NULL, const int minimumDepth = 0) {
+<a name="line267">267: </a>        <font color="#4169E1">typedef</font> typename ALE::New::SupportSizeSection&lt;bundle_type, SifterType&gt; support_size_section;
+<a name="line268">268: </a>        <font color="#4169E1">typedef</font> typename ALE::New::SupportSection&lt;SifterType&gt;                  support_section;
+<a name="line269">269: </a>        <font color="#4169E1">typedef</font> typename ALE::Field&lt;send_overlap_type, int, ALE::Section&lt;point_type, value_type, value_alloc_type&gt; &gt; send_section_type;
+<a name="line270">270: </a>        <font color="#4169E1">typedef</font> typename ALE::Field&lt;recv_overlap_type, int, ALE::Section&lt;point_type, value_type, value_alloc_type&gt; &gt; recv_section_type;
+<a name="line271">271: </a>        Obj&lt;topology_type&gt;        secTopology        = completion::createSendTopology(sendOverlap);
+<a name="line272">272: </a>        Obj&lt;support_size_section&gt; supportSizeSection = new support_size_section(bundle, sifter, minimumDepth);
+<a name="line273">273: </a>        Obj&lt;support_section&gt;      supportSection     = new support_section(sifter);
+<a name="line274">274: </a>        Obj&lt;send_section_type&gt;    sendSection        = new send_section_type(sifter-&gt;comm(), sifter-&gt;debug());
+<a name="line275">275: </a>        Obj&lt;recv_section_type&gt;    recvSection        = new recv_section_type(sifter-&gt;comm(), sendSection-&gt;getTag(), sifter-&gt;debug());
+
+<a name="line277">277: </a><strong><font color="#FF0000">        completion:</font></strong>:completeSection(sendOverlap, recvOverlap, supportSizeSection, supportSection, sendSection, recvSection);
+<a name="line278">278: </a>        // Unpack the section into the sieve
+<a name="line279">279: </a>        const typename recv_section_type::sheaf_type&amp; recvPatches = recvSection-&gt;getPatches();
+
+<a name="line281">281: </a>        <font color="#4169E1">for</font>(typename recv_section_type::sheaf_type::const_iterator p_iter = recvPatches.begin(); p_iter != recvPatches.end(); ++p_iter) {
+<a name="line282">282: </a>          const Obj&lt;typename send_section_type::section_type&gt;&amp;       section = p_iter-&gt;second;
+<a name="line283">283: </a>          const typename send_section_type::section_type::chart_type chart   = section-&gt;getChart();
+
+<a name="line285">285: </a>          <font color="#4169E1">for</font>(typename recv_section_type::section_type::chart_type::iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+<a name="line286">286: </a>            const typename recv_section_type::value_type *points = section-&gt;restrictPoint(*c_iter);
+<a name="line287">287: </a>            int                                           size   = section-&gt;getFiberDimension(*c_iter);
+<a name="line288">288: </a>            int                                           c      = 0;
+
+<a name="line290">290: </a>            <font color="#4169E1">for</font>(int p = 0; p &lt; size; p++) {
+<a name="line291">291: </a>              sifterNew-&gt;addArrow(*c_iter, points[p], c++);
+<a name="line292">292: </a>            }
+<a name="line293">293: </a>          }
+<a name="line294">294: </a>        }
+<a name="line295">295: </a>      }
+<a name="line296">296: </a>    };
+
+<a name="line298">298: </a>    template&lt;typename Value_&gt;
+<a name="line299">299: </a>    class ParallelFactory {
+<a name="line300">300: </a><strong><font color="#FF0000">    public:</font></strong>
+<a name="line301">301: </a>      <font color="#4169E1">typedef</font> Value_ value_type;
+<a name="line302">302: </a><strong><font color="#FF0000">    protected:</font></strong>
+<a name="line303">303: </a>      int          _debug;
+<a name="line304">304: </a>      MPI_Datatype _mpiType;
+<a name="line305">305: </a><strong><font color="#FF0000">    protected:</font></strong>
+<a name="line306">306: </a>      MPI_Datatype constructMPIType() {
+<a name="line307">307: </a>        <font color="#4169E1">if</font> (<font color="#4169E1">sizeof</font>(value_type) == 1) {
+<a name="line308">308: </a>          <font color="#4169E1">return</font> MPI_BYTE;
+<a name="line309">309: </a>        } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (<font color="#4169E1">sizeof</font>(value_type) == 2) {
+<a name="line310">310: </a>          <font color="#4169E1">return</font> MPI_SHORT;
+<a name="line311">311: </a>        } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (<font color="#4169E1">sizeof</font>(value_type) == 4) {
+<a name="line312">312: </a>          <font color="#4169E1">return</font> MPI_INT;
+<a name="line313">313: </a>        } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (<font color="#4169E1">sizeof</font>(value_type) == 8) {
+<a name="line314">314: </a>          <font color="#4169E1">return</font> MPI_DOUBLE;
+<a name="line315">315: </a>        } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (<font color="#4169E1">sizeof</font>(value_type) == 28) {
+<a name="line316">316: </a>          int          blen[2];
+<a name="line317">317: </a>          MPI_Aint     indices[2];
+<a name="line318">318: </a>          MPI_Datatype oldtypes[2], newtype;
+<a name="line319">319: </a>          blen[0] = 1; indices[0] = 0;           oldtypes[0] = MPI_INT;
+<a name="line320">320: </a>          blen[1] = 3; indices[1] = <font color="#4169E1">sizeof</font>(int); oldtypes[1] = MPI_DOUBLE;
+<a name="line321">321: </a>          <A href="http://www.mcs.anl.gov/mpi/www/www3/MPI_Type_struct.html#MPI_Type_struct">MPI_Type_struct</A>(2, blen, indices, oldtypes, &amp;newtype);
+<a name="line322">322: </a>          <A href="http://www.mcs.anl.gov/mpi/www/www3/MPI_Type_commit.html#MPI_Type_commit">MPI_Type_commit</A>(&amp;newtype);
+<a name="line323">323: </a>          <font color="#4169E1">return</font> newtype;
+<a name="line324">324: </a>        } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (<font color="#4169E1">sizeof</font>(value_type) == 32) {
+<a name="line325">325: </a>          int          blen[2];
+<a name="line326">326: </a>          MPI_Aint     indices[2];
+<a name="line327">327: </a>          MPI_Datatype oldtypes[2], newtype;
+<a name="line328">328: </a>          blen[0] = 1; indices[0] = 0;           oldtypes[0] = MPI_DOUBLE;
+<a name="line329">329: </a>          blen[1] = 3; indices[1] = <font color="#4169E1">sizeof</font>(int); oldtypes[1] = MPI_DOUBLE;
+<a name="line330">330: </a>          <A href="http://www.mcs.anl.gov/mpi/www/www3/MPI_Type_struct.html#MPI_Type_struct">MPI_Type_struct</A>(2, blen, indices, oldtypes, &amp;newtype);
+<a name="line331">331: </a>          <A href="http://www.mcs.anl.gov/mpi/www/www3/MPI_Type_commit.html#MPI_Type_commit">MPI_Type_commit</A>(&amp;newtype);
+<a name="line332">332: </a>          <font color="#4169E1">return</font> newtype;
+<a name="line333">333: </a>        }
+<a name="line334">334: </a>        throw ALE::Exception(<font color="#666666">"Cannot determine MPI type for value type"</font>);
+<a name="line335">335: </a>      };
+<a name="line336">336: </a>      ParallelFactory(const int debug) : _debug(debug) {
+<a name="line337">337: </a>        this-&gt;_mpiType = this-&gt;constructMPIType();
+<a name="line338">338: </a>      };
+<a name="line339">339: </a><strong><font color="#FF0000">    public:</font></strong>
+<a name="line340">340: </a>      ~ParallelFactory() {};
+<a name="line341">341: </a><strong><font color="#FF0000">    public:</font></strong>
+<a name="line342">342: </a>      static const Obj&lt;ParallelFactory&gt;&amp; singleton(const int debug, bool cleanup = false) {
+<a name="line343">343: </a>        static Obj&lt;ParallelFactory&gt; *_singleton = NULL;
+
+<a name="line345">345: </a>        <font color="#4169E1">if</font> (cleanup) {
+<a name="line346">346: </a>          <font color="#4169E1">if</font> (debug) {std::cout &lt;&lt; <font color="#666666">"Destroying ParallelFactory"</font> &lt;&lt; std::endl;}
+<a name="line347">347: </a>          <font color="#4169E1">if</font> (_singleton) {delete _singleton;}
+<a name="line348">348: </a>          _singleton = NULL;
+<a name="line349">349: </a>        } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (_singleton == NULL) {
+<a name="line350">350: </a>          <font color="#4169E1">if</font> (debug) {std::cout &lt;&lt; <font color="#666666">"Creating new ParallelFactory"</font> &lt;&lt; std::endl;}
+<a name="line351">351: </a>          _singleton  = new Obj&lt;ParallelFactory&gt;();
+<a name="line352">352: </a>          *_singleton = new ParallelFactory(debug);
+<a name="line353">353: </a>        }
+<a name="line354">354: </a>        <font color="#4169E1">return</font> *_singleton;
+<a name="line355">355: </a>      };
+<a name="line356">356: </a><strong><font color="#FF0000">    public:</font></strong> // Accessors
+<a name="line357">357: </a>      int debug() const {<font color="#4169E1">return</font> this-&gt;_debug;};
+<a name="line358">358: </a>      MPI_Datatype getMPIType() const {<font color="#4169E1">return</font> this-&gt;_mpiType;};
+<a name="line359">359: </a>    };
+<a name="line360">360: </a>  }
+<a name="line361">361: </a>}
+<a name="line362">362: </a><font color="#A020F0">#endif</font>
+</pre>
+</body>
+
+</html>

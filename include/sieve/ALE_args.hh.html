@@ -1,0 +1,165 @@
+<center><a href="ALE_args.hh">Actual source code: ALE_args.hh</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="http://www.mcs.anl.gov/petsc/petsc-current/include/sieve/ALE_args.hh.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2013-10-15T17:08:26+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>petsc-3.4.3 2013-10-15</b></div>
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#ifndef included_ALE_args_hh</font>
+<a name="line2">  2: </a><strong><font color="#228B22">#define included_ALE_args_hh</font></strong>
+<a name="line3">  3: </a>// This should be included indirectly -- only by including ALE.hh
+
+<a name="line5">  5: </a><font color="#A020F0">#include &lt;vector&gt;</font>
+<a name="line6">  6: </a><font color="#A020F0">#include &lt;string&gt;</font>
+<a name="line7">  7: </a><font color="#A020F0">#include &lt;boost/program_options.hpp&gt;</font>
+
+
+
+<a name="line11"> 11: </a>namespace ALE {
+<a name="line12"> 12: </a>  //
+<a name="line13"> 13: </a>  <font color="#4169E1">struct AnyArg</font> {
+<a name="line14"> 14: </a>    <font color="#4169E1">typedef</font> ::boost::program_options::value_semantic value_semantic;
+<a name="line15"> 15: </a>    <font color="#4169E1">typedef</font> value_semantic*                          value_semantic_ptr;
+<a name="line16"> 16: </a>    // cast operator
+<a name="line17"> 17: </a>    virtual operator value_semantic_ptr() const = 0;
+<a name="line18"> 18: </a>    virtual ~AnyArg(){};
+<a name="line19"> 19: </a>  };
+<a name="line20"> 20: </a>  //
+<a name="line21"> 21: </a>  // Arg&lt;T&gt; is the type of object that can be added to ArgDB and
+<a name="line22"> 22: </a>  // ultimately holds an argument of type T.
+<a name="line23"> 23: </a>  //
+<a name="line24"> 24: </a>  template&lt;typename T&gt;
+<a name="line25"> 25: </a>  <font color="#4169E1">struct Arg</font> : public AnyArg {
+<a name="line26"> 26: </a>    <font color="#4169E1">typedef</font> typename AnyArg::value_semantic value_semantic;
+<a name="line27"> 27: </a>    <font color="#4169E1">typedef</font> value_semantic*                 value_semantic_ptr;
+<a name="line28"> 28: </a><strong><font color="#FF0000">  protected:</font></strong>
+<a name="line29"> 29: </a>    ::boost::program_options::typed_value&lt;T&gt;* _dtor;
+<a name="line30"> 30: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line31"> 31: </a>    Arg(T* storage = NULL) : _dtor(new ::boost::program_options::typed_value&lt;T&gt;(storage)){};
+<a name="line32"> 32: </a>    virtual ~Arg() {} // we <font color="#4169E1">do</font> not delete _dtor since it's destroyed
+<a name="line33"> 33: </a>    //when the ::boost::program_options::options_description container is destroyed
+<a name="line34"> 34: </a>    //
+<a name="line35"> 35: </a>    // cast operator
+<a name="line36"> 36: </a>    virtual operator value_semantic_ptr() const {
+<a name="line37"> 37: </a>      <font color="#4169E1">return</font> this-&gt;_dtor;
+<a name="line38"> 38: </a>    };
+<a name="line39"> 39: </a>    // forwarding methods
+<a name="line40"> 40: </a>    Arg&amp; DEFAULT(const T&amp; v) {
+<a name="line41"> 41: </a>      this-&gt;_dtor-&gt;default_value(v);
+<a name="line42"> 42: </a>      <font color="#4169E1">return</font> *this;
+<a name="line43"> 43: </a>    };
+<a name="line44"> 44: </a>    Arg&amp; IS_MULTIPLACED() {// may be defined in multiple places on the command line
+<a name="line45"> 45: </a>      this-&gt;_dtor-&gt;composing();
+<a name="line46"> 46: </a>      <font color="#4169E1">return</font> *this;
+<a name="line47"> 47: </a>    };
+<a name="line48"> 48: </a>    Arg&amp; IS_A_FLAG() { // no value expected
+<a name="line49"> 49: </a>      this-&gt;_dtor-&gt;zero_token();
+<a name="line50"> 50: </a>      <font color="#4169E1">return</font> *this;
+<a name="line51"> 51: </a>    };
+<a name="line52"> 52: </a>    Arg&amp; IS_A_LIST() {// multiple tokens per value
+<a name="line53"> 53: </a>      this-&gt;_dtor-&gt;multi_token();
+<a name="line54"> 54: </a>      <font color="#4169E1">return</font> *this;
+<a name="line55"> 55: </a>    };
+<a name="line56"> 56: </a>  };// <font color="#4169E1">struct Arg</font>
+<a name="line57"> 57: </a>  //
+<a name="line58"> 58: </a>  // The <font color="#4169E1">return</font> type of ArgDB dereference:
+<a name="line59"> 59: </a>  //   ArgValue val = argDB[<font color="#666666">"arg"</font>];
+<a name="line60"> 60: </a>  // ArgValue val can be cast to the type compatible with Arg&lt;T&gt;,
+<a name="line61"> 61: </a>  // <font color="#4169E1">if</font> the following description of <font color="#666666">"arg"</font> was used:
+<a name="line62"> 62: </a>  //   argDB(<font color="#666666">"arg"</font>, <font color="#666666">"arg help"</font>, Arg&lt;T&gt;);
+<a name="line63"> 63: </a>  //
+<a name="line64"> 64: </a>  <font color="#4169E1">struct ArgValue</font> : ::boost::program_options::variable_value {
+<a name="line65"> 65: </a>    <font color="#4169E1">typedef</font> ::boost::program_options::variable_value super;
+<a name="line66"> 66: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line67"> 67: </a>    ArgValue(const super&amp; val) : super(val) {};
+<a name="line68"> 68: </a>    // cast
+<a name="line69"> 69: </a>    template&lt;typename T&gt;
+<a name="line70"> 70: </a>    operator const T&amp;() {
+<a name="line71"> 71: </a>      <font color="#4169E1">return</font> super::as&lt;T&gt;();
+<a name="line72"> 72: </a>    }
+<a name="line73"> 73: </a>    //
+<a name="line74"> 74: </a>    template&lt;typename T&gt;
+<a name="line75"> 75: </a>    operator T&amp; () {
+<a name="line76"> 76: </a>      <font color="#4169E1">return</font> super::as&lt;T&gt;();
+<a name="line77"> 77: </a>    }
+<a name="line78"> 78: </a>  };// <font color="#4169E1">struct ArgValue</font>
+
+<a name="line80"> 80: </a>    //
+<a name="line81"> 81: </a>  class ArgDB : public ::boost::program_options::variables_map {
+<a name="line82"> 82: </a><strong><font color="#FF0000">  protected:</font></strong>
+<a name="line83"> 83: </a>    <font color="#4169E1">typedef</font> ::boost::program_options::variables_map super;
+<a name="line84"> 84: </a>    string _name;
+<a name="line85"> 85: </a><strong><font color="#FF0000">    ALE:</font></strong>:Obj&lt; ::boost::program_options::options_description&gt; _descs;
+<a name="line86"> 86: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line87"> 87: </a>    // Basic
+<a name="line88"> 88: </a>    ArgDB(const string&amp; name)                        :
+<a name="line89"> 89: </a>      _name(name), _descs(new ::boost::program_options::options_description(name))
+<a name="line90"> 90: </a>    {};
+<a name="line91"> 91: </a>    //
+<a name="line92"> 92: </a>    ArgDB(const ArgDB&amp; argDB, int argc, char **argv) :
+<a name="line93"> 93: </a>      _name(argDB.name()),_descs(new ::boost::program_options::options_description(_name))
+<a name="line94"> 94: </a>    {
+<a name="line95"> 95: </a>      (*this)(argDB);
+<a name="line96"> 96: </a>      this-&gt;parse(argc,argv);
+<a name="line97"> 97: </a>    };
+<a name="line98"> 98: </a>    // Printing
+<a name="line99"> 99: </a>    friend std::ostream&amp; operator&lt;&lt;(std::ostream&amp; os, const ArgDB&amp; argDB) {
+<a name="line100">100: </a>      os &lt;&lt; *(argDB._descs) &lt;&lt; <font color="#666666">"\n"</font>;
+<a name="line101">101: </a>      <font color="#4169E1">return</font> os;
+<a name="line102">102: </a>    }
+<a name="line103">103: </a>    // Main
+<a name="line104">104: </a>    //
+<a name="line105">105: </a>    ArgDB&amp; operator()(const ArgDB&amp; argDB) {
+<a name="line106">106: </a>      this-&gt;_descs-&gt;add(*(argDB._descs));
+<a name="line107">107: </a>      <font color="#4169E1">return</font> *this;
+<a name="line108">108: </a>    };
+<a name="line109">109: </a>    //
+<a name="line110">110: </a>    ArgDB&amp; operator()(const string&amp; name, const string&amp; helpLine) {
+<a name="line111">111: </a>      this-&gt;_descs-&gt;add_options()(name.c_str(), helpLine.c_str());
+<a name="line112">112: </a>      <font color="#4169E1">return</font> *this;
+<a name="line113">113: </a>    };
+<a name="line114">114: </a>    ArgDB&amp; operator()(const string&amp; name, const string&amp; helpLine, const AnyArg&amp; descriptor) {
+<a name="line115">115: </a>      this-&gt;_descs-&gt;add_options()(name.c_str(), descriptor, helpLine.c_str());
+<a name="line116">116: </a>      <font color="#4169E1">return</font> *this;
+<a name="line117">117: </a>    };
+<a name="line118">118: </a>    ArgDB&amp; operator()(const string&amp; name, const AnyArg&amp; descriptor) {
+<a name="line119">119: </a>      this-&gt;_descs-&gt;add_options()(name.c_str(), descriptor);
+<a name="line120">120: </a>      <font color="#4169E1">return</font> *this;
+<a name="line121">121: </a>    };
+<a name="line122">122: </a>    //
+<a name="line123">123: </a>    ArgDB&amp; parse(int argc, char **argv) {
+<a name="line124">124: </a>      ::boost::program_options::basic_command_line_parser&lt;char&gt; parser(argc, argv);
+<a name="line125">125: </a><font color="#A020F0">#if BOOST_VERSION &gt;= 103300   // works beginning from Boost V1.33.0</font>
+<a name="line126">126: </a>      parser.allow_unregistered().options(*(this-&gt;_descs));
+<a name="line127">127: </a><font color="#A020F0">#endif</font>
+<a name="line128">128: </a>      ::boost::program_options::store(parser.run(), *this);
+<a name="line129">129: </a>      <font color="#4169E1">return</font> *this;
+<a name="line130">130: </a>    };
+<a name="line131">131: </a>    //
+<a name="line132">132: </a>    ArgValue operator[](const string&amp; str) const {<font color="#4169E1">return</font> super::operator[](str);};
+<a name="line133">133: </a>    //
+<a name="line134">134: </a>    // Aux
+<a name="line135">135: </a>    //
+<a name="line136">136: </a>    const string&amp; name() const {<font color="#4169E1">return</font> this-&gt;_name;};
+<a name="line137">137: </a>    //
+<a name="line138">138: </a>    ArgDB&amp; rename(const string&amp; name) {
+<a name="line139">139: </a>      this-&gt;_name = name;
+<a name="line140">140: </a>      Obj&lt; ::boost::program_options::options_description&gt; tmp = this-&gt;_descs;
+<a name="line141">141: </a>      this-&gt;_descs = new ::boost::program_options::options_description(name);
+<a name="line142">142: </a>      this-&gt;_descs-&gt;add(tmp);
+<a name="line143">143: </a>      <font color="#4169E1">return</font> *this;
+<a name="line144">144: </a>    };
+<a name="line145">145: </a>  };// class ArgDB
+
+<a name="line147">147: </a>} // namespace ALE
+
+
+<a name="line150">150: </a><font color="#A020F0">#endif</font>
+</pre>
+</body>
+
+</html>

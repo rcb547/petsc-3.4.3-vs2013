@@ -1,0 +1,32 @@
+<center><a href="petscviewerams.h">Actual source code: petscviewerams.h</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="http://www.mcs.anl.gov/petsc/petsc-current/include/petscviewerams.h.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2013-10-15T16:54:37+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>petsc-3.4.3 2013-10-15</b></div>
+<pre width="80">
+
+<a name="line5">  5: </a><font color="#A020F0">#include &lt;petscviewer.h&gt;</font>
+<a name="line6">  6: </a><font color="#A020F0">#include &lt;ams.h&gt;</font>
+<a name="line7">  7: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> PetscViewerAMSSetCommName(<A href="../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A>,const char[])</font></strong>;
+<a name="line8">  8: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Viewer/PetscViewerAMSGetAMSComm.html#PetscViewerAMSGetAMSComm">PetscViewerAMSGetAMSComm</A>(<A href="../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A>,AMS_Comm *)</font></strong>;
+<a name="line9">  9: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Viewer/PetscViewerAMSOpen.html#PetscViewerAMSOpen">PetscViewerAMSOpen</A>(<A href="../docs/manualpages/Sys/MPI_Comm.html#MPI_Comm">MPI_Comm</A>,const char[],<A href="../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A>*)</font></strong>;
+<a name="line10"> 10: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A>    <A href="../docs/manualpages/Viewer/PETSC_VIEWER_AMS_.html#PETSC_VIEWER_AMS_">PETSC_VIEWER_AMS_</A>(<A href="../docs/manualpages/Sys/MPI_Comm.html#MPI_Comm">MPI_Comm</A>)</font></strong>;
+<a name="line11"> 11: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> PETSC_VIEWER_AMS_Destroy(<A href="../docs/manualpages/Sys/MPI_Comm.html#MPI_Comm">MPI_Comm</A>)</font></strong>;
+<a name="line12"> 12: </a><strong><font color="#228B22">#define PETSC_VIEWER_AMS_WORLD <A href="../docs/manualpages/Viewer/PETSC_VIEWER_AMS_.html#PETSC_VIEWER_AMS_">PETSC_VIEWER_AMS_</A>(<A href="../docs/manualpages/Sys/PETSC_COMM_WORLD.html#PETSC_COMM_WORLD">PETSC_COMM_WORLD</A>)</font></strong>
+<a name="line13"> 13: </a><strong><font color="#228B22">#define PETSC_VIEWER_AMS_SELF  <A href="../docs/manualpages/Viewer/PETSC_VIEWER_AMS_.html#PETSC_VIEWER_AMS_">PETSC_VIEWER_AMS_</A>(<A href="../docs/manualpages/Sys/PETSC_COMM_SELF.html#PETSC_COMM_SELF">PETSC_COMM_SELF</A>)</font></strong>
+
+<a name="line15"> 15: </a><strong><font color="#228B22">#define PetscStackCallAMS(func,args) do {<A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> _ierr; char* err; \</font></strong>
+<a name="line16"> 16: </a><strong><font color="#228B22">    PetscStackPush(#func);_func args;PetscStackPop; if (_ierr) {AMS_Explain_error(_ierr,&amp;err); <A href="../docs/manualpages/Sys/SETERRQ2.html#SETERRQ2">SETERRQ2</A>(<A href="../docs/manualpages/Sys/PETSC_COMM_SELF.html#PETSC_COMM_SELF">PETSC_COMM_SELF</A>,PETSC_ERR_LIB,</font><font color="#666666">"Error in %s() %s"</font><font color="#228B22">,#func,err);} \</font></strong>
+<a name="line17"> 17: </a><strong><font color="#228B22">} while (0)</font></strong>
+
+<a name="line19"> 19: </a><font color="#A020F0">#endif</font>
+</pre>
+</body>
+
+</html>

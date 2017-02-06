@@ -1,0 +1,827 @@
+<center><a href="SieveBuilder.hh">Actual source code: SieveBuilder.hh</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="http://www.mcs.anl.gov/petsc/petsc-current/include/sieve/SieveBuilder.hh.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2013-10-15T17:08:37+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>petsc-3.4.3 2013-10-15</b></div>
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#ifndef included_ALE_SieveBuilder_hh</font>
+<a name="line2">  2: </a><strong><font color="#228B22">#define included_ALE_SieveBuilder_hh</font></strong>
+
+<a name="line4">  4: </a><font color="#A020F0">#ifndef  included_ALE_ALE_hh</font>
+<a name="line5">  5: </a><font color="#A020F0">#include &lt;sieve/ALE.hh&gt;</font>
+<a name="line6">  6: </a><font color="#A020F0">#endif</font>
+
+<a name="line8">  8: </a>namespace ALE {
+<a name="line9">  9: </a>  template&lt;typename Bundle_&gt;
+<a name="line10"> 10: </a>  class SieveBuilder {
+<a name="line11"> 11: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line12"> 12: </a>    <font color="#4169E1">typedef</font> Bundle_                                      bundle_type;
+<a name="line13"> 13: </a>    <font color="#4169E1">typedef</font> typename bundle_type::sieve_type             sieve_type;
+<a name="line14"> 14: </a>    <font color="#4169E1">typedef</font> typename bundle_type::arrow_section_type     arrow_section_type;
+<a name="line15"> 15: </a>    <font color="#4169E1">typedef</font> std::vector&lt;typename sieve_type::point_type&gt; PointArray;
+<a name="line16"> 16: </a>    <font color="#4169E1">typedef</font> std::pair&lt;typename sieve_type::point_type, int&gt; oPoint_type;
+<a name="line17"> 17: </a>    <font color="#4169E1">typedef</font> std::vector&lt;oPoint_type&gt;                        oPointArray;
+<a name="line18"> 18: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line19"> 19: </a>    static void buildHexFaces(Obj&lt;sieve_type&gt; sieve, Obj&lt;arrow_section_type&gt; orientation, int dim, std::map&lt;int, int*&gt;&amp; curElement, std::map&lt;int,PointArray&gt;&amp; bdVertices, std::map&lt;int,oPointArray&gt;&amp; faces, typename sieve_type::point_type&amp; cell, int&amp; cellOrientation) {
+<a name="line20"> 20: </a>      int debug = sieve-&gt;debug();
+
+<a name="line22"> 22: </a>      <font color="#4169E1">if</font> (debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"  Building hex faces for boundary of "</font> &lt;&lt; cell &lt;&lt; <font color="#666666">" (size "</font> &lt;&lt; bdVertices[dim].size() &lt;&lt; <font color="#666666">"), dim "</font> &lt;&lt; dim &lt;&lt; std::endl;}
+<a name="line23"> 23: </a>      faces[dim].clear();
+<a name="line24"> 24: </a>      <font color="#4169E1">if</font> (dim &gt; 3) {
+<a name="line25"> 25: </a>        throw ALE::Exception(<font color="#666666">"Cannot do hexes of dimension greater than three"</font>);
+<a name="line26"> 26: </a>      } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (dim &gt; 2) {
+<a name="line27"> 27: </a>        int nodes[24] = {0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 5, 4,
+<a name="line28"> 28: </a>                         1, 2, 6, 5, 2, 3, 7, 6, 3, 0, 4, 7};
+
+<a name="line30"> 30: </a>        <font color="#4169E1">for</font>(int b = 0; b &lt; 6; b++) {
+<a name="line31"> 31: </a>          typename sieve_type::point_type face;
+<a name="line32"> 32: </a>          int o = 1;
+
+<a name="line34"> 34: </a>          bdVertices[dim-1].clear();
+<a name="line35"> 35: </a>          <font color="#4169E1">for</font>(int c = 0; c &lt; 4; c++) {
+<a name="line36"> 36: </a>            bdVertices[dim-1].push_back(bdVertices[dim][nodes[b*4+c]]);
+<a name="line37"> 37: </a>          }
+<a name="line38"> 38: </a>          <font color="#4169E1">if</font> (debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"    boundary hex face "</font> &lt;&lt; b &lt;&lt; std::endl;}
+<a name="line39"> 39: </a>          buildHexFaces(sieve, orientation, dim-1, curElement, bdVertices, faces, face, o);
+<a name="line40"> 40: </a>          <font color="#4169E1">if</font> (debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"    added face "</font> &lt;&lt; face &lt;&lt; std::endl;}
+<a name="line41"> 41: </a>          faces[dim].push_back(oPoint_type(face, o));
+<a name="line42"> 42: </a>        }
+<a name="line43"> 43: </a>      } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (dim &gt; 1) {
+<a name="line44"> 44: </a>        int boundarySize = bdVertices[dim].size();
+
+<a name="line46"> 46: </a>        <font color="#4169E1">for</font>(int b = 0; b &lt; boundarySize; b++) {
+<a name="line47"> 47: </a>          typename sieve_type::point_type face;
+<a name="line48"> 48: </a>          int o = 1;
+
+<a name="line50"> 50: </a>          bdVertices[dim-1].clear();
+<a name="line51"> 51: </a>          <font color="#4169E1">for</font>(int c = 0; c &lt; 2; c++) {
+<a name="line52"> 52: </a>            bdVertices[dim-1].push_back(bdVertices[dim][(b+c)%boundarySize]);
+<a name="line53"> 53: </a>          }
+<a name="line54"> 54: </a>          <font color="#4169E1">if</font> (debug &gt; 1) {
+<a name="line55"> 55: </a><strong><font color="#FF0000">            std:</font></strong>:cout &lt;&lt; <font color="#666666">"    boundary point "</font> &lt;&lt; bdVertices[dim][b] &lt;&lt; std::endl;
+<a name="line56"> 56: </a><strong><font color="#FF0000">            std:</font></strong>:cout &lt;&lt; <font color="#666666">"      boundary vertices"</font>;
+<a name="line57"> 57: </a>            <font color="#4169E1">for</font>(int c = 0; c &lt; (int) bdVertices[dim-1].size(); c++) {
+<a name="line58"> 58: </a><strong><font color="#FF0000">              std:</font></strong>:cout &lt;&lt; <font color="#666666">" "</font> &lt;&lt; bdVertices[dim-1][c];
+<a name="line59"> 59: </a>            }
+<a name="line60"> 60: </a><strong><font color="#FF0000">            std:</font></strong>:cout &lt;&lt; std::endl;
+<a name="line61"> 61: </a>          }
+<a name="line62"> 62: </a>          buildHexFaces(sieve, orientation, dim-1, curElement, bdVertices, faces, face, o);
+<a name="line63"> 63: </a>          <font color="#4169E1">if</font> (debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"    added face "</font> &lt;&lt; face &lt;&lt; std::endl;}
+<a name="line64"> 64: </a>          faces[dim].push_back(oPoint_type(face, o));
+<a name="line65"> 65: </a>        }
+<a name="line66"> 66: </a>      } <font color="#4169E1">else</font> {
+<a name="line67"> 67: </a>        <font color="#4169E1">if</font> (debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"  Just set faces to boundary in 1d"</font> &lt;&lt; std::endl;}
+<a name="line68"> 68: </a>        typename PointArray::iterator bd_iter = bdVertices[dim].begin();
+<a name="line69"> 69: </a>        faces[dim].push_back(oPoint_type(*bd_iter, 0));++bd_iter;
+<a name="line70"> 70: </a>        faces[dim].push_back(oPoint_type(*bd_iter, 0));
+<a name="line71"> 71: </a>        //faces[dim].insert(faces[dim].end(), bdVertices[dim].begin(), bdVertices[dim].end());
+<a name="line72"> 72: </a>      }
+<a name="line73"> 73: </a>      <font color="#4169E1">if</font> (debug &gt; 1) {
+<a name="line74"> 74: </a>        <font color="#4169E1">for</font>(typename oPointArray::iterator f_iter = faces[dim].begin(); f_iter != faces[dim].end(); ++f_iter) {
+<a name="line75"> 75: </a><strong><font color="#FF0000">          std:</font></strong>:cout &lt;&lt; <font color="#666666">"  face point "</font> &lt;&lt; f_iter-&gt;first &lt;&lt; <font color="#666666">" orientation "</font> &lt;&lt; f_iter-&gt;second &lt;&lt; std::endl;
+<a name="line76"> 76: </a>        }
+<a name="line77"> 77: </a>      }
+<a name="line78"> 78: </a>      // We always create the toplevel, so we could short circuit somehow
+<a name="line79"> 79: </a>      // Should not have to loop here since the meet of just 2 boundary elements is an element
+<a name="line80"> 80: </a>      typename oPointArray::iterator         f_itor = faces[dim].begin();
+<a name="line81"> 81: </a>      const typename sieve_type::point_type&amp; start  = f_itor-&gt;first;
+<a name="line82"> 82: </a>      const typename sieve_type::point_type&amp; next   = (++f_itor)-&gt;first;
+<a name="line83"> 83: </a>      Obj&lt;typename sieve_type::supportSet&gt; preElement = sieve-&gt;nJoin(start, next, 1);
+
+<a name="line85"> 85: </a>      <font color="#4169E1">if</font> (preElement-&gt;size() &gt; 0) {
+<a name="line86"> 86: </a>        cell = *preElement-&gt;begin();
+
+<a name="line88"> 88: </a>        const int size = faces[dim].size();
+<a name="line89"> 89: </a>        const Obj&lt;typename sieve_type::traits::coneSequence&gt;&amp; cone = sieve-&gt;cone(cell);
+<a name="line90"> 90: </a>        int       wrap = size &gt; 2 ? size-1 : 0;
+<a name="line91"> 91: </a>        int       indA = 0, indB = 0;
+
+<a name="line93"> 93: </a>        <font color="#4169E1">for</font>(typename sieve_type::traits::coneSequence::iterator c_iter = cone-&gt;begin(); c_iter != cone-&gt;end(); ++c_iter, ++indA) {
+<a name="line94"> 94: </a>          <font color="#4169E1">if</font> (start == *c_iter) <font color="#4169E1">break</font>;
+<a name="line95"> 95: </a>        }
+<a name="line96"> 96: </a>        <font color="#4169E1">if</font> (debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"    pointA "</font> &lt;&lt; start &lt;&lt; <font color="#666666">" indA "</font> &lt;&lt; indA &lt;&lt; std::endl;}
+<a name="line97"> 97: </a>        <font color="#4169E1">for</font>(typename sieve_type::traits::coneSequence::iterator c_iter = cone-&gt;begin(); c_iter != cone-&gt;end(); ++c_iter, ++indB) {
+<a name="line98"> 98: </a>          <font color="#4169E1">if</font> (next  == *c_iter) <font color="#4169E1">break</font>;
+<a name="line99"> 99: </a>        }
+<a name="line100">100: </a>        <font color="#4169E1">if</font> (debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"    pointB "</font> &lt;&lt; next  &lt;&lt; <font color="#666666">" indB "</font> &lt;&lt; indB &lt;&lt; std::endl;}
+<a name="line101">101: </a>        <font color="#4169E1">if</font> ((indB - indA == 1) || (indA - indB == wrap)) {
+<a name="line102">102: </a>          <font color="#4169E1">if</font> (cellOrientation &gt; 0) {
+<a name="line103">103: </a>            cellOrientation = indA+1;
+<a name="line104">104: </a>          } <font color="#4169E1">else</font> {
+<a name="line105">105: </a>            <font color="#4169E1">if</font> (dim == 1) {
+<a name="line106">106: </a>              cellOrientation = -2;
+<a name="line107">107: </a>            } <font color="#4169E1">else</font> {
+<a name="line108">108: </a>              cellOrientation = -(indA+1);
+<a name="line109">109: </a>            }
+<a name="line110">110: </a>          }
+<a name="line111">111: </a>        } <font color="#4169E1">else</font> <font color="#4169E1">if</font> ((indA - indB == 1) || (indB - indA == wrap)) {
+<a name="line112">112: </a>          <font color="#4169E1">if</font> (debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"      reversing cell orientation"</font> &lt;&lt; std::endl;}
+<a name="line113">113: </a>          <font color="#4169E1">if</font> (cellOrientation &gt; 0) {
+<a name="line114">114: </a>            cellOrientation = -(indA+1);
+<a name="line115">115: </a>          } <font color="#4169E1">else</font> {
+<a name="line116">116: </a>            <font color="#4169E1">if</font> (dim == 1) {
+<a name="line117">117: </a>              cellOrientation = 1;
+<a name="line118">118: </a>            } <font color="#4169E1">else</font> {
+<a name="line119">119: </a>              cellOrientation = indA+1;
+<a name="line120">120: </a>            }
+<a name="line121">121: </a>          }
+<a name="line122">122: </a>        } <font color="#4169E1">else</font> {
+<a name="line123">123: </a>          throw ALE::Exception(<font color="#666666">"Inconsistent orientation"</font>);
+<a name="line124">124: </a>        }
+<a name="line125">125: </a>        <font color="#4169E1">if</font> (debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"  Found old cell "</font> &lt;&lt; cell &lt;&lt; <font color="#666666">" orientation "</font> &lt;&lt; cellOrientation &lt;&lt; std::endl;}
+<a name="line126">126: </a>      } <font color="#4169E1">else</font> {
+<a name="line127">127: </a>        int color = 0;
+
+<a name="line129">129: </a>        cell = typename sieve_type::point_type((*curElement[dim])++);
+<a name="line130">130: </a>        <font color="#4169E1">for</font>(typename oPointArray::iterator f_iter = faces[dim].begin(); f_iter != faces[dim].end(); ++f_iter) {
+<a name="line131">131: </a>          MinimalArrow&lt;typename sieve_type::point_type,typename sieve_type::point_type&gt; arrow(f_iter-&gt;first, cell);
+
+<a name="line133">133: </a>          sieve-&gt;addArrow(f_iter-&gt;first, cell, color++);
+<a name="line134">134: </a>          <font color="#4169E1">if</font> (f_iter-&gt;second) {
+<a name="line135">135: </a>            orientation-&gt;addPoint(arrow);
+<a name="line136">136: </a>            orientation-&gt;updatePoint(arrow, &amp;(f_iter-&gt;second));
+<a name="line137">137: </a>            <font color="#4169E1">if</font> (debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"    Orienting arrow ("</font> &lt;&lt; f_iter-&gt;first &lt;&lt; <font color="#666666">", "</font> &lt;&lt; cell &lt;&lt; <font color="#666666">") to "</font> &lt;&lt; f_iter-&gt;second &lt;&lt; std::endl;}
+<a name="line138">138: </a>          }
+<a name="line139">139: </a>        }
+<a name="line140">140: </a>        <font color="#4169E1">if</font> (cellOrientation &gt; 0) {
+<a name="line141">141: </a>          cellOrientation = 1;
+<a name="line142">142: </a>        } <font color="#4169E1">else</font> {
+<a name="line143">143: </a>          cellOrientation = -(dim+1);
+<a name="line144">144: </a>        }
+<a name="line145">145: </a>        <font color="#4169E1">if</font> (debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"  Added cell "</font> &lt;&lt; cell &lt;&lt; <font color="#666666">" dim "</font> &lt;&lt; dim &lt;&lt; std::endl;}
+<a name="line146">146: </a>      }
+<a name="line147">147: </a>    };
+<a name="line148">148: </a>    static void buildQuadraticHexFaces(Obj&lt;sieve_type&gt; sieve, Obj&lt;arrow_section_type&gt; orientation, int dim, std::map&lt;int, int*&gt;&amp; curElement, std::map&lt;int,PointArray&gt;&amp; bdVertices, std::map&lt;int,oPointArray&gt;&amp; faces, typename sieve_type::point_type&amp; cell, int&amp; cellOrientation) {
+<a name="line149">149: </a>      int debug = sieve-&gt;debug();
+
+<a name="line151">151: </a>      <font color="#4169E1">if</font> (debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"  Building hex faces for boundary of "</font> &lt;&lt; cell &lt;&lt; <font color="#666666">" (size "</font> &lt;&lt; bdVertices[dim].size() &lt;&lt; <font color="#666666">"), dim "</font> &lt;&lt; dim &lt;&lt; std::endl;}
+<a name="line152">152: </a>      faces[dim].clear();
+<a name="line153">153: </a>      <font color="#4169E1">if</font> (dim &gt; 3) {
+<a name="line154">154: </a>        throw ALE::Exception(<font color="#666666">"Cannot do hexes of dimension greater than three"</font>);
+<a name="line155">155: </a>      } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (dim &gt; 2) {
+<a name="line156">156: </a>        const int faceSizeQuadHex = 9;
+<a name="line157">157: </a>        const int numFacesQuadHex = 6;
+<a name="line158">158: </a>        int nodes[54] = {
+<a name="line159">159: </a>          3, 2, 1, 0,  10, 9, 8, 11,  24, // bottom
+<a name="line160">160: </a>          4, 5, 6, 7,  12, 13, 14, 15,  25, // top
+<a name="line161">161: </a>          0, 1, 5, 4,  8, 17, 12, 16,  22, // front
+<a name="line162">162: </a>          1, 2, 6, 5,  9, 18, 13, 17,  21, // right
+<a name="line163">163: </a>          2, 3, 7, 6,  10, 19, 14, 18,  23, // back
+<a name="line164">164: </a>          3, 0, 4, 7,  11, 16, 15, 19,  20 // left
+<a name="line165">165: </a>        };
+
+<a name="line167">167: </a>        <font color="#4169E1">for</font>(int b = 0; b &lt; numFacesQuadHex; b++) {
+<a name="line168">168: </a>          typename sieve_type::point_type face;
+<a name="line169">169: </a>          int o = 1;
+
+<a name="line171">171: </a>          bdVertices[dim-1].clear();
+<a name="line172">172: </a>          <font color="#4169E1">for</font>(int c = 0; c &lt; faceSizeQuadHex; c++) {
+<a name="line173">173: </a>            bdVertices[dim-1].push_back(bdVertices[dim][nodes[b*faceSizeQuadHex+c]]);
+<a name="line174">174: </a>          }
+<a name="line175">175: </a>          <font color="#4169E1">if</font> (debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"    boundary hex face "</font> &lt;&lt; b &lt;&lt; std::endl;}
+<a name="line176">176: </a>          buildQuadraticHexFaces(sieve, orientation, dim-1, curElement, bdVertices, faces, face, o);
+<a name="line177">177: </a>          <font color="#4169E1">if</font> (debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"    added face "</font> &lt;&lt; face &lt;&lt; std::endl;}
+<a name="line178">178: </a>          faces[dim].push_back(oPoint_type(face, o));
+<a name="line179">179: </a>        }
+<a name="line180">180: </a>      } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (dim &gt; 1) {
+<a name="line181">181: </a>        const int edgeSizeQuadHex = 3;
+<a name="line182">182: </a>        const int numEdgesQuadHex = 4;
+<a name="line183">183: </a>        int nodes[12] = {
+<a name="line184">184: </a>          0, 1,  4, // bottom
+<a name="line185">185: </a>          1, 2,  5, // right
+<a name="line186">186: </a>          2, 3,  6, // top
+<a name="line187">187: </a>          3, 0,  7, // left
+<a name="line188">188: </a>        };
+<a name="line189">189: </a>        <font color="#4169E1">for</font>(int b = 0; b &lt; numEdgesQuadHex; b++) {
+<a name="line190">190: </a>          typename sieve_type::point_type face;
+<a name="line191">191: </a>          int o = 1;
+
+<a name="line193">193: </a>          bdVertices[dim-1].clear();
+<a name="line194">194: </a>          <font color="#4169E1">for</font>(int c = 0; c &lt; edgeSizeQuadHex; c++) {
+<a name="line195">195: </a>            bdVertices[dim-1].push_back(bdVertices[dim][nodes[b*edgeSizeQuadHex+c]]);
+<a name="line196">196: </a>          }
+<a name="line197">197: </a>          <font color="#4169E1">if</font> (debug &gt; 1) {
+<a name="line198">198: </a><strong><font color="#FF0000">            std:</font></strong>:cout &lt;&lt; <font color="#666666">"    boundary point "</font> &lt;&lt; bdVertices[dim][b] &lt;&lt; std::endl;
+<a name="line199">199: </a><strong><font color="#FF0000">            std:</font></strong>:cout &lt;&lt; <font color="#666666">"      boundary vertices"</font>;
+<a name="line200">200: </a>            <font color="#4169E1">for</font>(int c = 0; c &lt; (int) bdVertices[dim-1].size(); c++) {
+<a name="line201">201: </a><strong><font color="#FF0000">              std:</font></strong>:cout &lt;&lt; <font color="#666666">" "</font> &lt;&lt; bdVertices[dim-1][c];
+<a name="line202">202: </a>            }
+<a name="line203">203: </a><strong><font color="#FF0000">            std:</font></strong>:cout &lt;&lt; std::endl;
+<a name="line204">204: </a>          }
+<a name="line205">205: </a>          buildQuadraticHexFaces(sieve, orientation, dim-1, curElement, bdVertices, faces, face, o);
+<a name="line206">206: </a>          <font color="#4169E1">if</font> (debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"    added face "</font> &lt;&lt; face &lt;&lt; std::endl;}
+<a name="line207">207: </a>          faces[dim].push_back(oPoint_type(face, o));
+<a name="line208">208: </a>        }
+<a name="line209">209: </a>      } <font color="#4169E1">else</font> {
+<a name="line210">210: </a>        <font color="#4169E1">if</font> (debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"  Just set faces to boundary in 1d"</font> &lt;&lt; std::endl;}
+<a name="line211">211: </a>        typename PointArray::iterator bdEnd = bdVertices[dim].end();
+<a name="line212">212: </a>        <font color="#4169E1">for</font> (typename PointArray::iterator bd_iter = bdVertices[dim].begin(); bd_iter != bdEnd; ++bd_iter)
+<a name="line213">213: </a>          faces[dim].push_back(oPoint_type(*bd_iter, 0));
+<a name="line214">214: </a>        //faces[dim].insert(faces[dim].end(), bdVertices[dim].begin(), bdVertices[dim].end());
+<a name="line215">215: </a>      }
+<a name="line216">216: </a>      <font color="#4169E1">if</font> (debug &gt; 1) {
+<a name="line217">217: </a>        <font color="#4169E1">for</font>(typename oPointArray::iterator f_iter = faces[dim].begin(); f_iter != faces[dim].end(); ++f_iter) {
+<a name="line218">218: </a><strong><font color="#FF0000">          std:</font></strong>:cout &lt;&lt; <font color="#666666">"  face point "</font> &lt;&lt; f_iter-&gt;first &lt;&lt; <font color="#666666">" orientation "</font> &lt;&lt; f_iter-&gt;second &lt;&lt; std::endl;
+<a name="line219">219: </a>        }
+<a name="line220">220: </a>      }
+<a name="line221">221: </a>      // We always create the toplevel, so we could short circuit somehow
+<a name="line222">222: </a>      // Should not have to loop here since the meet of just 2 boundary elements is an element
+<a name="line223">223: </a>      typename oPointArray::iterator         f_itor = faces[dim].begin();
+<a name="line224">224: </a>      const typename sieve_type::point_type&amp; start  = f_itor-&gt;first;
+<a name="line225">225: </a>      const typename sieve_type::point_type&amp; next   = (++f_itor)-&gt;first;
+<a name="line226">226: </a>      Obj&lt;typename sieve_type::supportSet&gt; preElement = sieve-&gt;nJoin(start, next, 1);
+
+<a name="line228">228: </a>      <font color="#4169E1">if</font> (preElement-&gt;size() &gt; 0) {
+<a name="line229">229: </a>        cell = *preElement-&gt;begin();
+
+<a name="line231">231: </a>        const int size = faces[dim].size();
+<a name="line232">232: </a>        const Obj&lt;typename sieve_type::traits::coneSequence&gt;&amp; cone = sieve-&gt;cone(cell);
+<a name="line233">233: </a>        int       wrap = size &gt; 2 ? size-1 : 0;
+<a name="line234">234: </a>        int       indA = 0, indB = 0;
+
+<a name="line236">236: </a>        <font color="#4169E1">for</font>(typename sieve_type::traits::coneSequence::iterator c_iter = cone-&gt;begin(); c_iter != cone-&gt;end(); ++c_iter, ++indA) {
+<a name="line237">237: </a>          <font color="#4169E1">if</font> (start == *c_iter) <font color="#4169E1">break</font>;
+<a name="line238">238: </a>        }
+<a name="line239">239: </a>        <font color="#4169E1">if</font> (debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"    pointA "</font> &lt;&lt; start &lt;&lt; <font color="#666666">" indA "</font> &lt;&lt; indA &lt;&lt; std::endl;}
+<a name="line240">240: </a>        <font color="#4169E1">for</font>(typename sieve_type::traits::coneSequence::iterator c_iter = cone-&gt;begin(); c_iter != cone-&gt;end(); ++c_iter, ++indB) {
+<a name="line241">241: </a>          <font color="#4169E1">if</font> (next  == *c_iter) <font color="#4169E1">break</font>;
+<a name="line242">242: </a>        }
+<a name="line243">243: </a>        <font color="#4169E1">if</font> (debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"    pointB "</font> &lt;&lt; next  &lt;&lt; <font color="#666666">" indB "</font> &lt;&lt; indB &lt;&lt; std::endl;}
+<a name="line244">244: </a>        <font color="#4169E1">if</font> ((indB - indA == 1) || (indA - indB == wrap)) {
+<a name="line245">245: </a>          <font color="#4169E1">if</font> (cellOrientation &gt; 0) {
+<a name="line246">246: </a>            cellOrientation = indA+1;
+<a name="line247">247: </a>          } <font color="#4169E1">else</font> {
+<a name="line248">248: </a>            <font color="#4169E1">if</font> (dim == 1) {
+<a name="line249">249: </a>              cellOrientation = -2;
+<a name="line250">250: </a>            } <font color="#4169E1">else</font> {
+<a name="line251">251: </a>              cellOrientation = -(indA+1);
+<a name="line252">252: </a>            }
+<a name="line253">253: </a>          }
+<a name="line254">254: </a>        } <font color="#4169E1">else</font> <font color="#4169E1">if</font> ((indA - indB == 1) || (indB - indA == wrap)) {
+<a name="line255">255: </a>          <font color="#4169E1">if</font> (debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"      reversing cell orientation"</font> &lt;&lt; std::endl;}
+<a name="line256">256: </a>          <font color="#4169E1">if</font> (cellOrientation &gt; 0) {
+<a name="line257">257: </a>            cellOrientation = -(indA+1);
+<a name="line258">258: </a>          } <font color="#4169E1">else</font> {
+<a name="line259">259: </a>            <font color="#4169E1">if</font> (dim == 1) {
+<a name="line260">260: </a>              cellOrientation = 1;
+<a name="line261">261: </a>            } <font color="#4169E1">else</font> {
+<a name="line262">262: </a>              cellOrientation = indA+1;
+<a name="line263">263: </a>            }
+<a name="line264">264: </a>          }
+<a name="line265">265: </a>        } <font color="#4169E1">else</font> {
+<a name="line266">266: </a>          throw ALE::Exception(<font color="#666666">"Inconsistent orientation"</font>);
+<a name="line267">267: </a>        }
+<a name="line268">268: </a>        <font color="#4169E1">if</font> (debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"  Found old cell "</font> &lt;&lt; cell &lt;&lt; <font color="#666666">" orientation "</font> &lt;&lt; cellOrientation &lt;&lt; std::endl;}
+<a name="line269">269: </a>      } <font color="#4169E1">else</font> {
+<a name="line270">270: </a>        int color = 0;
+
+<a name="line272">272: </a>        cell = typename sieve_type::point_type((*curElement[dim])++);
+<a name="line273">273: </a>        <font color="#4169E1">for</font>(typename oPointArray::iterator f_iter = faces[dim].begin(); f_iter != faces[dim].end(); ++f_iter) {
+<a name="line274">274: </a>          MinimalArrow&lt;typename sieve_type::point_type,typename sieve_type::point_type&gt; arrow(f_iter-&gt;first, cell);
+
+<a name="line276">276: </a>          sieve-&gt;addArrow(f_iter-&gt;first, cell, color++);
+<a name="line277">277: </a>          <font color="#4169E1">if</font> (f_iter-&gt;second) {
+<a name="line278">278: </a>            orientation-&gt;addPoint(arrow);
+<a name="line279">279: </a>            orientation-&gt;updatePoint(arrow, &amp;(f_iter-&gt;second));
+<a name="line280">280: </a>            <font color="#4169E1">if</font> (debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"    Orienting arrow ("</font> &lt;&lt; f_iter-&gt;first &lt;&lt; <font color="#666666">", "</font> &lt;&lt; cell &lt;&lt; <font color="#666666">") to "</font> &lt;&lt; f_iter-&gt;second &lt;&lt; std::endl;}
+<a name="line281">281: </a>          }
+<a name="line282">282: </a>        }
+<a name="line283">283: </a>        <font color="#4169E1">if</font> (cellOrientation &gt; 0) {
+<a name="line284">284: </a>          cellOrientation = 1;
+<a name="line285">285: </a>        } <font color="#4169E1">else</font> {
+<a name="line286">286: </a>          cellOrientation = -(dim+1);
+<a name="line287">287: </a>        }
+<a name="line288">288: </a>        <font color="#4169E1">if</font> (debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"  Added cell "</font> &lt;&lt; cell &lt;&lt; <font color="#666666">" dim "</font> &lt;&lt; dim &lt;&lt; std::endl;}
+<a name="line289">289: </a>      }
+<a name="line290">290: </a>    };
+<a name="line291">291: </a>    static void buildQuadraticTetFaces(Obj&lt;sieve_type&gt; sieve, Obj&lt;arrow_section_type&gt; orientation,
+<a name="line292">292: </a>                                       int dim,
+<a name="line293">293: </a><strong><font color="#FF0000">                                       std:</font></strong>:map&lt;int, int*&gt;&amp; curElement,
+<a name="line294">294: </a><strong><font color="#FF0000">                                       std:</font></strong>:map&lt;int,PointArray&gt;&amp; bdVertices,
+<a name="line295">295: </a><strong><font color="#FF0000">                                       std:</font></strong>:map&lt;int,oPointArray&gt;&amp; faces,
+<a name="line296">296: </a>                                       typename sieve_type::point_type&amp; cell,
+<a name="line297">297: </a>                                       int&amp; cellOrientation) {
+<a name="line298">298: </a>      int debug = sieve-&gt;debug();
+
+<a name="line300">300: </a>      <font color="#4169E1">if</font> (debug &gt; 1)
+<a name="line301">301: </a><strong><font color="#FF0000">        std:</font></strong>:cout &lt;&lt; <font color="#666666">"  Building tet faces for cell "</font> &lt;&lt; cell &lt;&lt; <font color="#666666">" (size "</font> &lt;&lt; bdVertices[dim].size() &lt;&lt; <font color="#666666">"), dim "</font> &lt;&lt; dim &lt;&lt; std::endl;
+
+<a name="line303">303: </a>      <font color="#4169E1">switch</font> (dim) {
+<a name="line304">304: </a>      <font color="#4169E1">case</font> 1: {
+<a name="line305">305: </a>        <font color="#4169E1">break</font>;
+<a name="line306">306: </a>      } // <font color="#4169E1">case</font> 1
+<a name="line307">307: </a>      <font color="#4169E1">case</font> 2: {
+<a name="line308">308: </a>        assert(6 == bdVertices[dim].size());
+
+<a name="line310">310: </a>        // Edges on face
+<a name="line311">311: </a>        int color = 0;
+<a name="line312">312: </a>        int faceOrientation = 1;
+
+<a name="line314">314: </a>        // Bottom edge
+<a name="line315">315: </a>        typename sieve_type::point_type edge = bdVertices[dim][0];
+<a name="line316">316: </a>        MinimalArrow&lt;typename sieve_type::point_type,typename sieve_type::point_type&gt; arrow(edge, cell);
+<a name="line317">317: </a>        sieve-&gt;addArrow(edge, cell, color++);
+<a name="line318">318: </a>        orientation-&gt;addPoint(arrow);
+<a name="line319">319: </a>        <font color="#4169E1">if</font> (bdVertices[dim][3] &lt; bdVertices[dim][4])
+<a name="line320">320: </a>          faceOrientation = 1;
+<a name="line321">321: </a>        <font color="#4169E1">else</font>
+<a name="line322">322: </a>          faceOrientation = -dim;
+<a name="line323">323: </a>        orientation-&gt;updatePoint(arrow, &amp;faceOrientation);
+<a name="line324">324: </a>        <font color="#4169E1">if</font> (debug &gt; 1)
+<a name="line325">325: </a><strong><font color="#FF0000">          std:</font></strong>:cout &lt;&lt; <font color="#666666">"    Adding bottom edge "</font> &lt;&lt; edge &lt;&lt; <font color="#666666">" with orientation "</font> &lt;&lt; faceOrientation &lt;&lt; std::endl;
+
+<a name="line327">327: </a>        // Right edge
+<a name="line328">328: </a>        faceOrientation = 1;
+<a name="line329">329: </a>        edge = bdVertices[dim][1];
+<a name="line330">330: </a>        arrow.source = edge;
+<a name="line331">331: </a>        sieve-&gt;addArrow(edge, cell, color++);
+<a name="line332">332: </a>        orientation-&gt;addPoint(arrow);
+<a name="line333">333: </a>        <font color="#4169E1">if</font> (bdVertices[dim][4] &lt; bdVertices[dim][5])
+<a name="line334">334: </a>          faceOrientation = 1;
+<a name="line335">335: </a>        <font color="#4169E1">else</font>
+<a name="line336">336: </a>          faceOrientation = -dim;
+<a name="line337">337: </a>        orientation-&gt;updatePoint(arrow, &amp;faceOrientation);
+<a name="line338">338: </a>        <font color="#4169E1">if</font> (debug &gt; 1)
+<a name="line339">339: </a><strong><font color="#FF0000">          std:</font></strong>:cout &lt;&lt; <font color="#666666">"    Adding right edge "</font> &lt;&lt; edge &lt;&lt; <font color="#666666">" with orientation "</font> &lt;&lt; faceOrientation &lt;&lt; std::endl;
+<a name="line340">340: </a>
+<a name="line341">341: </a>        // Left edge
+<a name="line342">342: </a>        faceOrientation = 1;
+<a name="line343">343: </a>        edge = bdVertices[dim][2];
+<a name="line344">344: </a>        arrow.source = edge;
+<a name="line345">345: </a>        sieve-&gt;addArrow(edge, cell, color++);
+<a name="line346">346: </a>        orientation-&gt;addPoint(arrow);
+<a name="line347">347: </a>        <font color="#4169E1">if</font> (bdVertices[dim][5] &lt; bdVertices[dim][3])
+<a name="line348">348: </a>          faceOrientation = 1;
+<a name="line349">349: </a>        <font color="#4169E1">else</font>
+<a name="line350">350: </a>          faceOrientation = -dim;
+<a name="line351">351: </a>        orientation-&gt;updatePoint(arrow, &amp;faceOrientation);
+<a name="line352">352: </a>        <font color="#4169E1">if</font> (debug &gt; 1)
+<a name="line353">353: </a><strong><font color="#FF0000">          std:</font></strong>:cout &lt;&lt; <font color="#666666">"    Adding left edge "</font> &lt;&lt; edge &lt;&lt; <font color="#666666">" with orientation "</font> &lt;&lt; faceOrientation &lt;&lt; std::endl;
+<a name="line354">354: </a>
+<a name="line355">355: </a>        // Vertices on edges
+
+<a name="line357">357: </a>        // Vertices on bottom edge
+<a name="line358">358: </a>        color = 0;
+<a name="line359">359: </a>        edge = bdVertices[dim][0];
+<a name="line360">360: </a>        typename sieve_type::point_type vertexA = bdVertices[dim][3];
+<a name="line361">361: </a>        typename sieve_type::point_type vertexB = bdVertices[dim][4];
+<a name="line362">362: </a>        sieve-&gt;addArrow(vertexA, edge, color++);
+<a name="line363">363: </a>        sieve-&gt;addArrow(vertexB, edge, color++);
+<a name="line364">364: </a>        <font color="#4169E1">if</font> (debug &gt; 1)
+<a name="line365">365: </a><strong><font color="#FF0000">          std:</font></strong>:cout &lt;&lt; <font color="#666666">"    Adding vertices "</font> &lt;&lt; vertexA &lt;&lt; <font color="#666666">" and "</font> &lt;&lt; vertexB &lt;&lt; std::endl;
+<a name="line366">366: </a>
+<a name="line367">367: </a>        // Vertices on right edge
+<a name="line368">368: </a>        color = 0;
+<a name="line369">369: </a>        edge = bdVertices[dim][1];
+<a name="line370">370: </a>        vertexA = bdVertices[dim][4];
+<a name="line371">371: </a>        vertexB = bdVertices[dim][5];
+<a name="line372">372: </a>        sieve-&gt;addArrow(vertexA, edge, color++);
+<a name="line373">373: </a>        sieve-&gt;addArrow(vertexB, edge, color++);
+<a name="line374">374: </a>        <font color="#4169E1">if</font> (debug &gt; 1)
+<a name="line375">375: </a><strong><font color="#FF0000">          std:</font></strong>:cout &lt;&lt; <font color="#666666">"    Adding vertices "</font> &lt;&lt; vertexA &lt;&lt; <font color="#666666">" and "</font> &lt;&lt; vertexB &lt;&lt; std::endl;
+<a name="line376">376: </a>
+<a name="line377">377: </a>        // Vertices on left edge
+<a name="line378">378: </a>        color = 0;
+<a name="line379">379: </a>        edge = bdVertices[dim][2];
+<a name="line380">380: </a>        vertexA = bdVertices[dim][5];
+<a name="line381">381: </a>        vertexB = bdVertices[dim][3];
+<a name="line382">382: </a>        sieve-&gt;addArrow(vertexA, edge, color++);
+<a name="line383">383: </a>        sieve-&gt;addArrow(vertexB, edge, color++);
+<a name="line384">384: </a>        <font color="#4169E1">if</font> (debug &gt; 1)
+<a name="line385">385: </a><strong><font color="#FF0000">          std:</font></strong>:cout &lt;&lt; <font color="#666666">"    Adding vertices "</font> &lt;&lt; vertexA &lt;&lt; <font color="#666666">" and "</font> &lt;&lt; vertexB &lt;&lt; std::endl;
+<a name="line386">386: </a>
+<a name="line387">387: </a>        <font color="#4169E1">break</font>;
+<a name="line388">388: </a>      } // <font color="#4169E1">case</font> 2
+<a name="line389">389: </a>      <font color="#4169E1">case</font> 3: {
+<a name="line390">390: </a>        <font color="#4169E1">break</font>;
+<a name="line391">391: </a>      } // <font color="#4169E1">case</font> 3
+<a name="line392">392: </a><strong><font color="#FF0000">      default:</font></strong>
+<a name="line393">393: </a><strong><font color="#FF0000">        std:</font></strong>:cerr &lt;&lt; <font color="#666666">"Unknown dimension "</font> &lt;&lt; dim &lt;&lt; std::endl;
+<a name="line394">394: </a>        assert(0);
+<a name="line395">395: </a>        throw ALE::Exception(<font color="#666666">"Unknown dimension"</font>);
+<a name="line396">396: </a>      } // <font color="#4169E1">switch</font>
+
+<a name="line398">398: </a>    };
+<a name="line399">399: </a>    static void buildFaces(Obj&lt;sieve_type&gt; sieve, Obj&lt;arrow_section_type&gt; orientation, int dim, std::map&lt;int, int*&gt;&amp; curElement, std::map&lt;int,PointArray&gt;&amp; bdVertices, std::map&lt;int,oPointArray&gt;&amp; faces, typename sieve_type::point_type&amp; cell, int&amp; cellOrientation) {
+<a name="line400">400: </a>      int debug = sieve-&gt;debug();
+
+<a name="line402">402: </a>      <font color="#4169E1">if</font> (debug &gt; 1) {
+<a name="line403">403: </a>        <font color="#4169E1">if</font> (cell &gt;= 0) {
+<a name="line404">404: </a><strong><font color="#FF0000">          std:</font></strong>:cout &lt;&lt; <font color="#666666">"  Building faces for boundary of "</font> &lt;&lt; cell &lt;&lt; <font color="#666666">" (size "</font> &lt;&lt; bdVertices[dim].size() &lt;&lt; <font color="#666666">"), dim "</font> &lt;&lt; dim &lt;&lt; std::endl;
+<a name="line405">405: </a>        } <font color="#4169E1">else</font> {
+<a name="line406">406: </a><strong><font color="#FF0000">          std:</font></strong>:cout &lt;&lt; <font color="#666666">"  Building faces for boundary of undetermined cell (size "</font> &lt;&lt; bdVertices[dim].size() &lt;&lt; <font color="#666666">"), dim "</font> &lt;&lt; dim &lt;&lt; std::endl;
+<a name="line407">407: </a>        }
+<a name="line408">408: </a>      }
+<a name="line409">409: </a>      <font color="#4169E1">if</font> (dim == 0) <font color="#4169E1">return</font>;
+<a name="line410">410: </a>      faces[dim].clear();
+<a name="line411">411: </a>      <font color="#4169E1">if</font> (dim &gt; 1) {
+<a name="line412">412: </a>        int b = 0;
+<a name="line413">413: </a>        // Use the cone construction
+<a name="line414">414: </a>        <font color="#4169E1">for</font>(typename PointArray::iterator b_itor = bdVertices[dim].begin(); b_itor != bdVertices[dim].end(); ++b_itor, ++b) {
+<a name="line415">415: </a>          typename sieve_type::point_type face = -1;
+<a name="line416">416: </a>          int                             o    = b%2 ? -bdVertices[dim].size() : 1;
+
+<a name="line418">418: </a>          bdVertices[dim-1].clear();
+<a name="line419">419: </a>          <font color="#4169E1">for</font>(typename PointArray::iterator i_itor = bdVertices[dim].begin(); i_itor != bdVertices[dim].end(); ++i_itor) {
+<a name="line420">420: </a>            <font color="#4169E1">if</font> (i_itor != b_itor) {
+<a name="line421">421: </a>              bdVertices[dim-1].push_back(*i_itor);
+<a name="line422">422: </a>            }
+<a name="line423">423: </a>          }
+<a name="line424">424: </a>          <font color="#4169E1">if</font> (debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"    boundary point "</font> &lt;&lt; *b_itor &lt;&lt; std::endl;}
+<a name="line425">425: </a>          buildFaces(sieve, orientation, dim-1, curElement, bdVertices, faces, face, o);
+<a name="line426">426: </a>          <font color="#4169E1">if</font> (debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"    added face "</font> &lt;&lt; face &lt;&lt; std::endl;}
+<a name="line427">427: </a>          faces[dim].push_back(oPoint_type(face, o));
+<a name="line428">428: </a>        }
+<a name="line429">429: </a>      } <font color="#4169E1">else</font> {
+<a name="line430">430: </a>        <font color="#4169E1">if</font> (debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"  Just set faces to boundary in 1d"</font> &lt;&lt; std::endl;}
+<a name="line431">431: </a>        typename PointArray::iterator bd_iter = bdVertices[dim].begin();
+<a name="line432">432: </a>        faces[dim].push_back(oPoint_type(*bd_iter, 0));++bd_iter;
+<a name="line433">433: </a>        faces[dim].push_back(oPoint_type(*bd_iter, 0));
+<a name="line434">434: </a>        //faces[dim].insert(faces[dim].end(), bdVertices[dim].begin(), bdVertices[dim].end());
+<a name="line435">435: </a>      }
+<a name="line436">436: </a>      <font color="#4169E1">if</font> (debug &gt; 1) {
+<a name="line437">437: </a>        <font color="#4169E1">for</font>(typename oPointArray::iterator f_iter = faces[dim].begin(); f_iter != faces[dim].end(); ++f_iter) {
+<a name="line438">438: </a><strong><font color="#FF0000">          std:</font></strong>:cout &lt;&lt; <font color="#666666">"  face point "</font> &lt;&lt; f_iter-&gt;first &lt;&lt; <font color="#666666">" orientation "</font> &lt;&lt; f_iter-&gt;second &lt;&lt; std::endl;
+<a name="line439">439: </a>        }
+<a name="line440">440: </a>      }
+<a name="line441">441: </a>      // We always create the toplevel, so we could short circuit somehow
+<a name="line442">442: </a>      // Should not have to loop here since the meet of just 2 boundary elements is an element
+<a name="line443">443: </a>      typename oPointArray::iterator         f_itor = faces[dim].begin();
+<a name="line444">444: </a>      const typename sieve_type::point_type&amp; start  = f_itor-&gt;first;
+<a name="line445">445: </a>      const typename sieve_type::point_type&amp; next   = (++f_itor)-&gt;first;
+<a name="line446">446: </a>      Obj&lt;typename sieve_type::supportSet&gt; preElement = sieve-&gt;nJoin(start, next, 1);
+
+<a name="line448">448: </a>      <font color="#4169E1">if</font> (preElement-&gt;size() &gt; 0) {
+<a name="line449">449: </a>        cell = *preElement-&gt;begin();
+
+<a name="line451">451: </a>        const int size = faces[dim].size();
+<a name="line452">452: </a>        const Obj&lt;typename sieve_type::traits::coneSequence&gt;&amp; cone = sieve-&gt;cone(cell);
+<a name="line453">453: </a>        int       wrap = size &gt; 2 ? size-1 : 0;
+<a name="line454">454: </a>        int       indA = 0, indB = 0;
+
+<a name="line456">456: </a>        <font color="#4169E1">for</font>(typename sieve_type::traits::coneSequence::iterator c_iter = cone-&gt;begin(); c_iter != cone-&gt;end(); ++c_iter, ++indA) {
+<a name="line457">457: </a>          <font color="#4169E1">if</font> (start == *c_iter) <font color="#4169E1">break</font>;
+<a name="line458">458: </a>        }
+<a name="line459">459: </a>        <font color="#4169E1">if</font> (debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"    pointA "</font> &lt;&lt; start &lt;&lt; <font color="#666666">" indA "</font> &lt;&lt; indA &lt;&lt; std::endl;}
+<a name="line460">460: </a>        <font color="#4169E1">for</font>(typename sieve_type::traits::coneSequence::iterator c_iter = cone-&gt;begin(); c_iter != cone-&gt;end(); ++c_iter, ++indB) {
+<a name="line461">461: </a>          <font color="#4169E1">if</font> (next  == *c_iter) <font color="#4169E1">break</font>;
+<a name="line462">462: </a>        }
+<a name="line463">463: </a>        <font color="#4169E1">if</font> (debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"    pointB "</font> &lt;&lt; next  &lt;&lt; <font color="#666666">" indB "</font> &lt;&lt; indB &lt;&lt; std::endl;}
+<a name="line464">464: </a>        <font color="#4169E1">if</font> ((indB - indA == 1) || (indA - indB == wrap)) {
+<a name="line465">465: </a>          <font color="#4169E1">if</font> (cellOrientation &gt; 0) {
+<a name="line466">466: </a>            cellOrientation = indA+1;
+<a name="line467">467: </a>          } <font color="#4169E1">else</font> {
+<a name="line468">468: </a>            <font color="#4169E1">if</font> (dim == 1) {
+<a name="line469">469: </a>              cellOrientation = -2;
+<a name="line470">470: </a>            } <font color="#4169E1">else</font> {
+<a name="line471">471: </a>              cellOrientation = -(indA+1);
+<a name="line472">472: </a>            }
+<a name="line473">473: </a>          }
+<a name="line474">474: </a>        } <font color="#4169E1">else</font> <font color="#4169E1">if</font> ((indA - indB == 1) || (indB - indA == wrap)) {
+<a name="line475">475: </a>          <font color="#4169E1">if</font> (debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"      reversing cell orientation"</font> &lt;&lt; std::endl;}
+<a name="line476">476: </a>          <font color="#4169E1">if</font> (cellOrientation &gt; 0) {
+<a name="line477">477: </a>            cellOrientation = -(indA+1);
+<a name="line478">478: </a>          } <font color="#4169E1">else</font> {
+<a name="line479">479: </a>            <font color="#4169E1">if</font> (dim == 1) {
+<a name="line480">480: </a>              cellOrientation = 1;
+<a name="line481">481: </a>            } <font color="#4169E1">else</font> {
+<a name="line482">482: </a>              cellOrientation = indA+1;
+<a name="line483">483: </a>            }
+<a name="line484">484: </a>          }
+<a name="line485">485: </a>        } <font color="#4169E1">else</font> {
+<a name="line486">486: </a>          throw ALE::Exception(<font color="#666666">"Inconsistent orientation"</font>);
+<a name="line487">487: </a>        }
+<a name="line488">488: </a>        <font color="#4169E1">if</font> (debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"  Found old cell "</font> &lt;&lt; cell &lt;&lt; <font color="#666666">" orientation "</font> &lt;&lt; cellOrientation &lt;&lt; std::endl;}
+<a name="line489">489: </a>      } <font color="#4169E1">else</font> {
+<a name="line490">490: </a>        int color = 0;
+
+<a name="line492">492: </a>        cell = typename sieve_type::point_type((*curElement[dim])++);
+<a name="line493">493: </a>        <font color="#4169E1">for</font>(typename oPointArray::iterator f_iter = faces[dim].begin(); f_iter != faces[dim].end(); ++f_iter) {
+<a name="line494">494: </a>          MinimalArrow&lt;typename sieve_type::point_type,typename sieve_type::point_type&gt; arrow(f_iter-&gt;first, cell);
+
+<a name="line496">496: </a>          sieve-&gt;addArrow(f_iter-&gt;first, cell, color++);
+<a name="line497">497: </a>          <font color="#4169E1">if</font> (f_iter-&gt;second) {
+<a name="line498">498: </a>            orientation-&gt;addPoint(arrow);
+<a name="line499">499: </a>            orientation-&gt;updatePoint(arrow, &amp;(f_iter-&gt;second));
+<a name="line500">500: </a>            <font color="#4169E1">if</font> (debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"    Orienting arrow ("</font> &lt;&lt; f_iter-&gt;first &lt;&lt; <font color="#666666">", "</font> &lt;&lt; cell &lt;&lt; <font color="#666666">") to "</font> &lt;&lt; f_iter-&gt;second &lt;&lt; std::endl;}
+<a name="line501">501: </a>          }
+<a name="line502">502: </a>        }
+<a name="line503">503: </a>        <font color="#4169E1">if</font> (cellOrientation &gt; 0) {
+<a name="line504">504: </a>          cellOrientation = 1;
+<a name="line505">505: </a>        } <font color="#4169E1">else</font> {
+<a name="line506">506: </a>          cellOrientation = -(dim+1);
+<a name="line507">507: </a>        }
+<a name="line508">508: </a>        <font color="#4169E1">if</font> (debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"  Added cell "</font> &lt;&lt; cell &lt;&lt; <font color="#666666">" dim "</font> &lt;&lt; dim &lt;&lt; <font color="#666666">" orientation "</font> &lt;&lt; cellOrientation &lt;&lt; std::endl;}
+<a name="line509">509: </a>      }
+<a name="line510">510: </a>    };
+<a name="line511">511: </a><font color="#A020F0">#if 0</font>
+<a name="line512">512: </a>    static void orientTriangle(const typename sieve_type::point_type cell, const int vertices[], const Obj&lt;sieve_type&gt;&amp; sieve, const Obj&lt;arrow_section_type&gt;&amp; orientation, int firstVertex[]) {
+<a name="line513">513: </a>      const Obj&lt;typename sieve_type::traits::coneSequence&gt;&amp;     cone = sieve-&gt;cone(cell);
+<a name="line514">514: </a>      const typename sieve_type::traits::coneSequence::iterator end  = cone-&gt;end();
+<a name="line515">515: </a>      int debug   = sieve-&gt;debug();
+<a name="line516">516: </a>      int corners = 3;
+<a name="line517">517: </a>      int e       = 0;
+
+<a name="line519">519: </a>      <font color="#4169E1">if</font> (debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"Orienting triangle "</font> &lt;&lt; cell &lt;&lt; std::endl;}
+<a name="line520">520: </a>      <font color="#4169E1">for</font>(typename sieve_type::traits::coneSequence::iterator p_iter = cone-&gt;begin(); p_iter != end; ++p_iter, ++e) {
+<a name="line521">521: </a>        <font color="#4169E1">if</font> (debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"  edge "</font> &lt;&lt; *p_iter &lt;&lt; std::endl;}
+<a name="line522">522: </a>        const Obj&lt;typename sieve_type::traits::coneSequence&gt;&amp; endpoints = sieve-&gt;cone(*p_iter);
+<a name="line523">523: </a>        typename sieve_type::traits::coneSequence::iterator   vertex    = endpoints-&gt;begin();
+<a name="line524">524: </a>        MinimalArrow&lt;typename sieve_type::point_type,typename sieve_type::point_type&gt; arrow(*p_iter, cell);
+<a name="line525">525: </a>        int                                                                           indA, indB, value;
+
+<a name="line527">527: </a>        orientation-&gt;addPoint(arrow);
+<a name="line528">528: </a>        <font color="#4169E1">for</font>(indA = 0; indA &lt; corners; indA++) {<font color="#4169E1">if</font> (*vertex == vertices[indA]) <font color="#4169E1">break</font>;}
+<a name="line529">529: </a>        <font color="#4169E1">if</font> (debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"    vertexA "</font> &lt;&lt; *vertex &lt;&lt; <font color="#666666">" indA "</font> &lt;&lt; indA &lt;&lt;std::endl;}
+<a name="line530">530: </a>        firstVertex[e] = *vertex;
+<a name="line531">531: </a>        ++vertex;
+<a name="line532">532: </a>        <font color="#4169E1">for</font>(indB = 0; indB &lt; corners; indB++) {<font color="#4169E1">if</font> (*vertex == vertices[indB]) <font color="#4169E1">break</font>;}
+<a name="line533">533: </a>        <font color="#4169E1">if</font> (debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"    vertexB "</font> &lt;&lt; *vertex &lt;&lt; <font color="#666666">" indB "</font> &lt;&lt; indB &lt;&lt;std::endl;}
+<a name="line534">534: </a>        <font color="#4169E1">if</font> ((indA == corners) || (indB == corners) || (indA == indB)) {throw ALE::Exception(<font color="#666666">"Invalid edge endpoints"</font>);}
+<a name="line535">535: </a>        <font color="#4169E1">if</font> ((indB - indA == 1) || (indA - indB == 2)) {
+<a name="line536">536: </a>          value =  1;
+<a name="line537">537: </a>        } <font color="#4169E1">else</font> {
+<a name="line538">538: </a>          value = -1;
+<a name="line539">539: </a>          firstVertex[e] = *vertex;
+<a name="line540">540: </a>        }
+<a name="line541">541: </a>        <font color="#4169E1">if</font> (debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"  value "</font> &lt;&lt; value &lt;&lt;std::endl;}
+<a name="line542">542: </a>        orientation-&gt;updatePoint(arrow, &amp;value);
+<a name="line543">543: </a>      }
+<a name="line544">544: </a>    };
+<a name="line545">545: </a><font color="#A020F0">#endif</font>
+<a name="line548">548: </a>    // Build a topology from a connectivity description
+<a name="line549">549: </a>    //   (0, 0)        ... (0, numCells-1):  dim-dimensional cells
+<a name="line550">550: </a>    //   (0, numCells) ... (0, numVertices): vertices
+<a name="line551">551: </a>    // The other cells are numbered as they are requested
+<a name="line552">552: </a>    static void buildTopology(Obj&lt;sieve_type&gt; sieve, int dim, int numCells, int cells[], int numVertices, bool interpolate = true, int corners = -1, int firstVertex = -1, Obj&lt;arrow_section_type&gt; orientation = NULL, int firstCell = 0) {
+<a name="line553">553: </a>      <font color="#4169E1">if</font> (interpolate &amp;&amp; orientation.isNull()) {
+<a name="line554">554: </a>        throw ALE::Exception(<font color="#666666">"Cannot interpolate mesh without providing an orientation Section"</font>);
+<a name="line555">555: </a>      }
+<a name="line556">556: </a>      ALE_LOG_EVENT_BEGIN;
+<a name="line557">557: </a>      <font color="#4169E1">if</font> (sieve-&gt;commRank() != 0) {
+<a name="line558">558: </a>        ALE_LOG_EVENT_END;
+<a name="line559">559: </a>        <font color="#4169E1">return</font>;
+<a name="line560">560: </a>      }
+<a name="line561">561: </a>      buildTopology_private(sieve, dim, numCells, cells, numVertices, interpolate, corners, firstVertex, orientation, firstCell);
+<a name="line562">562: </a>      ALE_LOG_EVENT_END;
+<a name="line563">563: </a>    };
+<a name="line564">564: </a>    static void buildTopology_private(Obj&lt;sieve_type&gt; sieve, int dim, int numCells, int cells[], int numVertices, bool interpolate = true, int corners = -1, int firstVertex = -1, Obj&lt;arrow_section_type&gt; orientation = NULL, int firstCell = 0) {
+<a name="line565">565: </a>      int debug = sieve-&gt;debug();
+
+<a name="line567">567: </a>      <font color="#4169E1">if</font> (firstVertex &lt; 0) firstVertex = numCells;
+<a name="line568">568: </a>      // Create a map from dimension to the current element number <font color="#4169E1">for</font> that dimension
+<a name="line569">569: </a><strong><font color="#FF0000">      std:</font></strong>:map&lt;int,int*&gt;       curElement;
+<a name="line570">570: </a><strong><font color="#FF0000">      std:</font></strong>:map&lt;int,PointArray&gt; bdVertices;
+<a name="line571">571: </a><strong><font color="#FF0000">      std:</font></strong>:map&lt;int,PointArray&gt; faces;
+<a name="line572">572: </a><strong><font color="#FF0000">      std:</font></strong>:map&lt;int,oPointArray&gt; oFaces;
+<a name="line573">573: </a>      int                      curCell    = firstCell;
+<a name="line574">574: </a>      int                      curVertex  = firstVertex;
+<a name="line575">575: </a>      int                      newElement = firstVertex &gt; firstCell ? firstVertex + numVertices : firstCell + numCells;
+<a name="line576">576: </a>      int                      o          = 1;
+
+<a name="line578">578: </a>      <font color="#4169E1">if</font> (corners &lt; 0) corners = dim+1;
+<a name="line579">579: </a>      curElement[0]   = &amp;curVertex;
+<a name="line580">580: </a>      curElement[dim] = &amp;curCell;
+<a name="line581">581: </a>      <font color="#4169E1">for</font>(int d = 1; d &lt; dim; d++) {
+<a name="line582">582: </a>        curElement[d] = &amp;newElement;
+<a name="line583">583: </a>      }
+<a name="line584">584: </a>      <font color="#4169E1">for</font>(int c = 0; c &lt; numCells; c++) {
+<a name="line585">585: </a>        typename sieve_type::point_type cell(c);
+
+<a name="line587">587: </a>        // Build the cell
+<a name="line588">588: </a>        <font color="#4169E1">if</font> (interpolate) {
+<a name="line589">589: </a>          bdVertices[dim].clear();
+<a name="line590">590: </a>          <font color="#4169E1">for</font>(int b = 0; b &lt; corners; b++) {
+<a name="line591">591: </a>            // This ordering produces the same vertex order as the uninterpolated mesh
+<a name="line592">592: </a>            //typename sieve_type::point_type vertex(cells[c*corners+(b+corners-1)%corners]+firstVertex);
+<a name="line593">593: </a>            typename sieve_type::point_type vertex(cells[c*corners+b]+firstVertex);
+
+<a name="line595">595: </a>            <font color="#4169E1">if</font> (debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"Adding boundary vertex "</font> &lt;&lt; vertex &lt;&lt; std::endl;}
+<a name="line596">596: </a>            bdVertices[dim].push_back(vertex);
+<a name="line597">597: </a>          }
+<a name="line598">598: </a>          <font color="#4169E1">if</font> (debug) {std::cout &lt;&lt; <font color="#666666">"cell "</font> &lt;&lt; cell &lt;&lt; <font color="#666666">" num boundary vertices "</font> &lt;&lt; bdVertices[dim].size() &lt;&lt; std::endl;}
+
+<a name="line600">600: </a>          <font color="#4169E1">if</font> ((2 == dim &amp;&amp; 4 == corners) || (3 == dim &amp;&amp; 8 == corners)) {
+<a name="line601">601: </a>            buildHexFaces(sieve, orientation, dim, curElement, bdVertices, oFaces, cell, o);
+<a name="line602">602: </a>          } <font color="#4169E1">else</font> <font color="#4169E1">if</font> ((2 == dim &amp;&amp; 9 == corners) || (3 == dim &amp;&amp; 27 == corners)) {
+<a name="line603">603: </a>            buildQuadraticHexFaces(sieve, orientation, dim, curElement, bdVertices, oFaces, cell, o);
+<a name="line604">604: </a>          } <font color="#4169E1">else</font> <font color="#4169E1">if</font> ((2 == dim &amp;&amp; 6 == corners) || (3 == dim &amp;&amp; 10 == corners)) {
+<a name="line605">605: </a>            buildQuadraticTetFaces(sieve, orientation, dim, curElement, bdVertices, oFaces, cell, o);
+<a name="line606">606: </a>          } <font color="#4169E1">else</font> {
+<a name="line607">607: </a>            buildFaces(sieve, orientation, dim, curElement, bdVertices, oFaces, cell, o);
+<a name="line608">608: </a>          }
+<a name="line609">609: </a><font color="#A020F0">#if 0</font>
+<a name="line610">610: </a>          <font color="#4169E1">if</font> ((dim == 2) &amp;&amp; (!orientation.isNull())) {
+<a name="line611">611: </a>            typename sieve_type::point_type eVertices[3];
+<a name="line612">612: </a>            typename sieve_type::point_type fVertices[3];
+
+<a name="line614">614: </a>            <font color="#4169E1">for</font>(int v = 0; v &lt; 3; ++v) {
+<a name="line615">615: </a>              fVertices[v] = cells[c*corners+v]+numCells;
+<a name="line616">616: </a>            }
+<a name="line617">617: </a>            orientTriangle(cell, fVertices, sieve, orientation, eVertices);
+<a name="line618">618: </a>          } <font color="#4169E1">else</font> <font color="#4169E1">if</font> ((dim == 3) &amp;&amp; (!orientation.isNull())) {
+<a name="line619">619: </a>            // The order of vertices in cells[] orients the cell itself
+<a name="line620">620: </a>            <font color="#4169E1">if</font> (debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"Orienting tetrahedron "</font> &lt;&lt; cell &lt;&lt; std::endl;}
+<a name="line621">621: </a>            const Obj&lt;typename sieve_type::traits::coneSequence&gt;&amp;     cone = sieve-&gt;cone(cell);
+<a name="line622">622: </a>            const typename sieve_type::traits::coneSequence::iterator end  = cone-&gt;end();
+<a name="line623">623: </a>            int f = 0;
+
+<a name="line625">625: </a>            <font color="#4169E1">for</font>(typename sieve_type::traits::coneSequence::iterator p_iter = cone-&gt;begin(); p_iter != end; ++p_iter, ++f) {
+<a name="line626">626: </a>              <font color="#4169E1">if</font> (debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"  face "</font> &lt;&lt; *p_iter &lt;&lt; std::endl;}
+<a name="line627">627: </a>              const Obj&lt;typename sieve_type::traits::coneSequence&gt;&amp;     fCone = sieve-&gt;cone(*p_iter);
+<a name="line628">628: </a>              const typename sieve_type::traits::coneSequence::iterator fEnd  = fCone-&gt;end();
+<a name="line629">629: </a>              typename sieve_type::point_type fVertices[3];
+<a name="line630">630: </a>              typename sieve_type::point_type eVertices[3];
+
+<a name="line632">632: </a>              // We will choose the orientation such that the normals are outward
+<a name="line633">633: </a>              <font color="#4169E1">for</font>(int v = 0, i = 0; v &lt; corners; ++v) {
+<a name="line634">634: </a>                <font color="#4169E1">if</font> (v == f) <font color="#4169E1">continue</font>;
+<a name="line635">635: </a>                fVertices[i++] = cells[c*corners+v]+numCells;
+<a name="line636">636: </a>              }
+<a name="line637">637: </a>              <font color="#4169E1">if</font> (f%2) {
+<a name="line638">638: </a>                int tmp      = fVertices[0];
+<a name="line639">639: </a>                fVertices[0] = fVertices[1];
+<a name="line640">640: </a>                fVertices[1] = tmp;
+<a name="line641">641: </a>              }
+<a name="line642">642: </a>              orientTriangle(*p_iter, fVertices, sieve, orientation, eVertices);
+<a name="line643">643: </a>              MinimalArrow&lt;typename sieve_type::point_type,typename sieve_type::point_type&gt; fArrow(*p_iter, cell);
+<a name="line644">644: </a>              int                                                                           indC, indD, indE, value;
+
+<a name="line646">646: </a>              orientation-&gt;addPoint(fArrow);
+<a name="line647">647: </a>              <font color="#4169E1">for</font>(indC = 0; indC &lt; corners; indC++) {<font color="#4169E1">if</font> (eVertices[0] == fVertices[indC]) <font color="#4169E1">break</font>;}
+<a name="line648">648: </a>              <font color="#4169E1">if</font> (debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"    vertexC "</font> &lt;&lt; eVertices[0] &lt;&lt; <font color="#666666">" indC "</font> &lt;&lt; indC &lt;&lt;std::endl;}
+<a name="line649">649: </a>              <font color="#4169E1">for</font>(indD = 0; indD &lt; corners; indD++) {<font color="#4169E1">if</font> (eVertices[1] == fVertices[indD]) <font color="#4169E1">break</font>;}
+<a name="line650">650: </a>              <font color="#4169E1">if</font> (debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"    vertexD "</font> &lt;&lt; eVertices[1] &lt;&lt; <font color="#666666">" indD "</font> &lt;&lt; indD &lt;&lt;std::endl;}
+<a name="line651">651: </a>              <font color="#4169E1">for</font>(indE = 0; indE &lt; corners; indE++) {<font color="#4169E1">if</font> (eVertices[2] == fVertices[indE]) <font color="#4169E1">break</font>;}
+<a name="line652">652: </a>              <font color="#4169E1">if</font> (debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"    vertexE "</font> &lt;&lt; eVertices[2] &lt;&lt; <font color="#666666">" indE "</font> &lt;&lt; indE &lt;&lt;std::endl;}
+<a name="line653">653: </a>              <font color="#4169E1">if</font> ((indC == corners) || (indD == corners) || (indE == corners) ||
+<a name="line654">654: </a>                  (indC == indD) || (indD == indE) || (indE == indC)) {throw ALE::Exception(<font color="#666666">"Invalid face corners"</font>);}
+<a name="line655">655: </a>              <font color="#4169E1">if</font> ((indD - indC == 1) || (indC - indD == 2)) {
+<a name="line656">656: </a>                <font color="#4169E1">if</font> (!((indE - indD == 1) || (indD - indE == 2)) ||
+<a name="line657">657: </a>                    !((indC - indE == 1) || (indE - indC == 2))) {throw ALE::Exception(<font color="#666666">"Invalid order"</font>);}
+<a name="line658">658: </a>                value =  1;
+<a name="line659">659: </a>              } <font color="#4169E1">else</font> {
+<a name="line660">660: </a>                value = -1;
+<a name="line661">661: </a>              }
+<a name="line662">662: </a>              <font color="#4169E1">if</font> (debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"  value "</font> &lt;&lt; value &lt;&lt;std::endl;}
+<a name="line663">663: </a>              orientation-&gt;updatePoint(fArrow, &amp;value);
+<a name="line664">664: </a>              orientation-&gt;view(<font color="#666666">"Intermediate orientation"</font>);
+<a name="line665">665: </a>            }
+<a name="line666">666: </a>          }
+<a name="line667">667: </a><font color="#A020F0">#endif</font>
+<a name="line668">668: </a>        } <font color="#4169E1">else</font> {
+<a name="line669">669: </a>          <font color="#4169E1">for</font>(int b = 0; b &lt; corners; b++) {
+<a name="line670">670: </a>            sieve-&gt;addArrow(typename sieve_type::point_type(cells[c*corners+b]+firstVertex), cell, b);
+<a name="line671">671: </a>          }
+<a name="line672">672: </a>          <font color="#4169E1">if</font> (debug) {
+<a name="line673">673: </a>            <font color="#4169E1">if</font> (debug &gt; 1) {
+<a name="line674">674: </a>              <font color="#4169E1">for</font>(int b = 0; b &lt; corners; b++) {
+<a name="line675">675: </a><strong><font color="#FF0000">                std:</font></strong>:cout &lt;&lt; <font color="#666666">"  Adding vertex "</font> &lt;&lt; typename sieve_type::point_type(cells[c*corners+b]+firstVertex) &lt;&lt; std::endl;
+<a name="line676">676: </a>              }
+<a name="line677">677: </a>            }
+<a name="line678">678: </a>            <font color="#4169E1">if</font> ((numCells &lt; 10000) || (c%1000 == 0)) {
+<a name="line679">679: </a><strong><font color="#FF0000">              std:</font></strong>:cout &lt;&lt; <font color="#666666">"Adding cell "</font> &lt;&lt; cell &lt;&lt; <font color="#666666">" dim "</font> &lt;&lt; dim &lt;&lt; std::endl;
+<a name="line680">680: </a>            }
+<a name="line681">681: </a>          }
+<a name="line682">682: </a>        }
+<a name="line683">683: </a>      }
+<a name="line684">684: </a>    };
+<a name="line685">685: </a>    static void buildCoordinates(const Obj&lt;Bundle_&gt;&amp; bundle, const int embedDim, const <A href="../../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A> coords[], int numCells = -1) {
+<a name="line686">686: </a>      const Obj&lt;typename Bundle_::real_section_type&gt;&amp; coordinates = bundle-&gt;getRealSection(<font color="#666666">"coordinates"</font>);
+<a name="line687">687: </a>      const Obj&lt;typename Bundle_::label_sequence&gt;&amp;    vertices    = bundle-&gt;depthStratum(0);
+<a name="line688">688: </a>      const int                                       debug       = bundle-&gt;debug();
+
+<a name="line690">690: </a>      <font color="#4169E1">if</font> (numCells &lt; 0) {
+<a name="line691">691: </a>        numCells = bundle-&gt;heightStratum(0)-&gt;size();
+<a name="line692">692: </a>      }
+<a name="line693">693: </a>      bundle-&gt;setupCoordinates(coordinates);
+<a name="line694">694: </a>      coordinates-&gt;setFiberDimension(vertices, embedDim);
+<a name="line695">695: </a>      bundle-&gt;allocate(coordinates);
+<a name="line696">696: </a>      <font color="#4169E1">for</font>(typename Bundle_::label_sequence::iterator v_iter = vertices-&gt;begin(); v_iter != vertices-&gt;end(); ++v_iter) {
+<a name="line697">697: </a>        coordinates-&gt;updatePoint(*v_iter, &amp;(coords[(*v_iter - numCells)*embedDim]));
+<a name="line698">698: </a>        <font color="#4169E1">if</font> (debug) {
+<a name="line699">699: </a>          <font color="#4169E1">if</font> ((numCells &lt; 10000) || ((*v_iter)%1000 == 0)) {
+<a name="line700">700: </a><strong><font color="#FF0000">            std:</font></strong>:cout &lt;&lt; <font color="#666666">"Adding coordinates for vertex "</font> &lt;&lt; *v_iter &lt;&lt; std::endl;
+<a name="line701">701: </a>          }
+<a name="line702">702: </a>        }
+<a name="line703">703: </a>      }
+<a name="line704">704: </a>    };
+<a name="line707">707: </a>    // Build a topology from a connectivity description
+<a name="line708">708: </a>    //   (0, 0)        ... (0, numCells-1):  dim-dimensional cells
+<a name="line709">709: </a>    //   (0, numCells) ... (0, numVertices): vertices
+<a name="line710">710: </a>    // The other cells are numbered as they are requested
+<a name="line711">711: </a>    static void buildTopologyMultiple(Obj&lt;sieve_type&gt; sieve, int dim, int numCells, int cells[], int numVertices, bool interpolate = true, int corners = -1, int firstVertex = -1, Obj&lt;arrow_section_type&gt; orientation = NULL) {
+<a name="line712">712: </a>      int debug = sieve-&gt;debug();
+
+<a name="line714">714: </a>      ALE_LOG_EVENT_BEGIN;
+<a name="line715">715: </a>      int *cellOffset = new int[sieve-&gt;commSize()+1];
+<a name="line716">716: </a>      cellOffset[0] = 0;
+<a name="line717">717: </a>      <A href="http://www.mcs.anl.gov/mpi/www/www3/MPI_Allgather.html#MPI_Allgather">MPI_Allgather</A>(&amp;numCells, 1, MPI_INT, &amp;cellOffset[1], 1, MPI_INT, sieve-&gt;comm());
+<a name="line718">718: </a>      <font color="#4169E1">for</font>(int p = 1; p &lt;= sieve-&gt;commSize(); ++p) cellOffset[p] += cellOffset[p-1];
+<a name="line719">719: </a>      int *vertexOffset = new int[sieve-&gt;commSize()+1];
+<a name="line720">720: </a>      vertexOffset[0] = 0;
+<a name="line721">721: </a>      <A href="http://www.mcs.anl.gov/mpi/www/www3/MPI_Allgather.html#MPI_Allgather">MPI_Allgather</A>(&amp;numVertices, 1, MPI_INT, &amp;vertexOffset[1], 1, MPI_INT, sieve-&gt;comm());
+<a name="line722">722: </a>      <font color="#4169E1">for</font>(int p = 1; p &lt;= sieve-&gt;commSize(); ++p) vertexOffset[p] += vertexOffset[p-1];
+<a name="line723">723: </a>      <font color="#4169E1">if</font> (firstVertex &lt; 0) firstVertex = cellOffset[sieve-&gt;commSize()] + vertexOffset[sieve-&gt;commRank()];
+<a name="line724">724: </a>      // Estimate the number of intermediates as (V+C)*(dim-1)
+<a name="line725">725: </a>      //   Should include a check <font color="#4169E1">for</font> running over the namespace
+<a name="line726">726: </a>      // Create a map from dimension to the current element number <font color="#4169E1">for</font> that dimension
+<a name="line727">727: </a><strong><font color="#FF0000">      std:</font></strong>:map&lt;int,int*&gt;       curElement;
+<a name="line728">728: </a><strong><font color="#FF0000">      std:</font></strong>:map&lt;int,PointArray&gt; bdVertices;
+<a name="line729">729: </a><strong><font color="#FF0000">      std:</font></strong>:map&lt;int,PointArray&gt; faces;
+<a name="line730">730: </a><strong><font color="#FF0000">      std:</font></strong>:map&lt;int,oPointArray&gt; oFaces;
+<a name="line731">731: </a>      int                      curCell    = cellOffset[sieve-&gt;commRank()];
+<a name="line732">732: </a>      int                      curVertex  = firstVertex;
+<a name="line733">733: </a>      int                      newElement = firstVertex+vertexOffset[sieve-&gt;commSize()] + (cellOffset[sieve-&gt;commRank()] + vertexOffset[sieve-&gt;commRank()])*(dim-1);
+<a name="line734">734: </a>      int                      o          = 1;
+
+<a name="line736">736: </a>      <font color="#4169E1">if</font> (corners &lt; 0) corners = dim+1;
+<a name="line737">737: </a>      curElement[0]   = &amp;curVertex;
+<a name="line738">738: </a>      curElement[dim] = &amp;curCell;
+<a name="line739">739: </a>      <font color="#4169E1">for</font>(int d = 1; d &lt; dim; d++) {
+<a name="line740">740: </a>        curElement[d] = &amp;newElement;
+<a name="line741">741: </a>      }
+<a name="line742">742: </a>      <font color="#4169E1">for</font>(int c = 0; c &lt; numCells; c++) {
+<a name="line743">743: </a>        typename sieve_type::point_type cell(c);
+
+<a name="line745">745: </a>        // Build the cell
+<a name="line746">746: </a>        <font color="#4169E1">if</font> (interpolate) {
+<a name="line747">747: </a>          bdVertices[dim].clear();
+<a name="line748">748: </a>          <font color="#4169E1">for</font>(int b = 0; b &lt; corners; b++) {
+<a name="line749">749: </a>            // This ordering produces the same vertex order as the uninterpolated mesh
+<a name="line750">750: </a>            //typename sieve_type::point_type vertex(cells[c*corners+(b+corners-1)%corners]+firstVertex);
+<a name="line751">751: </a>            typename sieve_type::point_type vertex(cells[c*corners+b]+firstVertex);
+
+<a name="line753">753: </a>            <font color="#4169E1">if</font> (debug &gt; 1) {std::cout &lt;&lt; <font color="#666666">"Adding boundary vertex "</font> &lt;&lt; vertex &lt;&lt; std::endl;}
+<a name="line754">754: </a>            bdVertices[dim].push_back(vertex);
+<a name="line755">755: </a>          }
+<a name="line756">756: </a>          <font color="#4169E1">if</font> (debug) {std::cout &lt;&lt; <font color="#666666">"cell "</font> &lt;&lt; cell &lt;&lt; <font color="#666666">" num boundary vertices "</font> &lt;&lt; bdVertices[dim].size() &lt;&lt; std::endl;}
+
+<a name="line758">758: </a>          <font color="#4169E1">if</font> ((2 == dim &amp;&amp; 4 == corners) || (3 == dim &amp;&amp; 8 == corners)) {
+<a name="line759">759: </a>            buildHexFaces(sieve, orientation, dim, curElement, bdVertices, oFaces, cell, o);
+<a name="line760">760: </a>          } <font color="#4169E1">else</font> <font color="#4169E1">if</font> ((2 == dim &amp;&amp; 9 == corners) || (3 == dim &amp;&amp; 27 == corners)) {
+<a name="line761">761: </a>            buildQuadraticHexFaces(sieve, orientation, dim, curElement, bdVertices, oFaces, cell, o);
+<a name="line762">762: </a>          } <font color="#4169E1">else</font> <font color="#4169E1">if</font> ((2 == dim &amp;&amp; 6 == corners) || (3 == dim &amp;&amp; 10 == corners)) {
+<a name="line763">763: </a>            buildQuadraticTetFaces(sieve, orientation, dim, curElement, bdVertices, oFaces, cell, o);
+<a name="line764">764: </a>          } <font color="#4169E1">else</font> {
+<a name="line765">765: </a>            buildFaces(sieve, orientation, dim, curElement, bdVertices, oFaces, cell, o);
+<a name="line766">766: </a>          }
+<a name="line767">767: </a>        } <font color="#4169E1">else</font> {
+<a name="line768">768: </a>          <font color="#4169E1">for</font>(int b = 0; b &lt; corners; b++) {
+<a name="line769">769: </a>            sieve-&gt;addArrow(typename sieve_type::point_type(cells[c*corners+b]+firstVertex), cell, b);
+<a name="line770">770: </a>          }
+<a name="line771">771: </a>          <font color="#4169E1">if</font> (debug) {
+<a name="line772">772: </a>            <font color="#4169E1">if</font> (debug &gt; 1) {
+<a name="line773">773: </a>              <font color="#4169E1">for</font>(int b = 0; b &lt; corners; b++) {
+<a name="line774">774: </a><strong><font color="#FF0000">                std:</font></strong>:cout &lt;&lt; <font color="#666666">"  Adding vertex "</font> &lt;&lt; typename sieve_type::point_type(cells[c*corners+b]+firstVertex) &lt;&lt; std::endl;
+<a name="line775">775: </a>              }
+<a name="line776">776: </a>            }
+<a name="line777">777: </a>            <font color="#4169E1">if</font> ((numCells &lt; 10000) || (c%1000 == 0)) {
+<a name="line778">778: </a><strong><font color="#FF0000">              std:</font></strong>:cout &lt;&lt; <font color="#666666">"Adding cell "</font> &lt;&lt; cell &lt;&lt; <font color="#666666">" dim "</font> &lt;&lt; dim &lt;&lt; std::endl;
+<a name="line779">779: </a>            }
+<a name="line780">780: </a>          }
+<a name="line781">781: </a>        }
+<a name="line782">782: </a>      }
+
+<a name="line784">784: </a>      <font color="#4169E1">if</font> (newElement &gt;= firstVertex+vertexOffset[sieve-&gt;commSize()] + (cellOffset[sieve-&gt;commRank()+1] + vertexOffset[sieve-&gt;commRank()+1])*(dim-1)) {
+<a name="line785">785: </a>        throw ALE::Exception(<font color="#666666">"Namespace violation during intermediate element construction"</font>);
+<a name="line786">786: </a>      }
+<a name="line787">787: </a>      delete [] cellOffset;
+<a name="line788">788: </a>      delete [] vertexOffset;
+<a name="line789">789: </a>      ALE_LOG_EVENT_END;
+<a name="line790">790: </a>    };
+<a name="line791">791: </a>    static void buildCoordinatesMultiple(const Obj&lt;Bundle_&gt;&amp; bundle, const int embedDim, const double coords[], int numGlobalCells = -1) {
+<a name="line792">792: </a>      const Obj&lt;typename Bundle_::real_section_type&gt;&amp; coordinates = bundle-&gt;getRealSection(<font color="#666666">"coordinates"</font>);
+<a name="line793">793: </a>      const Obj&lt;typename Bundle_::label_sequence&gt;&amp;    vertices    = bundle-&gt;depthStratum(0);
+<a name="line794">794: </a>      const int numCells = bundle-&gt;heightStratum(0)-&gt;size(), numVertices = vertices-&gt;size();
+<a name="line795">795: </a>      const int debug    = bundle-&gt;debug();
+<a name="line796">796: </a>      int       offset;
+
+<a name="line798">798: </a>      <font color="#4169E1">if</font> (numGlobalCells &lt; 0) {
+<a name="line799">799: </a>        <A href="http://www.mcs.anl.gov/mpi/www/www3/MPI_Allreduce.html#MPI_Allreduce">MPI_Allreduce</A>((void *) &amp;numCells, &amp;numGlobalCells, 1, MPI_INT, MPI_SUM, bundle-&gt;comm());
+<a name="line800">800: </a>      }
+<a name="line801">801: </a>      <A href="http://www.mcs.anl.gov/mpi/www/www3/MPI_Scan.html#MPI_Scan">MPI_Scan</A>((void *) &amp;numVertices, &amp;offset, 1, MPI_INT, MPI_SUM, bundle-&gt;comm());
+<a name="line802">802: </a>      offset += numGlobalCells - numVertices;
+<a name="line803">803: </a>      coordinates-&gt;setFiberDimension(vertices, embedDim);
+<a name="line804">804: </a>      bundle-&gt;allocate(coordinates);
+<a name="line805">805: </a>      <font color="#4169E1">for</font>(typename Bundle_::label_sequence::iterator v_iter = vertices-&gt;begin(); v_iter != vertices-&gt;end(); ++v_iter) {
+<a name="line806">806: </a>        coordinates-&gt;updatePoint(*v_iter, &amp;(coords[(*v_iter - offset)*embedDim]));
+<a name="line807">807: </a>        <font color="#4169E1">if</font> (debug) {
+<a name="line808">808: </a>          <font color="#4169E1">if</font> ((numCells &lt; 10000) || ((*v_iter)%1000 == 0)) {
+<a name="line809">809: </a><strong><font color="#FF0000">            std:</font></strong>:cout &lt;&lt; <font color="#666666">"Adding coordinates for vertex "</font> &lt;&lt; *v_iter &lt;&lt; std::endl;
+<a name="line810">810: </a>          }
+<a name="line811">811: </a>        }
+<a name="line812">812: </a>      }
+<a name="line813">813: </a>    };
+<a name="line814">814: </a>  };
+<a name="line815">815: </a>}
+<a name="line816">816: </a><font color="#A020F0">#endif</font>
+</pre>
+</body>
+
+</html>

@@ -1,0 +1,86 @@
+<center><a href="petsc-drawimpl.h">Actual source code: petsc-drawimpl.h</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="http://www.mcs.anl.gov/petsc/petsc-current/include/petsc-private/drawimpl.h.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2013-10-15T16:54:40+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>petsc-3.4.3 2013-10-15</b></div>
+<pre width="80"><a name="line1">  1: </a><font color="#B22222">/*</font>
+<a name="line2">  2: </a><font color="#B22222">       Abstract data structure and functions for graphics.</font>
+<a name="line3">  3: </a><font color="#B22222">*/</font>
+
+<a name="line5">  5: </a><font color="#A020F0">#if !defined(_DRAWIMPL_H)</font>
+<a name="line6">  6: </a><strong><font color="#228B22">#define _DRAWIMPL_H</font></strong>
+
+<a name="line8">  8: </a><font color="#A020F0">#include &lt;petscdraw.h&gt;</font>
+<a name="line9">  9: </a><font color="#A020F0">#include &lt;petsc-private/petscimpl.h&gt;</font>
+
+<a name="line11"> 11: </a><font color="#4169E1"><a name="_PetscDrawOps"></a>struct _PetscDrawOps </font>{
+<a name="line12"> 12: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*setdoublebuffer)(<A href="../docs/manualpages/Draw/PetscDraw.html#PetscDraw">PetscDraw</A>);
+<a name="line13"> 13: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*flush)(<A href="../docs/manualpages/Draw/PetscDraw.html#PetscDraw">PetscDraw</A>);
+<a name="line14"> 14: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*line)(<A href="../docs/manualpages/Draw/PetscDraw.html#PetscDraw">PetscDraw</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>,int);
+<a name="line15"> 15: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*linesetwidth)(<A href="../docs/manualpages/Draw/PetscDraw.html#PetscDraw">PetscDraw</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>);
+<a name="line16"> 16: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*linegetwidth)(<A href="../docs/manualpages/Draw/PetscDraw.html#PetscDraw">PetscDraw</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>*);
+<a name="line17"> 17: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*point)(<A href="../docs/manualpages/Draw/PetscDraw.html#PetscDraw">PetscDraw</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>,int);
+<a name="line18"> 18: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*pointsetsize)(<A href="../docs/manualpages/Draw/PetscDraw.html#PetscDraw">PetscDraw</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>);
+<a name="line19"> 19: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*string)(<A href="../docs/manualpages/Draw/PetscDraw.html#PetscDraw">PetscDraw</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>,int,const char[]);
+<a name="line20"> 20: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*stringvertical)(<A href="../docs/manualpages/Draw/PetscDraw.html#PetscDraw">PetscDraw</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>,int,const char[]);
+<a name="line21"> 21: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*stringsetsize)(<A href="../docs/manualpages/Draw/PetscDraw.html#PetscDraw">PetscDraw</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>);
+<a name="line22"> 22: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*stringgetsize)(<A href="../docs/manualpages/Draw/PetscDraw.html#PetscDraw">PetscDraw</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>*,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>*);
+<a name="line23"> 23: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*setviewport)(<A href="../docs/manualpages/Draw/PetscDraw.html#PetscDraw">PetscDraw</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>);
+<a name="line24"> 24: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*clear)(<A href="../docs/manualpages/Draw/PetscDraw.html#PetscDraw">PetscDraw</A>);
+<a name="line25"> 25: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*synchronizedflush)(<A href="../docs/manualpages/Draw/PetscDraw.html#PetscDraw">PetscDraw</A>);
+<a name="line26"> 26: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*rectangle)(<A href="../docs/manualpages/Draw/PetscDraw.html#PetscDraw">PetscDraw</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>,int,int,int,int);
+<a name="line27"> 27: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*triangle)(<A href="../docs/manualpages/Draw/PetscDraw.html#PetscDraw">PetscDraw</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>,int,int,int);
+<a name="line28"> 28: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*ellipse)(<A href="../docs/manualpages/Draw/PetscDraw.html#PetscDraw">PetscDraw</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>,int);
+<a name="line29"> 29: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*getmousebutton)(<A href="../docs/manualpages/Draw/PetscDraw.html#PetscDraw">PetscDraw</A>,<A href="../docs/manualpages/Draw/PetscDrawButton.html#PetscDrawButton">PetscDrawButton</A>*,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A> *,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A> *,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>*,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>*);
+<a name="line30"> 30: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*pause)(<A href="../docs/manualpages/Draw/PetscDraw.html#PetscDraw">PetscDraw</A>);
+<a name="line31"> 31: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*synchronizedclear)(<A href="../docs/manualpages/Draw/PetscDraw.html#PetscDraw">PetscDraw</A>);
+<a name="line32"> 32: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*beginpage)(<A href="../docs/manualpages/Draw/PetscDraw.html#PetscDraw">PetscDraw</A>);
+<a name="line33"> 33: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*endpage)(<A href="../docs/manualpages/Draw/PetscDraw.html#PetscDraw">PetscDraw</A>);
+<a name="line34"> 34: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*getpopup)(<A href="../docs/manualpages/Draw/PetscDraw.html#PetscDraw">PetscDraw</A>,<A href="../docs/manualpages/Draw/PetscDraw.html#PetscDraw">PetscDraw</A>*);
+<a name="line35"> 35: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*settitle)(<A href="../docs/manualpages/Draw/PetscDraw.html#PetscDraw">PetscDraw</A>,const char[]);
+<a name="line36"> 36: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*checkresizedwindow)(<A href="../docs/manualpages/Draw/PetscDraw.html#PetscDraw">PetscDraw</A>);
+<a name="line37"> 37: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*resizewindow)(<A href="../docs/manualpages/Draw/PetscDraw.html#PetscDraw">PetscDraw</A>,int,int);
+<a name="line38"> 38: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*destroy)(<A href="../docs/manualpages/Draw/PetscDraw.html#PetscDraw">PetscDraw</A>);
+<a name="line39"> 39: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*view)(<A href="../docs/manualpages/Draw/PetscDraw.html#PetscDraw">PetscDraw</A>,<A href="../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A>);
+<a name="line40"> 40: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*getsingleton)(<A href="../docs/manualpages/Draw/PetscDraw.html#PetscDraw">PetscDraw</A>,<A href="../docs/manualpages/Draw/PetscDraw.html#PetscDraw">PetscDraw</A>*);
+<a name="line41"> 41: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*restoresingleton)(<A href="../docs/manualpages/Draw/PetscDraw.html#PetscDraw">PetscDraw</A>,<A href="../docs/manualpages/Draw/PetscDraw.html#PetscDraw">PetscDraw</A>*);
+<a name="line42"> 42: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*save)(<A href="../docs/manualpages/Draw/PetscDraw.html#PetscDraw">PetscDraw</A>);
+<a name="line43"> 43: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*setsave)(<A href="../docs/manualpages/Draw/PetscDraw.html#PetscDraw">PetscDraw</A>,const char*);
+<a name="line44"> 44: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*setcoordinates)(<A href="../docs/manualpages/Draw/PetscDraw.html#PetscDraw">PetscDraw</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>);
+<a name="line45"> 45: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*arrow)(<A href="../docs/manualpages/Draw/PetscDraw.html#PetscDraw">PetscDraw</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>,int);
+<a name="line46"> 46: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*coordinatetopixel)(<A href="../docs/manualpages/Draw/PetscDraw.html#PetscDraw">PetscDraw</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>,<A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>*,<A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>*);
+<a name="line47"> 47: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*pixeltocoordinate)(<A href="../docs/manualpages/Draw/PetscDraw.html#PetscDraw">PetscDraw</A>,<A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>,<A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>*,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>*);
+<a name="line48"> 48: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*pointpixel)(<A href="../docs/manualpages/Draw/PetscDraw.html#PetscDraw">PetscDraw</A>,<A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>,<A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>,int);
+<a name="line49"> 49: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*boxedstring)(<A href="../docs/manualpages/Draw/PetscDraw.html#PetscDraw">PetscDraw</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>,int,int,const char[],<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>*,<A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>*);
+<a name="line50"> 50: </a>};
+
+<a name="line52"> 52: </a><font color="#4169E1"><a name="_p_PetscDraw"></a>struct _p_PetscDraw </font>{
+<a name="line53"> 53: </a>  PETSCHEADER(<font color="#4169E1">struct _PetscDrawOps</font>);
+<a name="line54"> 54: </a>  <A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>       pause;       <font color="#B22222">/* sleep time after a synchronized flush */</font>
+<a name="line55"> 55: </a>  <A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>       port_xl,port_yl,port_xr,port_yr;
+<a name="line56"> 56: </a>  <A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>       coor_xl,coor_yl,coor_xr,coor_yr;
+<a name="line57"> 57: </a>  <A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>       currentpoint_x[20],currentpoint_y[20];
+<a name="line58"> 58: </a>  <A href="../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>       boundbox_xl,boundbox_yl,boundbox_xr,boundbox_yr; <font color="#B22222">/* need to have this for each current point? */</font>
+<a name="line59"> 59: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>        currentpoint;
+<a name="line60"> 60: </a>  char            *title;
+<a name="line61"> 61: </a>  char            *display;
+<a name="line62"> 62: </a>  <A href="../docs/manualpages/Draw/PetscDraw.html#PetscDraw">PetscDraw</A>       popup;
+<a name="line63"> 63: </a>  int             x,y,h,w;
+<a name="line64"> 64: </a>  char            *savefilename;
+<a name="line65"> 65: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>        savefilecount;
+<a name="line66"> 66: </a>  <A href="../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A>       savefilemovie;
+<a name="line67"> 67: </a>  <A href="../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A>       saveonflush;       <font color="#B22222">/* save a new image for every <A href="../docs/manualpages/Draw/PetscDrawFlush.html#PetscDrawFlush">PetscDrawFlush</A>() called */</font>
+<a name="line68"> 68: </a>  void            *data;
+<a name="line69"> 69: </a>};
+
+<a name="line71"> 71: </a><font color="#A020F0">#endif</font>
+</pre>
+</body>
+
+</html>

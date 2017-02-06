@@ -1,0 +1,1158 @@
+<center><a href="Distribution.hh">Actual source code: Distribution.hh</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="http://www.mcs.anl.gov/petsc/petsc-current/include/sieve/Distribution.hh.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2013-10-15T17:09:06+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>petsc-3.4.3 2013-10-15</b></div>
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#ifndef included_ALE_Distribution_hh</font>
+<a name="line2">  2: </a><strong><font color="#228B22">#define included_ALE_Distribution_hh</font></strong>
+
+<a name="line4">  4: </a><font color="#A020F0">#ifndef  included_ALE_Mesh_hh</font>
+<a name="line5">  5: </a><font color="#A020F0">#include &lt;sieve/Mesh.hh&gt;</font>
+<a name="line6">  6: </a><font color="#A020F0">#endif</font>
+
+<a name="line8">  8: </a><font color="#A020F0">#ifndef  included_ALE_Completion_hh</font>
+<a name="line9">  9: </a><font color="#A020F0">#include &lt;sieve/Completion.hh&gt;</font>
+<a name="line10"> 10: </a><font color="#A020F0">#endif</font>
+
+<a name="line12"> 12: </a><font color="#A020F0">#ifndef  included_ALE_SectionCompletion_hh</font>
+<a name="line13"> 13: </a><font color="#A020F0">#include &lt;sieve/SectionCompletion.hh&gt;</font>
+<a name="line14"> 14: </a><font color="#A020F0">#endif</font>
+
+<a name="line16"> 16: </a>// Attempt to unify all of the distribution mechanisms:
+<a name="line17"> 17: </a>//   one to many  (distributeMesh)
+<a name="line18"> 18: </a>//   many to one  (unifyMesh)
+<a name="line19"> 19: </a>//   many to many (Numbering)
+<a name="line20"> 20: </a>// as well as things being distributed
+<a name="line21"> 21: </a>//   Section
+<a name="line22"> 22: </a>//   Sieve        (This sends two sections, the points and cones)
+<a name="line23"> 23: </a>//   Numbering    (Should be an integer section)
+<a name="line24"> 24: </a>//   Global Order (should be an integer section with extra methods)
+<a name="line25"> 25: </a>//
+<a name="line26"> 26: </a>// 0) Create the new object to hold the communicated data
+<a name="line27"> 27: </a>//
+<a name="line28"> 28: </a>// 1) Create Overlap
+<a name="line29"> 29: </a>//    There may be special ways to <font color="#4169E1">do</font> this based upon what we know at the time
+<a name="line30"> 30: </a>//
+<a name="line31"> 31: </a>// 2) Create send and receive sections over the interface
+<a name="line32"> 32: </a>//    These have a flat topology now, consisting only of the overlap nodes
+<a name="line33"> 33: </a>//    We could make a full topology on the overlap (maybe it is necessary <font color="#4169E1">for</font> higher order)
+<a name="line34"> 34: </a>//
+<a name="line35"> 35: </a>// 3) Communication section
+<a name="line36"> 36: </a>//    Create sizer sections on interface (uses constant sizer)
+<a name="line37"> 37: </a>//    Communicate sizes on interface (uses custom filler)
+<a name="line38"> 38: </a>//      Fill send section
+<a name="line39"> 39: </a>//      sendSection-&gt;startCommunication();
+<a name="line40"> 40: </a>//      recvSection-&gt;startCommunication();
+<a name="line41"> 41: </a>//      sendSection-&gt;endCommunication();
+<a name="line42"> 42: </a>//      recvSection-&gt;endCommunication();
+<a name="line43"> 43: </a>//
+<a name="line44"> 44: </a>//    Create section on interface (uses previous sizer)
+<a name="line45"> 45: </a>//    Communicate values on interface (uses custom filler)
+<a name="line46"> 46: </a>//      Same stuff as above
+<a name="line47"> 47: </a>//
+<a name="line48"> 48: </a>// 4) Update new section with old local values (can be done in between the communication?)
+<a name="line49"> 49: </a>//    Loop over patches in new topology
+<a name="line50"> 50: </a>//      Loop over chart from patch in old atlas
+<a name="line51"> 51: </a>//        If this point is in the new sieve from patch
+<a name="line52"> 52: </a>//          Set to old fiber dimension
+<a name="line53"> 53: </a>//    Order and allocate new section
+<a name="line54"> 54: </a>//    Repeat loop, but update values
+<a name="line55"> 55: </a>//
+<a name="line56"> 56: </a>// 5) Update new section with old received values
+<a name="line57"> 57: </a>//    Loop over patches in discrete topology of receive section (these are ranks)
+<a name="line58"> 58: </a>//      Loop over base of discrete sieve (we should transform this to a chart to match above)
+<a name="line59"> 59: </a>//        Get new patch from overlap, or should the receive patches be &lt;rank, patch&gt;?
+<a name="line60"> 60: </a>//        Guaranteed to be in the new sieve from patch (but we could check anyway)
+<a name="line61"> 61: </a>//          Set to recevied fiber dimension
+<a name="line62"> 62: </a>//    Order and allocate new section
+<a name="line63"> 63: </a>//    Repeat loop, but update values
+<a name="line64"> 64: </a>//
+<a name="line65"> 65: </a>// 6) Synchronize PETSc tags (can I get around this?)
+<a name="line66"> 66: </a>namespace ALE {
+<a name="line67"> 67: </a>  template&lt;typename Mesh, typename Partitioner = ALE::Partitioner&lt;&gt; &gt;
+<a name="line68"> 68: </a>  class DistributionNew {
+<a name="line69"> 69: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line70"> 70: </a>    <font color="#4169E1">typedef</font> Partitioner                                   partitioner_type;
+<a name="line71"> 71: </a>    <font color="#4169E1">typedef</font> typename Mesh::point_type                     point_type;
+<a name="line72"> 72: </a>    <font color="#4169E1">typedef</font> OrientedPoint&lt;point_type&gt;                     oriented_point_type;
+<a name="line73"> 73: </a>    <font color="#4169E1">typedef</font> typename Partitioner::part_type               rank_type;
+<a name="line74"> 74: </a>    <font color="#4169E1">typedef</font> ALE::ISection&lt;rank_type, point_type&gt;          partition_type;
+<a name="line75"> 75: </a>    <font color="#4169E1">typedef</font> ALE::Section&lt;ALE::Pair&lt;int, point_type&gt;, point_type&gt;          cones_type;
+<a name="line76"> 76: </a>    <font color="#4169E1">typedef</font> ALE::Section&lt;ALE::Pair&lt;int, point_type&gt;, oriented_point_type&gt; oriented_cones_type;
+<a name="line77"> 77: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line78"> 78: </a>    template&lt;typename Sieve, typename NewSieve, typename Renumbering, typename SendOverlap, typename RecvOverlap&gt;
+<a name="line79"> 79: </a>    static Obj&lt;cones_type&gt; completeCones(const Obj&lt;Sieve&gt;&amp; sieve, const Obj&lt;NewSieve&gt;&amp; newSieve, Renumbering&amp; renumbering, const Obj&lt;SendOverlap&gt;&amp; sendMeshOverlap, const Obj&lt;RecvOverlap&gt;&amp; recvMeshOverlap) {
+<a name="line80"> 80: </a>      <font color="#4169E1">typedef</font> ALE::ConeSection&lt;Sieve&gt; cones_wrapper_type;
+<a name="line81"> 81: </a>      Obj&lt;cones_wrapper_type&gt; cones        = new cones_wrapper_type(sieve);
+<a name="line82"> 82: </a>      Obj&lt;cones_type&gt;         overlapCones = new cones_type(sieve-&gt;comm(), sieve-&gt;debug());
+
+<a name="line84"> 84: </a><strong><font color="#FF0000">      ALE:</font></strong>:Pullback::SimpleCopy::copy(sendMeshOverlap, recvMeshOverlap, cones, overlapCones);
+<a name="line85"> 85: </a>      <font color="#4169E1">if</font> (sieve-&gt;debug()) {overlapCones-&gt;view(<font color="#666666">"Overlap Cones"</font>);}
+<a name="line86"> 86: </a>      // Inserts cones into parallelMesh (must renumber here)
+<a name="line87"> 87: </a><strong><font color="#FF0000">      ALE:</font></strong>:Pullback::InsertionBinaryFusion::fuse(overlapCones, recvMeshOverlap, renumbering, newSieve);
+<a name="line88"> 88: </a>      <font color="#4169E1">return</font> overlapCones;
+<a name="line89"> 89: </a>    }
+<a name="line90"> 90: </a>    template&lt;typename Sieve, typename NewSieve, typename SendOverlap, typename RecvOverlap&gt;
+<a name="line91"> 91: </a>    static Obj&lt;oriented_cones_type&gt; completeConesV(const Obj&lt;Sieve&gt;&amp; sieve, const Obj&lt;NewSieve&gt;&amp; newSieve, const Obj&lt;SendOverlap&gt;&amp; sendMeshOverlap, const Obj&lt;RecvOverlap&gt;&amp; recvMeshOverlap) {
+<a name="line92"> 92: </a>      <font color="#4169E1">typedef</font> ALE::OrientedConeSectionV&lt;Sieve&gt; oriented_cones_wrapper_type;
+<a name="line93"> 93: </a>      Obj&lt;oriented_cones_wrapper_type&gt; cones        = new oriented_cones_wrapper_type(sieve);
+<a name="line94"> 94: </a>      Obj&lt;oriented_cones_type&gt;         overlapCones = new oriented_cones_type(sieve-&gt;comm(), sieve-&gt;debug());
+
+<a name="line96"> 96: </a><strong><font color="#FF0000">      ALE:</font></strong>:Pullback::SimpleCopy::copy(sendMeshOverlap, recvMeshOverlap, cones, overlapCones);
+<a name="line97"> 97: </a>      <font color="#4169E1">if</font> (sieve-&gt;debug()) {overlapCones-&gt;view(<font color="#666666">"Overlap Cones"</font>);}
+<a name="line98"> 98: </a><strong><font color="#FF0000">      ALE:</font></strong>:Pullback::InsertionBinaryFusion::fuse(overlapCones, recvMeshOverlap, newSieve);
+<a name="line99"> 99: </a>      <font color="#4169E1">return</font> overlapCones;
+<a name="line100">100: </a>    }
+<a name="line101">101: </a>    template&lt;typename Sieve, typename NewSieve, typename Renumbering, typename SendOverlap, typename RecvOverlap&gt;
+<a name="line102">102: </a>    static Obj&lt;oriented_cones_type&gt; completeConesV(const Obj&lt;Sieve&gt;&amp; sieve, const Obj&lt;NewSieve&gt;&amp; newSieve, Renumbering&amp; renumbering, const Obj&lt;SendOverlap&gt;&amp; sendMeshOverlap, const Obj&lt;RecvOverlap&gt;&amp; recvMeshOverlap) {
+<a name="line103">103: </a>      <font color="#4169E1">typedef</font> ALE::OrientedConeSectionV&lt;Sieve&gt; oriented_cones_wrapper_type;
+<a name="line104">104: </a>      Obj&lt;oriented_cones_wrapper_type&gt; cones        = new oriented_cones_wrapper_type(sieve);
+<a name="line105">105: </a>      Obj&lt;oriented_cones_type&gt;         overlapCones = new oriented_cones_type(sieve-&gt;comm(), sieve-&gt;debug());
+
+<a name="line107">107: </a><strong><font color="#FF0000">      ALE:</font></strong>:Pullback::SimpleCopy::copy(sendMeshOverlap, recvMeshOverlap, cones, overlapCones);
+<a name="line108">108: </a>      <font color="#4169E1">if</font> (sieve-&gt;debug()) {overlapCones-&gt;view(<font color="#666666">"Overlap Cones"</font>);}
+<a name="line109">109: </a>      // Inserts cones into parallelMesh (must renumber here)
+<a name="line110">110: </a><strong><font color="#FF0000">      ALE:</font></strong>:Pullback::InsertionBinaryFusion::fuse(overlapCones, recvMeshOverlap, renumbering, newSieve);
+<a name="line111">111: </a>      <font color="#4169E1">return</font> overlapCones;
+<a name="line112">112: </a>    }
+<a name="line113">113: </a>    // Given a partition of sieve points, copy the mesh pieces to each process and fuse into the new mesh
+<a name="line114">114: </a>    //   Return overlaps <font color="#4169E1">for</font> the cone communication
+<a name="line115">115: </a>    template&lt;typename Renumbering, typename NewMesh, typename SendOverlap, typename RecvOverlap&gt;
+<a name="line116">116: </a>    static void completeMesh(const Obj&lt;Mesh&gt;&amp; mesh, const Obj&lt;partition_type&gt;&amp; partition, Renumbering&amp; renumbering, const Obj&lt;NewMesh&gt;&amp; newMesh, const Obj&lt;SendOverlap&gt;&amp; sendMeshOverlap, const Obj&lt;RecvOverlap&gt;&amp; recvMeshOverlap) {
+<a name="line117">117: </a>      <font color="#4169E1">typedef</font> ALE::Sifter&lt;rank_type,rank_type,rank_type&gt; part_send_overlap_type;
+<a name="line118">118: </a>      <font color="#4169E1">typedef</font> ALE::Sifter&lt;rank_type,rank_type,rank_type&gt; part_recv_overlap_type;
+<a name="line119">119: </a>      const Obj&lt;part_send_overlap_type&gt; sendOverlap = new part_send_overlap_type(partition-&gt;comm());
+<a name="line120">120: </a>      const Obj&lt;part_recv_overlap_type&gt; recvOverlap = new part_recv_overlap_type(partition-&gt;comm());
+
+<a name="line122">122: </a>      // Create overlap <font color="#4169E1">for</font> partition points
+<a name="line123">123: </a>      //   TODO: This needs to be generalized <font color="#4169E1">for</font> multiple sources
+<a name="line124">124: </a><strong><font color="#FF0000">      Partitioner:</font></strong>:createDistributionPartOverlap(sendOverlap, recvOverlap);
+<a name="line125">125: </a>      // Communicate partition pieces to processes
+<a name="line126">126: </a>      Obj&lt;partition_type&gt; overlapPartition = new partition_type(partition-&gt;comm(), partition-&gt;debug());
+
+<a name="line128">128: </a>      overlapPartition-&gt;setChart(partition-&gt;getChart());
+<a name="line129">129: </a><strong><font color="#FF0000">      ALE:</font></strong>:Pullback::SimpleCopy::copy(sendOverlap, recvOverlap, partition, overlapPartition);
+<a name="line130">130: </a>      // Create renumbering
+<a name="line131">131: </a>      const int         rank           = partition-&gt;commRank();
+<a name="line132">132: </a>      const point_type *localPoints    = partition-&gt;restrictPoint(rank);
+<a name="line133">133: </a>      const int         numLocalPoints = partition-&gt;getFiberDimension(rank);
+
+<a name="line135">135: </a>      <font color="#4169E1">for</font>(point_type p = 0; p &lt; numLocalPoints; ++p) {
+<a name="line136">136: </a>        renumbering[localPoints[p]] = p;
+<a name="line137">137: </a>      }
+<a name="line138">138: </a>      const Obj&lt;typename part_recv_overlap_type::traits::baseSequence&gt; rPoints    = recvOverlap-&gt;base();
+<a name="line139">139: </a>      point_type                                                       localPoint = numLocalPoints;
+
+<a name="line141">141: </a>      <font color="#4169E1">for</font>(typename part_recv_overlap_type::traits::baseSequence::iterator p_iter = rPoints-&gt;begin(); p_iter != rPoints-&gt;end(); ++p_iter) {
+<a name="line142">142: </a>        const Obj&lt;typename part_recv_overlap_type::coneSequence&gt;&amp; ranks           = recvOverlap-&gt;cone(*p_iter);
+<a name="line143">143: </a>        const rank_type&amp;                                          remotePartPoint = ranks-&gt;begin().color();
+<a name="line144">144: </a>        const point_type                                         *points          = overlapPartition-&gt;restrictPoint(remotePartPoint);
+<a name="line145">145: </a>        const int                                                 numPoints       = overlapPartition-&gt;getFiberDimension(remotePartPoint);
+
+<a name="line147">147: </a>        <font color="#4169E1">for</font>(int i = 0; i &lt; numPoints; ++i) {
+<a name="line148">148: </a>          renumbering[points[i]] = localPoint++;
+<a name="line149">149: </a>        }
+<a name="line150">150: </a>      }
+<a name="line151">151: </a>      // Create mesh overlap from partition overlap
+<a name="line152">152: </a>      //   TODO: Generalize to redistribution (receive from multiple sources)
+<a name="line153">153: </a><strong><font color="#FF0000">      Partitioner:</font></strong>:createDistributionMeshOverlap(partition, recvOverlap, renumbering, overlapPartition, sendMeshOverlap, recvMeshOverlap);
+<a name="line154">154: </a>      // Send cones
+<a name="line155">155: </a>      completeCones(mesh-&gt;getSieve(), newMesh-&gt;getSieve(), renumbering, sendMeshOverlap, recvMeshOverlap);
+<a name="line156">156: </a>    }
+<a name="line157">157: </a>    template&lt;typename Renumbering, typename NewMesh, typename SendOverlap, typename RecvOverlap&gt;
+<a name="line158">158: </a>    static void completeBaseV(const Obj&lt;Mesh&gt;&amp; mesh, const Obj&lt;partition_type&gt;&amp; partition, Renumbering&amp; renumbering, const Obj&lt;NewMesh&gt;&amp; newMesh, const Obj&lt;SendOverlap&gt;&amp; sendMeshOverlap, const Obj&lt;RecvOverlap&gt;&amp; recvMeshOverlap) {
+<a name="line159">159: </a>      <font color="#4169E1">typedef</font> ALE::Sifter&lt;rank_type,rank_type,rank_type&gt; part_send_overlap_type;
+<a name="line160">160: </a>      <font color="#4169E1">typedef</font> ALE::Sifter&lt;rank_type,rank_type,rank_type&gt; part_recv_overlap_type;
+<a name="line161">161: </a>      const Obj&lt;part_send_overlap_type&gt; sendOverlap = new part_send_overlap_type(partition-&gt;comm());
+<a name="line162">162: </a>      const Obj&lt;part_recv_overlap_type&gt; recvOverlap = new part_recv_overlap_type(partition-&gt;comm());
+
+<a name="line164">164: </a>      // Create overlap <font color="#4169E1">for</font> partition points
+<a name="line165">165: </a>      //   TODO: This needs to be generalized <font color="#4169E1">for</font> multiple sources
+<a name="line166">166: </a><strong><font color="#FF0000">      Partitioner:</font></strong>:createDistributionPartOverlap(sendOverlap, recvOverlap);
+<a name="line167">167: </a>      // Communicate partition pieces to processes
+<a name="line168">168: </a>      Obj&lt;partition_type&gt; overlapPartition = new partition_type(partition-&gt;comm(), partition-&gt;debug());
+
+<a name="line170">170: </a>      overlapPartition-&gt;setChart(partition-&gt;getChart());
+<a name="line171">171: </a><strong><font color="#FF0000">      ALE:</font></strong>:Pullback::SimpleCopy::copy(sendOverlap, recvOverlap, partition, overlapPartition);
+<a name="line172">172: </a>      // Create renumbering
+<a name="line173">173: </a>      const int         rank           = partition-&gt;commRank();
+<a name="line174">174: </a>      const point_type *localPoints    = partition-&gt;restrictPoint(rank);
+<a name="line175">175: </a>      const int         numLocalPoints = partition-&gt;getFiberDimension(rank);
+
+<a name="line177">177: </a>      <font color="#4169E1">for</font>(point_type p = 0; p &lt; numLocalPoints; ++p) {
+<a name="line178">178: </a>        ///std::cout &lt;&lt;<font color="#666666">"["</font>&lt;&lt;partition-&gt;commRank()&lt;&lt;<font color="#666666">"]: local renumbering "</font> &lt;&lt; localPoints[p] &lt;&lt; <font color="#666666">" --&gt; "</font> &lt;&lt; p &lt;&lt; std::endl;
+<a name="line179">179: </a>        renumbering[localPoints[p]] = p;
+<a name="line180">180: </a>      }
+<a name="line181">181: </a>      const Obj&lt;typename part_recv_overlap_type::traits::baseSequence&gt; rPoints    = recvOverlap-&gt;base();
+<a name="line182">182: </a>      point_type                                                       localPoint = numLocalPoints;
+
+<a name="line184">184: </a>      <font color="#4169E1">for</font>(typename part_recv_overlap_type::traits::baseSequence::iterator p_iter = rPoints-&gt;begin(); p_iter != rPoints-&gt;end(); ++p_iter) {
+<a name="line185">185: </a>        const Obj&lt;typename part_recv_overlap_type::coneSequence&gt;&amp; ranks           = recvOverlap-&gt;cone(*p_iter);
+<a name="line186">186: </a>        const rank_type&amp;                                          remotePartPoint = ranks-&gt;begin().color();
+<a name="line187">187: </a>        const point_type                                         *points          = overlapPartition-&gt;restrictPoint(remotePartPoint);
+<a name="line188">188: </a>        const int                                                 numPoints       = overlapPartition-&gt;getFiberDimension(remotePartPoint);
+
+<a name="line190">190: </a>        <font color="#4169E1">for</font>(int i = 0; i &lt; numPoints; ++i) {
+<a name="line191">191: </a>          ///std::cout &lt;&lt;<font color="#666666">"["</font>&lt;&lt;partition-&gt;commRank()&lt;&lt;<font color="#666666">"]: remote renumbering "</font> &lt;&lt; points[i] &lt;&lt; <font color="#666666">" --&gt; "</font> &lt;&lt; localPoint &lt;&lt; std::endl;
+<a name="line192">192: </a>          renumbering[points[i]] = localPoint++;
+<a name="line193">193: </a>        }
+<a name="line194">194: </a>      }
+<a name="line195">195: </a>      newMesh-&gt;getSieve()-&gt;setChart(typename NewMesh::sieve_type::chart_type(0, renumbering.size()));
+<a name="line196">196: </a>      // Create mesh overlap from partition overlap
+<a name="line197">197: </a>      //   TODO: Generalize to redistribution (receive from multiple sources)
+<a name="line198">198: </a><strong><font color="#FF0000">      Partitioner:</font></strong>:createDistributionMeshOverlap(partition, recvOverlap, renumbering, overlapPartition, sendMeshOverlap, recvMeshOverlap);
+<a name="line199">199: </a>    }
+<a name="line200">200: </a>    template&lt;typename NewMesh, typename Renumbering, typename SendOverlap, typename RecvOverlap&gt;
+<a name="line201">201: </a>    static Obj&lt;partition_type&gt; distributeMesh(const Obj&lt;Mesh&gt;&amp; mesh, const Obj&lt;NewMesh&gt;&amp; newMesh, Renumbering&amp; renumbering, const Obj&lt;SendOverlap&gt;&amp; sendMeshOverlap, const Obj&lt;RecvOverlap&gt;&amp; recvMeshOverlap, const int height = 0) {
+<a name="line202">202: </a>      const Obj&lt;partition_type&gt; cellPartition = new partition_type(mesh-&gt;comm(), 0, mesh-&gt;commSize(), mesh-&gt;debug());
+<a name="line203">203: </a>      const Obj&lt;partition_type&gt; partition     = new partition_type(mesh-&gt;comm(), 0, mesh-&gt;commSize(), mesh-&gt;debug());
+
+<a name="line205">205: </a>      // Create the cell partition
+<a name="line206">206: </a><strong><font color="#FF0000">      Partitioner:</font></strong>:createPartition(mesh, cellPartition, height);
+<a name="line207">207: </a>      <font color="#4169E1">if</font> (mesh-&gt;debug()) {
+<a name="line208">208: </a>        <A href="../../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A>    viewer;
+
+<a name="line211">211: </a>        cellPartition-&gt;view(<font color="#666666">"Cell Partition"</font>);
+<a name="line212">212: </a>        <A href="../../docs/manualpages/Viewer/PetscViewerCreate.html#PetscViewerCreate">PetscViewerCreate</A>(mesh-&gt;comm(), &amp;viewer);<A href="../../docs/manualpages/Sys/CHKERRXX.html#CHKERRXX">CHKERRXX</A>(ierr);
+<a name="line213">213: </a>        <A href="../../docs/manualpages/Viewer/PetscViewerSetType.html#PetscViewerSetType">PetscViewerSetType</A>(viewer, PETSCVIEWERASCII);<A href="../../docs/manualpages/Sys/CHKERRXX.html#CHKERRXX">CHKERRXX</A>(ierr);
+<a name="line214">214: </a>        <A href="../../docs/manualpages/Viewer/PetscViewerFileSetName.html#PetscViewerFileSetName">PetscViewerFileSetName</A>(viewer, <font color="#666666">"mesh.vtk"</font>);<A href="../../docs/manualpages/Sys/CHKERRXX.html#CHKERRXX">CHKERRXX</A>(ierr);
+<a name="line215">215: </a>        ///TODO MeshView_Sieve_Ascii(mesh, cellPartition, viewer);<A href="../../docs/manualpages/Sys/CHKERRXX.html#CHKERRXX">CHKERRXX</A>(ierr);
+<a name="line216">216: </a>        <A href="../../docs/manualpages/Viewer/PetscViewerDestroy.html#PetscViewerDestroy">PetscViewerDestroy</A>(&amp;viewer);<A href="../../docs/manualpages/Sys/CHKERRXX.html#CHKERRXX">CHKERRXX</A>(ierr);
+<a name="line217">217: </a>      }
+<a name="line218">218: </a>      // Close the partition over sieve points
+<a name="line219">219: </a><strong><font color="#FF0000">      Partitioner:</font></strong>:createPartitionClosure(mesh, cellPartition, partition, height);
+<a name="line220">220: </a>      <font color="#4169E1">if</font> (mesh-&gt;debug()) {partition-&gt;view(<font color="#666666">"Partition"</font>);}
+<a name="line221">221: </a>      // Create the remote meshes
+<a name="line222">222: </a>      completeMesh(mesh, partition, renumbering, newMesh, sendMeshOverlap, recvMeshOverlap);
+<a name="line223">223: </a>      // Create the local mesh
+<a name="line224">224: </a><strong><font color="#FF0000">      Partitioner:</font></strong>:createLocalMesh(mesh, partition, renumbering, newMesh, height);
+<a name="line225">225: </a>      newMesh-&gt;stratify();
+<a name="line226">226: </a>      <font color="#4169E1">return</font> partition;
+<a name="line227">227: </a>    }
+<a name="line228">228: </a>    template&lt;typename NewMesh, typename Renumbering, typename SendOverlap, typename RecvOverlap&gt;
+<a name="line229">229: </a>    static Obj&lt;partition_type&gt; distributeMeshAndSections(const Obj&lt;Mesh&gt;&amp; mesh, const Obj&lt;NewMesh&gt;&amp; newMesh, Renumbering&amp; renumbering, const Obj&lt;SendOverlap&gt;&amp; sendMeshOverlap, const Obj&lt;RecvOverlap&gt;&amp; recvMeshOverlap, const int height = 0) {
+<a name="line230">230: </a>      Obj&lt;partition_type&gt; partition = distributeMesh(mesh, newMesh, renumbering, sendMeshOverlap, recvMeshOverlap, height);
+
+<a name="line232">232: </a>      // Distribute the coordinates
+<a name="line233">233: </a>      const Obj&lt;typename Mesh::real_section_type&gt;&amp; coordinates         = mesh-&gt;getRealSection(<font color="#666666">"coordinates"</font>);
+<a name="line234">234: </a>      const Obj&lt;typename Mesh::real_section_type&gt;&amp; parallelCoordinates = newMesh-&gt;getRealSection(<font color="#666666">"coordinates"</font>);
+
+<a name="line236">236: </a>      newMesh-&gt;setupCoordinates(parallelCoordinates);
+<a name="line237">237: </a>      distributeSection(coordinates, partition, renumbering, sendMeshOverlap, recvMeshOverlap, parallelCoordinates);
+<a name="line238">238: </a>      // Distribute other sections
+<a name="line239">239: </a>      <font color="#4169E1">if</font> (mesh-&gt;getRealSections()-&gt;size() &gt; 1) {
+<a name="line240">240: </a>        Obj&lt;std::set&lt;std::string&gt; &gt; names = mesh-&gt;getRealSections();
+
+<a name="line242">242: </a>        <font color="#4169E1">for</font>(std::set&lt;std::string&gt;::const_iterator n_iter = names-&gt;begin(); n_iter != names-&gt;end(); ++n_iter) {
+<a name="line243">243: </a>          <font color="#4169E1">if</font> (*n_iter == <font color="#666666">"coordinates"</font>)   <font color="#4169E1">continue</font>;
+<a name="line244">244: </a>          distributeSection(mesh-&gt;getRealSection(*n_iter), partition, renumbering, sendMeshOverlap, recvMeshOverlap, newMesh-&gt;getRealSection(*n_iter));
+<a name="line245">245: </a>        }
+<a name="line246">246: </a>      }
+<a name="line247">247: </a>      <font color="#4169E1">if</font> (mesh-&gt;getIntSections()-&gt;size() &gt; 0) {
+<a name="line248">248: </a>        Obj&lt;std::set&lt;std::string&gt; &gt; names = mesh-&gt;getIntSections();
+
+<a name="line250">250: </a>        <font color="#4169E1">for</font>(std::set&lt;std::string&gt;::const_iterator n_iter = names-&gt;begin(); n_iter != names-&gt;end(); ++n_iter) {
+<a name="line251">251: </a>          distributeSection(mesh-&gt;getIntSection(*n_iter), partition, renumbering, sendMeshOverlap, recvMeshOverlap, newMesh-&gt;getIntSection(*n_iter));
+<a name="line252">252: </a>        }
+<a name="line253">253: </a>      }
+<a name="line254">254: </a>      <font color="#4169E1">if</font> (mesh-&gt;getArrowSections()-&gt;size() &gt; 1) {
+<a name="line255">255: </a>        throw ALE::Exception(<font color="#666666">"Need to distribute more arrow sections"</font>);
+<a name="line256">256: </a>      }
+<a name="line257">257: </a>      // Distribute labels
+<a name="line258">258: </a>      const typename Mesh::labels_type&amp; labels = mesh-&gt;getLabels();
+
+<a name="line260">260: </a>      <font color="#4169E1">for</font>(typename Mesh::labels_type::const_iterator l_iter = labels.begin(); l_iter != labels.end(); ++l_iter) {
+<a name="line261">261: </a>        <font color="#4169E1">if</font> (newMesh-&gt;hasLabel(l_iter-&gt;first)) <font color="#4169E1">continue</font>;
+<a name="line262">262: </a>        const Obj&lt;typename Mesh::label_type&gt;&amp; origLabel = l_iter-&gt;second;
+<a name="line263">263: </a>        const Obj&lt;typename Mesh::label_type&gt;&amp; newLabel  = newMesh-&gt;createLabel(l_iter-&gt;first);
+<a name="line264">264: </a>        // Get remote labels
+<a name="line265">265: </a><strong><font color="#FF0000">        ALE:</font></strong>:New::Completion&lt;Mesh,typename Mesh::point_type&gt;::scatterCones(origLabel, newLabel, sendMeshOverlap, recvMeshOverlap, renumbering);
+<a name="line266">266: </a>        // Create local label
+<a name="line267">267: </a>        newLabel-&gt;add(origLabel, newMesh-&gt;getSieve(), renumbering);
+<a name="line268">268: </a>      }
+<a name="line269">269: </a>      <font color="#4169E1">return</font> partition;
+<a name="line270">270: </a>    }
+<a name="line271">271: </a>    template&lt;typename NewMesh, typename Renumbering, typename SendOverlap, typename RecvOverlap&gt;
+<a name="line272">272: </a>    static Obj&lt;partition_type&gt; distributeMeshV(const Obj&lt;Mesh&gt;&amp; mesh, const Obj&lt;NewMesh&gt;&amp; newMesh, Renumbering&amp; renumbering, const Obj&lt;SendOverlap&gt;&amp; sendMeshOverlap, const Obj&lt;RecvOverlap&gt;&amp; recvMeshOverlap, const int height = 0) {
+<a name="line273">273: </a>      const Obj&lt;partition_type&gt; cellPartition = new partition_type(mesh-&gt;comm(), 0, mesh-&gt;commSize(), mesh-&gt;debug());
+<a name="line274">274: </a>      const Obj&lt;partition_type&gt; partition     = new partition_type(mesh-&gt;comm(), 0, mesh-&gt;commSize(), mesh-&gt;debug());
+
+<a name="line276">276: </a><strong><font color="#FF0000">      PETSc:</font></strong>:Log::Event(<font color="#666666">"DistributeMesh"</font>).begin();
+<a name="line277">277: </a>      // Create the cell partition
+<a name="line278">278: </a><strong><font color="#FF0000">      Partitioner:</font></strong>:createPartitionV(mesh, cellPartition, height);
+<a name="line279">279: </a>      <font color="#4169E1">if</font> (mesh-&gt;debug()) {
+<a name="line280">280: </a>        <A href="../../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A>    viewer;
+
+<a name="line283">283: </a>        cellPartition-&gt;view(<font color="#666666">"Cell Partition"</font>);
+<a name="line284">284: </a>        <A href="../../docs/manualpages/Viewer/PetscViewerCreate.html#PetscViewerCreate">PetscViewerCreate</A>(mesh-&gt;comm(), &amp;viewer);<A href="../../docs/manualpages/Sys/CHKERRXX.html#CHKERRXX">CHKERRXX</A>(ierr);
+<a name="line285">285: </a>        <A href="../../docs/manualpages/Viewer/PetscViewerSetType.html#PetscViewerSetType">PetscViewerSetType</A>(viewer, PETSCVIEWERASCII);<A href="../../docs/manualpages/Sys/CHKERRXX.html#CHKERRXX">CHKERRXX</A>(ierr);
+<a name="line286">286: </a>        <A href="../../docs/manualpages/Viewer/PetscViewerFileSetName.html#PetscViewerFileSetName">PetscViewerFileSetName</A>(viewer, <font color="#666666">"mesh.vtk"</font>);<A href="../../docs/manualpages/Sys/CHKERRXX.html#CHKERRXX">CHKERRXX</A>(ierr);
+<a name="line287">287: </a>        ///TODO MeshView_Sieve_Ascii(mesh, cellPartition, viewer);<A href="../../docs/manualpages/Sys/CHKERRXX.html#CHKERRXX">CHKERRXX</A>(ierr);
+<a name="line288">288: </a>        <A href="../../docs/manualpages/Viewer/PetscViewerDestroy.html#PetscViewerDestroy">PetscViewerDestroy</A>(&amp;viewer);<A href="../../docs/manualpages/Sys/CHKERRXX.html#CHKERRXX">CHKERRXX</A>(ierr);
+<a name="line289">289: </a>      }
+<a name="line290">290: </a>      // Close the partition over sieve points
+<a name="line291">291: </a><strong><font color="#FF0000">      Partitioner:</font></strong>:createPartitionClosureV(mesh, cellPartition, partition, height);
+<a name="line292">292: </a>      <font color="#4169E1">if</font> (mesh-&gt;debug()) {partition-&gt;view(<font color="#666666">"Partition"</font>);}
+<a name="line293">293: </a>      // Create the remote bases
+<a name="line294">294: </a>      completeBaseV(mesh, partition, renumbering, newMesh, sendMeshOverlap, recvMeshOverlap);
+<a name="line295">295: </a>      // Size the local mesh
+<a name="line296">296: </a><strong><font color="#FF0000">      Partitioner:</font></strong>:sizeLocalMeshV(mesh, partition, renumbering, newMesh, height);
+<a name="line297">297: </a>      // Create the remote meshes
+<a name="line298">298: </a>      completeConesV(mesh-&gt;getSieve(), newMesh-&gt;getSieve(), renumbering, sendMeshOverlap, recvMeshOverlap);
+<a name="line299">299: </a>      // Create the local mesh
+<a name="line300">300: </a><strong><font color="#FF0000">      Partitioner:</font></strong>:createLocalMeshV(mesh, partition, renumbering, newMesh, height);
+<a name="line301">301: </a>      newMesh-&gt;getSieve()-&gt;symmetrize();
+<a name="line302">302: </a>      newMesh-&gt;stratify();
+<a name="line303">303: </a><strong><font color="#FF0000">      PETSc:</font></strong>:Log::Event(<font color="#666666">"DistributeMesh"</font>).end();
+<a name="line304">304: </a>      <font color="#4169E1">return</font> partition;
+<a name="line305">305: </a>    }
+<a name="line306">306: </a>    // distributeMeshV:
+<a name="line307">307: </a>    //   createPartitionV (can be dumb)
+<a name="line308">308: </a>    //   createPartitionClosureV (should be low memory)
+<a name="line309">309: </a>    //   completeBaseV ( have not decided )
+<a name="line310">310: </a>    //     Partitioner::createDistributionPartOverlap (low memory)
+<a name="line311">311: </a>    //     copy points to partitions (uses small overlap and fake sections)
+<a name="line312">312: </a>    //     renumber (map is potentially big, can measure)
+<a name="line313">313: </a>    //     Partitioner::createDistributionMeshOverlap (should be large <font color="#4169E1">for</font> distribution)
+<a name="line314">314: </a>    //       sendMeshOverlap is localPoint--- remotePoint ---&gt;remoteRank
+<a name="line315">315: </a>    //       recvMeshOverlap is remoteRank--- remotePoint ---&gt;localPoint
+<a name="line316">316: </a>    //   sizeLocalMeshV (should be low memory)
+<a name="line317">317: </a>    //   completeConesV ( have not decided )
+<a name="line318">318: </a>    //   createLocalMesh (should be low memory)
+<a name="line319">319: </a>    //   symmetrize
+<a name="line320">320: </a>    //   stratify
+<a name="line321">321: </a>    template&lt;typename NewMesh&gt;
+<a name="line322">322: </a>    static void distributeMeshAndSectionsV(const Obj&lt;Mesh&gt;&amp; mesh, const Obj&lt;NewMesh&gt;&amp; newMesh) {
+<a name="line323">323: </a>      <font color="#4169E1">typedef</font> typename Mesh::point_type point_type;
+
+<a name="line325">325: </a>      const Obj&lt;typename Mesh::send_overlap_type&gt; sendMeshOverlap = new typename Mesh::send_overlap_type(mesh-&gt;comm(), mesh-&gt;debug());
+<a name="line326">326: </a>      const Obj&lt;typename Mesh::recv_overlap_type&gt; recvMeshOverlap = new typename Mesh::recv_overlap_type(mesh-&gt;comm(), mesh-&gt;debug());
+<a name="line327">327: </a><strong><font color="#FF0000">      std:</font></strong>:map&lt;point_type,point_type&gt;&amp;            renumbering     = newMesh-&gt;getRenumbering();
+<a name="line328">328: </a>      // Distribute the mesh
+<a name="line329">329: </a>      Obj&lt;partition_type&gt; partition = distributeMeshV(mesh, newMesh, renumbering, sendMeshOverlap, recvMeshOverlap);
+<a name="line330">330: </a>      <font color="#4169E1">if</font> (mesh-&gt;debug()) {
+<a name="line331">331: </a><strong><font color="#FF0000">        std:</font></strong>:cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;mesh-&gt;commRank()&lt;&lt;<font color="#666666">"]: Mesh Renumbering:"</font> &lt;&lt; std::endl;
+<a name="line332">332: </a>        <font color="#4169E1">for</font>(typename Mesh::renumbering_type::const_iterator r_iter = renumbering.begin(); r_iter != renumbering.end(); ++r_iter) {
+<a name="line333">333: </a><strong><font color="#FF0000">          std:</font></strong>:cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;mesh-&gt;commRank()&lt;&lt;<font color="#666666">"]:   global point "</font> &lt;&lt; r_iter-&gt;first &lt;&lt; <font color="#666666">" --&gt; "</font> &lt;&lt; <font color="#666666">" local point "</font> &lt;&lt; r_iter-&gt;second &lt;&lt; std::endl;
+<a name="line334">334: </a>        }
+<a name="line335">335: </a>      }
+<a name="line336">336: </a>      // Distribute the coordinates
+<a name="line337">337: </a><strong><font color="#FF0000">      PETSc:</font></strong>:Log::Event(<font color="#666666">"DistributeCoords"</font>).begin();
+<a name="line338">338: </a>      const Obj&lt;typename Mesh::real_section_type&gt;&amp; coordinates         = mesh-&gt;getRealSection(<font color="#666666">"coordinates"</font>);
+<a name="line339">339: </a>      const Obj&lt;typename Mesh::real_section_type&gt;&amp; parallelCoordinates = newMesh-&gt;getRealSection(<font color="#666666">"coordinates"</font>);
+
+<a name="line341">341: </a>      newMesh-&gt;setupCoordinates(parallelCoordinates);
+<a name="line342">342: </a>      distributeSection(coordinates, partition, renumbering, sendMeshOverlap, recvMeshOverlap, parallelCoordinates);
+<a name="line343">343: </a><strong><font color="#FF0000">      PETSc:</font></strong>:Log::Event(<font color="#666666">"DistributeCoords"</font>).end();
+<a name="line344">344: </a>      // Distribute other sections
+<a name="line345">345: </a>      <font color="#4169E1">if</font> (mesh-&gt;getRealSections()-&gt;size() &gt; 1) {
+<a name="line346">346: </a><strong><font color="#FF0000">        PETSc:</font></strong>:Log::Event(<font color="#666666">"DistributeRealSec"</font>).begin();
+<a name="line347">347: </a>        Obj&lt;std::set&lt;std::string&gt; &gt; names = mesh-&gt;getRealSections();
+<a name="line348">348: </a>        int                         n     = 0;
+
+<a name="line350">350: </a>        <font color="#4169E1">for</font>(std::set&lt;std::string&gt;::const_iterator n_iter = names-&gt;begin(); n_iter != names-&gt;end(); ++n_iter) {
+<a name="line351">351: </a>          <font color="#4169E1">if</font> (*n_iter == <font color="#666666">"coordinates"</font>)   <font color="#4169E1">continue</font>;
+<a name="line352">352: </a><strong><font color="#FF0000">          std:</font></strong>:cout &lt;&lt; <font color="#666666">"ERROR: Did not distribute real section "</font> &lt;&lt; *n_iter &lt;&lt; std::endl;
+<a name="line353">353: </a>          ++n;
+<a name="line354">354: </a>        }
+<a name="line355">355: </a><strong><font color="#FF0000">        PETSc:</font></strong>:Log::Event(<font color="#666666">"DistributeRealSec"</font>).end();
+<a name="line356">356: </a>        <font color="#4169E1">if</font> (n) {throw ALE::Exception(<font color="#666666">"Need to distribute more real sections"</font>);}
+<a name="line357">357: </a>      }
+<a name="line358">358: </a>      <font color="#4169E1">if</font> (mesh-&gt;getIntSections()-&gt;size() &gt; 0) {
+<a name="line359">359: </a><strong><font color="#FF0000">        PETSc:</font></strong>:Log::Event(<font color="#666666">"DistributeIntSec"</font>).begin();
+<a name="line360">360: </a>        Obj&lt;std::set&lt;std::string&gt; &gt; names = mesh-&gt;getIntSections();
+
+<a name="line362">362: </a>        <font color="#4169E1">for</font>(std::set&lt;std::string&gt;::const_iterator n_iter = names-&gt;begin(); n_iter != names-&gt;end(); ++n_iter) {
+<a name="line363">363: </a>          const Obj&lt;typename Mesh::int_section_type&gt;&amp; section    = mesh-&gt;getIntSection(*n_iter);
+<a name="line364">364: </a>          const Obj&lt;typename Mesh::int_section_type&gt;&amp; newSection = newMesh-&gt;getIntSection(*n_iter);
+
+<a name="line366">366: </a>          // We assume all integer sections are complete sections
+<a name="line367">367: </a>          newSection-&gt;setChart(newMesh-&gt;getSieve()-&gt;getChart());
+<a name="line368">368: </a>          distributeSection(section, partition, renumbering, sendMeshOverlap, recvMeshOverlap, newSection);
+<a name="line369">369: </a>        }
+<a name="line370">370: </a><strong><font color="#FF0000">        PETSc:</font></strong>:Log::Event(<font color="#666666">"DistributeIntSec"</font>).end();
+<a name="line371">371: </a>      }
+<a name="line372">372: </a>      <font color="#4169E1">if</font> (mesh-&gt;getArrowSections()-&gt;size() &gt; 1) {
+<a name="line373">373: </a>        throw ALE::Exception(<font color="#666666">"Need to distribute more arrow sections"</font>);
+<a name="line374">374: </a>      }
+<a name="line375">375: </a>      // Distribute labels
+<a name="line376">376: </a><strong><font color="#FF0000">      PETSc:</font></strong>:Log::Event(<font color="#666666">"DistributeLabels"</font>).begin();
+<a name="line377">377: </a>      const typename Mesh::labels_type&amp; labels = mesh-&gt;getLabels();
+
+<a name="line379">379: </a>      <font color="#4169E1">for</font>(typename Mesh::labels_type::const_iterator l_iter = labels.begin(); l_iter != labels.end(); ++l_iter) {
+<a name="line380">380: </a>        <font color="#4169E1">if</font> (newMesh-&gt;hasLabel(l_iter-&gt;first)) <font color="#4169E1">continue</font>;
+<a name="line381">381: </a>        const Obj&lt;typename Mesh::label_type&gt;&amp; origLabel = l_iter-&gt;second;
+<a name="line382">382: </a>        const Obj&lt;typename Mesh::label_type&gt;&amp; newLabel  = newMesh-&gt;createLabel(l_iter-&gt;first);
+
+<a name="line384">384: </a><font color="#A020F0">#ifdef IMESH_NEW_LABELS</font>
+<a name="line385">385: </a>        newLabel-&gt;setChart(newMesh-&gt;getSieve()-&gt;getChart());
+<a name="line386">386: </a>        // Size the local mesh
+<a name="line387">387: </a><strong><font color="#FF0000">        Partitioner:</font></strong>:sizeLocalSieveV(origLabel, partition, renumbering, newLabel);
+<a name="line388">388: </a>        // Create the remote meshes
+<a name="line389">389: </a>        completeConesV(origLabel, newLabel, renumbering, sendMeshOverlap, recvMeshOverlap);
+<a name="line390">390: </a>        // Create the local mesh
+<a name="line391">391: </a><strong><font color="#FF0000">        Partitioner:</font></strong>:createLocalSieveV(origLabel, partition, renumbering, newLabel);
+<a name="line392">392: </a>        newLabel-&gt;symmetrize();
+<a name="line393">393: </a><font color="#A020F0">#else</font>
+<a name="line394">394: </a>        distributeLabelV(newMesh-&gt;getSieve(), origLabel, partition, renumbering, sendMeshOverlap, recvMeshOverlap, newLabel);
+<a name="line395">395: </a><font color="#A020F0">#endif</font>
+<a name="line396">396: </a>      }
+<a name="line397">397: </a><strong><font color="#FF0000">      PETSc:</font></strong>:Log::Event(<font color="#666666">"DistributeLabels"</font>).end();
+<a name="line398">398: </a>      // Create the parallel overlap
+<a name="line399">399: </a><strong><font color="#FF0000">      PETSc:</font></strong>:Log::Event(<font color="#666666">"CreateOverlap"</font>).begin();
+<a name="line400">400: </a>      Obj&lt;typename Mesh::send_overlap_type&gt; sendParallelMeshOverlap = newMesh-&gt;getSendOverlap();
+<a name="line401">401: </a>      Obj&lt;typename Mesh::recv_overlap_type&gt; recvParallelMeshOverlap = newMesh-&gt;getRecvOverlap();
+<a name="line402">402: </a>      //   Can I figure this out in a nicer way?
+<a name="line403">403: </a><strong><font color="#FF0000">      ALE:</font></strong>:SetFromMap&lt;std::map&lt;point_type,point_type&gt; &gt; globalPoints(renumbering);
+
+<a name="line405">405: </a><strong><font color="#FF0000">      ALE:</font></strong>:OverlapBuilder&lt;&gt;::constructOverlap(globalPoints, renumbering, sendParallelMeshOverlap, recvParallelMeshOverlap);
+<a name="line406">406: </a>      newMesh-&gt;setCalculatedOverlap(true);
+<a name="line407">407: </a><strong><font color="#FF0000">      PETSc:</font></strong>:Log::Event(<font color="#666666">"CreateOverlap"</font>).end();
+<a name="line408">408: </a>    }
+<a name="line409">409: </a>    template&lt;typename Label, typename Partition, typename Renumbering, typename SendOverlap, typename RecvOverlap, typename NewLabel&gt;
+<a name="line410">410: </a>    static void distributeLabel(const Obj&lt;typename Mesh::sieve_type&gt;&amp; sieve, const Obj&lt;Label&gt;&amp; l, const Obj&lt;Partition&gt;&amp; partition, Renumbering&amp; renumbering, const Obj&lt;SendOverlap&gt;&amp; sendOverlap, const Obj&lt;RecvOverlap&gt;&amp; recvOverlap, const Obj&lt;NewLabel&gt;&amp; newL) {
+<a name="line411">411: </a><strong><font color="#FF0000">      Partitioner:</font></strong>:createLocalSifter(l, partition, renumbering, newL);
+<a name="line412">412: </a>      //completeCones(l, newL, renumbering, sendMeshOverlap, recvMeshOverlap);
+<a name="line413">413: </a>      {
+<a name="line414">414: </a>        <font color="#4169E1">typedef</font> ALE::UniformSection&lt;point_type, int&gt;                cones_type;
+<a name="line415">415: </a>        <font color="#4169E1">typedef</font> ALE::LabelSection&lt;typename Mesh::sieve_type, Label&gt; cones_wrapper_type;
+<a name="line416">416: </a>        Obj&lt;cones_wrapper_type&gt; cones        = new cones_wrapper_type(sieve, l);
+<a name="line417">417: </a>        Obj&lt;cones_type&gt;         overlapCones = new cones_type(l-&gt;comm(), l-&gt;debug());
+
+<a name="line419">419: </a><strong><font color="#FF0000">        ALE:</font></strong>:Pullback::SimpleCopy::copy(sendOverlap, recvOverlap, cones, overlapCones);
+<a name="line420">420: </a>        <font color="#4169E1">if</font> (l-&gt;debug()) {overlapCones-&gt;view(<font color="#666666">"Overlap Label Values"</font>);}
+<a name="line421">421: </a>        // Inserts cones into newL (must renumber here)
+<a name="line422">422: </a>        //ALE::Pullback::InsertionBinaryFusion::fuse(overlapCones, recvOverlap, renumbering, newSieve);
+<a name="line423">423: </a>        {
+<a name="line424">424: </a>          <font color="#4169E1">typedef</font> typename cones_type::point_type overlap_point_type;
+<a name="line425">425: </a>          const Obj&lt;typename RecvOverlap::baseSequence&gt;      rPoints = recvOverlap-&gt;base();
+<a name="line426">426: </a>          const typename RecvOverlap::baseSequence::iterator rEnd    = rPoints-&gt;end();
+
+<a name="line428">428: </a>          <font color="#4169E1">for</font>(typename RecvOverlap::baseSequence::iterator p_iter = rPoints-&gt;begin(); p_iter != rEnd; ++p_iter) {
+<a name="line429">429: </a>            const Obj&lt;typename RecvOverlap::coneSequence&gt;&amp; points       = recvOverlap-&gt;cone(*p_iter);
+<a name="line430">430: </a>            const typename RecvOverlap::target_type&amp;       localPoint   = *p_iter;
+<a name="line431">431: </a>            const typename cones_type::point_type&amp;         remotePoint  = points-&gt;begin().color();
+<a name="line432">432: </a>            const overlap_point_type                       overlapPoint = overlap_point_type(remotePoint.second, remotePoint.first);
+<a name="line433">433: </a>            const int                                      size         = overlapCones-&gt;getFiberDimension(overlapPoint);
+<a name="line434">434: </a>            const typename cones_type::value_type         *values       = overlapCones-&gt;restrictPoint(overlapPoint);
+
+<a name="line436">436: </a>            newL-&gt;clearCone(localPoint);
+<a name="line437">437: </a>            <font color="#4169E1">for</font>(int i = 0; i &lt; size; ++i) {newL-&gt;addCone(values[i], localPoint);}
+<a name="line438">438: </a>          }
+<a name="line439">439: </a>        }
+<a name="line440">440: </a>      }
+<a name="line441">441: </a>    }
+<a name="line442">442: </a>    template&lt;typename Label, typename Partition, typename Renumbering, typename SendOverlap, typename RecvOverlap, typename NewLabel&gt;
+<a name="line443">443: </a>    static void distributeLabelV(const Obj&lt;typename Mesh::sieve_type&gt;&amp; sieve, const Obj&lt;Label&gt;&amp; l, const Obj&lt;Partition&gt;&amp; partition, Renumbering&amp; renumbering, const Obj&lt;SendOverlap&gt;&amp; sendOverlap, const Obj&lt;RecvOverlap&gt;&amp; recvOverlap, const Obj&lt;NewLabel&gt;&amp; newL) {
+<a name="line444">444: </a><strong><font color="#FF0000">      Partitioner:</font></strong>:createLocalSifter(l, partition, renumbering, newL);
+<a name="line445">445: </a>      //completeCones(l, newL, renumbering, sendMeshOverlap, recvMeshOverlap);
+<a name="line446">446: </a>      {
+<a name="line447">447: </a>        <font color="#4169E1">typedef</font> typename Label::alloc_type::template rebind&lt;int&gt;::other alloc_type;
+<a name="line448">448: </a>        <font color="#4169E1">typedef</font> LabelBaseSectionV&lt;typename Mesh::sieve_type, Label, alloc_type&gt; atlas_type;
+<a name="line449">449: </a>        <font color="#4169E1">typedef</font> ALE::UniformSection&lt;ALE::Pair&lt;int, point_type&gt;, int&gt;            cones_type;
+<a name="line450">450: </a>        <font color="#4169E1">typedef</font> ALE::LabelSection&lt;typename Mesh::sieve_type, Label, alloc_type, atlas_type&gt; cones_wrapper_type;
+<a name="line451">451: </a>        Obj&lt;cones_wrapper_type&gt; cones        = new cones_wrapper_type(sieve, l);
+<a name="line452">452: </a>        Obj&lt;cones_type&gt;         overlapCones = new cones_type(l-&gt;comm(), l-&gt;debug());
+
+<a name="line454">454: </a><strong><font color="#FF0000">        ALE:</font></strong>:Pullback::SimpleCopy::copy(sendOverlap, recvOverlap, cones, overlapCones);
+<a name="line455">455: </a>        <font color="#4169E1">if</font> (l-&gt;debug()) {overlapCones-&gt;view(<font color="#666666">"Overlap Label Values"</font>);}
+<a name="line456">456: </a>        // Inserts cones into newL (must renumber here)
+<a name="line457">457: </a>        //ALE::Pullback::InsertionBinaryFusion::fuse(overlapCones, recvOverlap, renumbering, newSieve);
+<a name="line458">458: </a>        {
+<a name="line459">459: </a>          <font color="#4169E1">typedef</font> typename cones_type::point_type overlap_point_type;
+<a name="line460">460: </a>          const typename RecvOverlap::capSequence::iterator rBegin = recvOverlap-&gt;capBegin();
+<a name="line461">461: </a>          const typename RecvOverlap::capSequence::iterator rEnd   = recvOverlap-&gt;capEnd();
+
+<a name="line463">463: </a>          <font color="#4169E1">for</font>(typename RecvOverlap::capSequence::iterator r_iter = rBegin; r_iter != rEnd; ++r_iter) {
+<a name="line464">464: </a>            const int                                             rank    = *r_iter;
+<a name="line465">465: </a>            const typename RecvOverlap::supportSequence::iterator pBegin  = recvOverlap-&gt;supportBegin(*r_iter);
+<a name="line466">466: </a>            const typename RecvOverlap::supportSequence::iterator pEnd    = recvOverlap-&gt;supportEnd(*r_iter);
+
+<a name="line468">468: </a>            <font color="#4169E1">for</font>(typename RecvOverlap::supportSequence::iterator p_iter = pBegin; p_iter != pEnd; ++p_iter) {
+<a name="line469">469: </a>              const typename RecvOverlap::target_type&amp; localPoint   = *p_iter;
+<a name="line470">470: </a>              const typename RecvOverlap::target_type&amp; remotePoint  = p_iter.color();
+<a name="line471">471: </a>              const overlap_point_type                 overlapPoint = overlap_point_type(rank, remotePoint);
+<a name="line472">472: </a>              const int                                size         = overlapCones-&gt;getFiberDimension(overlapPoint);
+<a name="line473">473: </a>              const typename cones_type::value_type   *values       = overlapCones-&gt;restrictPoint(overlapPoint);
+
+<a name="line475">475: </a>              newL-&gt;clearCone(localPoint);
+<a name="line476">476: </a>              <font color="#4169E1">for</font>(int i = 0; i &lt; size; ++i) {newL-&gt;addCone(values[i], localPoint);}
+<a name="line477">477: </a>            }
+<a name="line478">478: </a>          }
+<a name="line479">479: </a>        }
+<a name="line480">480: </a>      }
+<a name="line481">481: </a>    }
+<a name="line482">482: </a>    template&lt;typename Section, typename Partition, typename Renumbering, typename SendOverlap, typename RecvOverlap, typename NewSection&gt;
+<a name="line483">483: </a>    static void distributeSection(const Obj&lt;Section&gt;&amp; s, const Obj&lt;Partition&gt;&amp; partition, Renumbering&amp; renumbering, const Obj&lt;SendOverlap&gt;&amp; sendOverlap, const Obj&lt;RecvOverlap&gt;&amp; recvOverlap, const Obj&lt;NewSection&gt;&amp; newS) {
+<a name="line484">484: </a><strong><font color="#FF0000">      Partitioner:</font></strong>:createLocalSection(s, partition, renumbering, newS);
+<a name="line485">485: </a><strong><font color="#FF0000">      ALE:</font></strong>:Completion::completeSection(sendOverlap, recvOverlap, s, newS);
+<a name="line486">486: </a>    }
+<a name="line487">487: </a>    template&lt;typename NewMesh, typename Renumbering, typename SendOverlap, typename RecvOverlap&gt;
+<a name="line488">488: </a>    static Obj&lt;partition_type&gt; unifyMesh(const Obj&lt;Mesh&gt;&amp; mesh, const Obj&lt;NewMesh&gt;&amp; newMesh, Renumbering&amp; renumbering, const Obj&lt;SendOverlap&gt;&amp; sendMeshOverlap, const Obj&lt;RecvOverlap&gt;&amp; recvMeshOverlap) {
+<a name="line489">489: </a>      const Obj&lt;partition_type&gt; cellPartition = new partition_type(mesh-&gt;comm(), 0, mesh-&gt;commSize(), mesh-&gt;debug());
+<a name="line490">490: </a>      const Obj&lt;partition_type&gt; partition     = new partition_type(mesh-&gt;comm(), 0, mesh-&gt;commSize(), mesh-&gt;debug());
+<a name="line491">491: </a>      const Obj&lt;typename Mesh::label_sequence&gt;&amp;     cells  = mesh-&gt;heightStratum(0);
+<a name="line492">492: </a>      const typename Mesh::label_sequence::iterator cEnd   = cells-&gt;end();
+<a name="line493">493: </a>      typename Mesh::point_type                    *values = new typename Mesh::point_type[cells-&gt;size()];
+<a name="line494">494: </a>      int                                           c      = 0;
+
+<a name="line496">496: </a>      cellPartition-&gt;setFiberDimension(0, cells-&gt;size());
+<a name="line497">497: </a>      cellPartition-&gt;allocatePoint();
+<a name="line498">498: </a>      <font color="#4169E1">for</font>(typename Mesh::label_sequence::iterator c_iter = cells-&gt;begin(); c_iter != cEnd; ++c_iter, ++c) {
+<a name="line499">499: </a>        values[c] = *c_iter;
+<a name="line500">500: </a>      }
+<a name="line501">501: </a>      cellPartition-&gt;updatePoint(0, values);
+<a name="line502">502: </a>      delete [] values;
+<a name="line503">503: </a>      // Close the partition over sieve points
+<a name="line504">504: </a><strong><font color="#FF0000">      Partitioner:</font></strong>:createPartitionClosure(mesh, cellPartition, partition);
+<a name="line505">505: </a>      // Create the remote meshes
+<a name="line506">506: </a>      completeMesh(mesh, partition, renumbering, newMesh, sendMeshOverlap, recvMeshOverlap);
+<a name="line507">507: </a>      // Create the local mesh
+<a name="line508">508: </a><strong><font color="#FF0000">      Partitioner:</font></strong>:createLocalMesh(mesh, partition, renumbering, newMesh);
+<a name="line509">509: </a>      newMesh-&gt;stratify();
+<a name="line510">510: </a>      newMesh-&gt;view(<font color="#666666">"Unified mesh"</font>);
+<a name="line511">511: </a>      <font color="#4169E1">return</font> partition;
+<a name="line512">512: </a>    }
+<a name="line513">513: </a>    static Obj&lt;Mesh&gt; unifyMesh(const Obj&lt;Mesh&gt;&amp; mesh) {
+<a name="line514">514: </a>      <font color="#4169E1">typedef</font> ALE::Sifter&lt;point_type,rank_type,point_type&gt; mesh_send_overlap_type;
+<a name="line515">515: </a>      <font color="#4169E1">typedef</font> ALE::Sifter&lt;rank_type,point_type,point_type&gt; mesh_recv_overlap_type;
+<a name="line516">516: </a>      const Obj&lt;Mesh&gt;                      newMesh         = new Mesh(mesh-&gt;comm(), mesh-&gt;getDimension(), mesh-&gt;debug());
+<a name="line517">517: </a>      const Obj&lt;typename Mesh::sieve_type&gt; newSieve        = new typename Mesh::sieve_type(mesh-&gt;comm(), mesh-&gt;debug());
+<a name="line518">518: </a>      const Obj&lt;mesh_send_overlap_type&gt;    sendMeshOverlap = new mesh_send_overlap_type(mesh-&gt;comm(), mesh-&gt;debug());
+<a name="line519">519: </a>      const Obj&lt;mesh_recv_overlap_type&gt;    recvMeshOverlap = new mesh_recv_overlap_type(mesh-&gt;comm(), mesh-&gt;debug());
+<a name="line520">520: </a><strong><font color="#FF0000">      std:</font></strong>:map&lt;point_type,point_type&gt;      renumbering;
+
+<a name="line522">522: </a>      newMesh-&gt;setSieve(newSieve);
+<a name="line523">523: </a>      const Obj&lt;partition_type&gt; partition = unifyMesh(mesh, newMesh, renumbering, sendMeshOverlap, recvMeshOverlap);
+<a name="line524">524: </a>      // Unify coordinates
+<a name="line525">525: </a>      const Obj&lt;typename Mesh::real_section_type&gt;&amp; coordinates    = mesh-&gt;getRealSection(<font color="#666666">"coordinates"</font>);
+<a name="line526">526: </a>      const Obj&lt;typename Mesh::real_section_type&gt;&amp; newCoordinates = newMesh-&gt;getRealSection(<font color="#666666">"coordinates"</font>);
+
+<a name="line528">528: </a>      newMesh-&gt;setupCoordinates(newCoordinates);
+<a name="line529">529: </a>      distributeSection(coordinates, partition, renumbering, sendMeshOverlap, recvMeshOverlap, newCoordinates);
+<a name="line530">530: </a>      // Unify labels
+<a name="line531">531: </a>      const typename Mesh::labels_type&amp; labels = mesh-&gt;getLabels();
+
+<a name="line533">533: </a>      <font color="#4169E1">for</font>(typename Mesh::labels_type::const_iterator l_iter = labels.begin(); l_iter != labels.end(); ++l_iter) {
+<a name="line534">534: </a>        <font color="#4169E1">if</font> (newMesh-&gt;hasLabel(l_iter-&gt;first)) <font color="#4169E1">continue</font>;
+<a name="line535">535: </a>        const Obj&lt;typename Mesh::label_type&gt;&amp; label    = l_iter-&gt;second;
+<a name="line536">536: </a>        const Obj&lt;typename Mesh::label_type&gt;&amp; newLabel = newMesh-&gt;createLabel(l_iter-&gt;first);
+
+<a name="line538">538: </a>        //completeCones(label, newLabel, renumbering, sendMeshOverlap, recvMeshOverlap);
+<a name="line539">539: </a>        {
+<a name="line540">540: </a>          <font color="#4169E1">typedef</font> ALE::UniformSection&lt;point_type, int&gt; cones_type;
+<a name="line541">541: </a>          <font color="#4169E1">typedef</font> ALE::LabelSection&lt;typename Mesh::sieve_type,typename Mesh::label_type&gt; cones_wrapper_type;
+<a name="line542">542: </a>          Obj&lt;cones_wrapper_type&gt; cones        = new cones_wrapper_type(mesh-&gt;getSieve(), label);
+<a name="line543">543: </a>          Obj&lt;cones_type&gt;         overlapCones = new cones_type(label-&gt;comm(), label-&gt;debug());
+
+<a name="line545">545: </a><strong><font color="#FF0000">          ALE:</font></strong>:Pullback::SimpleCopy::copy(sendMeshOverlap, recvMeshOverlap, cones, overlapCones);
+<a name="line546">546: </a>          <font color="#4169E1">if</font> (label-&gt;debug()) {overlapCones-&gt;view(<font color="#666666">"Overlap Label Values"</font>);}
+<a name="line547">547: </a>          // Inserts cones into parallelMesh (must renumber here)
+<a name="line548">548: </a>          //ALE::Pullback::InsertionBinaryFusion::fuse(overlapCones, recvMeshOverlap, renumbering, newSieve);
+<a name="line549">549: </a>          {
+<a name="line550">550: </a>            const Obj&lt;typename mesh_recv_overlap_type::baseSequence&gt; rPoints = recvMeshOverlap-&gt;base();
+
+<a name="line552">552: </a>            <font color="#4169E1">for</font>(typename mesh_recv_overlap_type::baseSequence::iterator p_iter = rPoints-&gt;begin(); p_iter != rPoints-&gt;end(); ++p_iter) {
+<a name="line553">553: </a>              const Obj&lt;typename mesh_recv_overlap_type::coneSequence&gt;&amp; points      = recvMeshOverlap-&gt;cone(*p_iter);
+<a name="line554">554: </a>              const typename mesh_recv_overlap_type::target_type&amp;       localPoint  = *p_iter;
+<a name="line555">555: </a>              const typename cones_type::point_type&amp;                    remotePoint = points-&gt;begin().color();
+<a name="line556">556: </a>              const int                                                 size        = overlapCones-&gt;getFiberDimension(remotePoint);
+<a name="line557">557: </a>              const typename cones_type::value_type                    *values      = overlapCones-&gt;restrictPoint(remotePoint);
+
+<a name="line559">559: </a>              newLabel-&gt;clearCone(localPoint);
+<a name="line560">560: </a>              <font color="#4169E1">for</font>(int i = 0; i &lt; size; ++i) {newLabel-&gt;addCone(values[i], localPoint);}
+<a name="line561">561: </a>            }
+<a name="line562">562: </a>          }
+<a name="line563">563: </a>        }
+<a name="line564">564: </a>        //newLabel-&gt;add(label, newSieve);
+<a name="line565">565: </a><strong><font color="#FF0000">        Partitioner:</font></strong>:createLocalSifter(label, partition, renumbering, newLabel);
+<a name="line566">566: </a>        newLabel-&gt;view(l_iter-&gt;first.c_str());
+<a name="line567">567: </a>      }
+<a name="line568">568: </a>      <font color="#4169E1">return</font> newMesh;
+<a name="line569">569: </a>    }
+<a name="line570">570: </a>  };
+<a name="line571">571: </a>  template&lt;typename Bundle_&gt;
+<a name="line572">572: </a>  class Distribution {
+<a name="line573">573: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line574">574: </a>    <font color="#4169E1">typedef</font> Bundle_                                                                     bundle_type;
+<a name="line575">575: </a>    <font color="#4169E1">typedef</font> typename bundle_type::sieve_type                                            sieve_type;
+<a name="line576">576: </a>    <font color="#4169E1">typedef</font> typename bundle_type::point_type                                            point_type;
+<a name="line577">577: </a>    <font color="#4169E1">typedef</font> typename bundle_type::alloc_type                                            alloc_type;
+<a name="line578">578: </a>    <font color="#4169E1">typedef</font> typename bundle_type::send_overlap_type                                     send_overlap_type;
+<a name="line579">579: </a>    <font color="#4169E1">typedef</font> typename bundle_type::recv_overlap_type                                     recv_overlap_type;
+<a name="line580">580: </a>    <font color="#4169E1">typedef</font> typename ALE::New::Completion&lt;bundle_type, typename sieve_type::point_type&gt;                            sieveCompletion;
+<a name="line581">581: </a>    <font color="#4169E1">typedef</font> typename ALE::New::SectionCompletion&lt;bundle_type, typename bundle_type::real_section_type::value_type&gt; sectionCompletion;
+<a name="line582">582: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line585">585: </a>    static void createPartitionOverlap(const Obj&lt;bundle_type&gt;&amp; bundle, const Obj&lt;send_overlap_type&gt;&amp; sendOverlap, const Obj&lt;recv_overlap_type&gt;&amp; recvOverlap) {
+<a name="line586">586: </a>      const Obj&lt;send_overlap_type&gt;&amp; topSendOverlap = bundle-&gt;getSendOverlap();
+<a name="line587">587: </a>      const Obj&lt;recv_overlap_type&gt;&amp; topRecvOverlap = bundle-&gt;getRecvOverlap();
+<a name="line588">588: </a>      const Obj&lt;typename send_overlap_type::traits::baseSequence&gt; base = topSendOverlap-&gt;base();
+<a name="line589">589: </a>      const Obj&lt;typename recv_overlap_type::traits::capSequence&gt;  cap  = topRecvOverlap-&gt;cap();
+<a name="line590">590: </a>      const int rank = bundle-&gt;commRank();
+
+<a name="line592">592: </a>      <font color="#4169E1">if</font> (base-&gt;empty()) {
+<a name="line593">593: </a>        <font color="#4169E1">if</font> (rank == 0) {
+<a name="line594">594: </a>          <font color="#4169E1">for</font>(int p = 1; p &lt; bundle-&gt;commSize(); p++) {
+<a name="line595">595: </a>            // The arrow is from local partition point p (source) to remote partition point p (color) on rank p (target)
+<a name="line596">596: </a>            sendOverlap-&gt;addCone(p, p, p);
+<a name="line597">597: </a>          }
+<a name="line598">598: </a>        }
+<a name="line599">599: </a>      } <font color="#4169E1">else</font> {
+<a name="line600">600: </a>        <font color="#4169E1">for</font>(typename send_overlap_type::traits::baseSequence::iterator b_iter = base-&gt;begin(); b_iter != base-&gt;end(); ++b_iter) {
+<a name="line601">601: </a>          const int&amp; p = *b_iter;
+<a name="line602">602: </a>          // The arrow is from local partition point p (source) to remote partition point p (color) on rank p (target)
+<a name="line603">603: </a>          sendOverlap-&gt;addCone(p, p, p);
+<a name="line604">604: </a>        }
+<a name="line605">605: </a>      }
+<a name="line606">606: </a>      <font color="#4169E1">if</font> (cap-&gt;empty()) {
+<a name="line607">607: </a>        <font color="#4169E1">if</font> (rank != 0) {
+<a name="line608">608: </a>          // The arrow is from local partition point rank (color) on rank 0 (source) to remote partition point rank (target)
+<a name="line609">609: </a>          recvOverlap-&gt;addCone(0, rank, rank);
+<a name="line610">610: </a>        }
+<a name="line611">611: </a>      } <font color="#4169E1">else</font> {
+<a name="line612">612: </a>        <font color="#4169E1">for</font>(typename recv_overlap_type::traits::capSequence::iterator c_iter = cap-&gt;begin(); c_iter != cap-&gt;end(); ++c_iter) {
+<a name="line613">613: </a>          const int&amp; p = *c_iter;
+<a name="line614">614: </a>          // The arrow is from local partition point rank (color) on rank p (source) to remote partition point rank (target)
+<a name="line615">615: </a>          recvOverlap-&gt;addCone(p, rank, rank);
+<a name="line616">616: </a>        }
+<a name="line617">617: </a>      }
+<a name="line618">618: </a>    };
+<a name="line621">621: </a>    template&lt;typename Partitioner&gt;
+<a name="line622">622: </a>    static typename Partitioner::part_type *createAssignment(const Obj&lt;bundle_type&gt;&amp; bundle, const int dim, const Obj&lt;send_overlap_type&gt;&amp; sendOverlap, const Obj&lt;recv_overlap_type&gt;&amp; recvOverlap, const int height = 0) {
+<a name="line623">623: </a>      // 1) Form partition point overlap a priori
+<a name="line624">624: </a>      createPartitionOverlap(bundle, sendOverlap, recvOverlap);
+<a name="line625">625: </a>      <font color="#4169E1">if</font> (bundle-&gt;debug()) {
+<a name="line626">626: </a>        sendOverlap-&gt;view(<font color="#666666">"Send overlap for partition"</font>);
+<a name="line627">627: </a>        recvOverlap-&gt;view(<font color="#666666">"Receive overlap for partition"</font>);
+<a name="line628">628: </a>      }
+<a name="line629">629: </a>      // 2) Partition the mesh
+<a name="line630">630: </a>      <font color="#4169E1">if</font> (height == 0) {
+<a name="line631">631: </a>        <font color="#4169E1">return</font> Partitioner::partitionSieve(bundle, dim);
+<a name="line632">632: </a>      } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (height == 1) {
+<a name="line633">633: </a>        <font color="#4169E1">return</font> Partitioner::partitionSieveByFace(bundle, dim);
+<a name="line634">634: </a>      }
+<a name="line635">635: </a>      throw ALE::Exception(<font color="#666666">"Invalid partition height"</font>);
+<a name="line636">636: </a>    }
+<a name="line639">639: </a>    // Partition a bundle on process 0 and scatter to all processes
+<a name="line640">640: </a>    static void scatterBundle(const Obj&lt;bundle_type&gt;&amp; bundle, const int dim, const Obj&lt;bundle_type&gt;&amp; bundleNew, const Obj&lt;send_overlap_type&gt;&amp; sendOverlap, const Obj&lt;recv_overlap_type&gt;&amp; recvOverlap, const std::string&amp; partitioner, const int height = 0, const Obj&lt;bundle_type&gt;&amp; subBundle = NULL, const Obj&lt;bundle_type&gt;&amp; subBundleNew = NULL) {
+<a name="line641">641: </a>      <font color="#4169E1">if</font> (height == 0) {
+<a name="line642">642: </a>        <font color="#4169E1">if</font> (partitioner == <font color="#666666">"chaco"</font>) {
+<a name="line643">643: </a><font color="#A020F0">#ifdef PETSC_HAVE_CHACO</font>
+<a name="line644">644: </a>          <font color="#4169E1">typedef</font> typename ALE::New::Chaco::Partitioner&lt;bundle_type&gt; Partitioner;
+<a name="line645">645: </a>          <font color="#4169E1">typedef</font> typename ALE::New::Partitioner&lt;bundle_type&gt;        GenPartitioner;
+<a name="line646">646: </a>          <font color="#4169E1">typedef</font> typename Partitioner::part_type                    part_type;
+
+<a name="line648">648: </a>          part_type *assignment = scatterBundle&lt;Partitioner&gt;(bundle, dim, bundleNew, sendOverlap, recvOverlap, height);
+<a name="line649">649: </a>          <font color="#4169E1">if</font> (!subBundle.isNull() &amp;&amp; !subBundleNew.isNull()) {
+<a name="line650">650: </a>            part_type *subAssignment = GenPartitioner::subordinatePartition(bundle, 1, subBundle, assignment);
+<a name="line651">651: </a>            const Obj&lt;sieve_type&gt;&amp; sieve      = subBundle-&gt;getSieve();
+<a name="line652">652: </a>            const Obj&lt;sieve_type&gt;&amp; sieveNew   = new typename ALE::Mesh&lt;<A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>,<A href="../../docs/manualpages/Sys/PetscScalar.html#PetscScalar">PetscScalar</A>&gt;::sieve_type(subBundle-&gt;comm(), subBundle-&gt;debug());
+<a name="line653">653: </a>            const int              numCells   = subBundle-&gt;heightStratum(height)-&gt;size();
+
+<a name="line655">655: </a>            subBundleNew-&gt;setSieve(sieveNew);
+<a name="line656">656: </a><strong><font color="#FF0000">            sieveCompletion:</font></strong>:scatterSieve(subBundle, sieve, dim, sieveNew, sendOverlap, recvOverlap, height, numCells, subAssignment);
+<a name="line657">657: </a>            subBundleNew-&gt;stratify();
+<a name="line658">658: </a>            <font color="#4169E1">if</font> (subAssignment != NULL) delete [] subAssignment;
+<a name="line659">659: </a>          }
+<a name="line660">660: </a>          <font color="#4169E1">if</font> (assignment != NULL) delete [] assignment;
+<a name="line661">661: </a><font color="#A020F0">#else</font>
+<a name="line662">662: </a>          throw ALE::Exception(<font color="#666666">"Chaco is not installed. Reconfigure with the flag --download-chaco"</font>);
+<a name="line663">663: </a><font color="#A020F0">#endif</font>
+<a name="line664">664: </a>        } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (partitioner == <font color="#666666">"parmetis"</font>) {
+<a name="line665">665: </a><font color="#A020F0">#ifdef PETSC_HAVE_PARMETIS</font>
+<a name="line666">666: </a>          <font color="#4169E1">typedef</font> typename ALE::New::ParMetis::Partitioner&lt;bundle_type&gt; Partitioner;
+<a name="line667">667: </a>          <font color="#4169E1">typedef</font> typename ALE::New::Partitioner&lt;bundle_type&gt;           GenPartitioner;
+<a name="line668">668: </a>          <font color="#4169E1">typedef</font> typename Partitioner::part_type                       part_type;
+
+<a name="line670">670: </a>          part_type *assignment = scatterBundle&lt;Partitioner&gt;(bundle, dim, bundleNew, sendOverlap, recvOverlap, height);
+<a name="line671">671: </a>          <font color="#4169E1">if</font> (!subBundle.isNull() &amp;&amp; !subBundleNew.isNull()) {
+<a name="line672">672: </a>            part_type *subAssignment = GenPartitioner::subordinatePartition(bundle, 1, subBundle, assignment);
+<a name="line673">673: </a>            const Obj&lt;sieve_type&gt;&amp; sieve      = subBundle-&gt;getSieve();
+<a name="line674">674: </a>            const Obj&lt;sieve_type&gt;&amp; sieveNew   = new typename ALE::Mesh&lt;<A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>,<A href="../../docs/manualpages/Sys/PetscScalar.html#PetscScalar">PetscScalar</A>&gt;::sieve_type(subBundle-&gt;comm(), subBundle-&gt;debug());
+<a name="line675">675: </a>            const int              numCells   = subBundle-&gt;heightStratum(height)-&gt;size();
+
+<a name="line677">677: </a>            subBundleNew-&gt;setSieve(sieveNew);
+<a name="line678">678: </a><strong><font color="#FF0000">            sieveCompletion:</font></strong>:scatterSieve(subBundle, sieve, dim, sieveNew, sendOverlap, recvOverlap, height, numCells, subAssignment);
+<a name="line679">679: </a>            subBundleNew-&gt;stratify();
+<a name="line680">680: </a>            <font color="#4169E1">if</font> (subAssignment != NULL) delete [] subAssignment;
+<a name="line681">681: </a>          }
+<a name="line682">682: </a>          <font color="#4169E1">if</font> (assignment != NULL) delete [] assignment;
+<a name="line683">683: </a><font color="#A020F0">#else</font>
+<a name="line684">684: </a>          throw ALE::Exception(<font color="#666666">"ParMetis is not installed. Reconfigure with the flag --download-parmetis"</font>);
+<a name="line685">685: </a><font color="#A020F0">#endif</font>
+<a name="line686">686: </a>        } <font color="#4169E1">else</font> {
+<a name="line687">687: </a>          throw ALE::Exception(<font color="#666666">"Unknown partitioner"</font>);
+<a name="line688">688: </a>        }
+<a name="line689">689: </a>      } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (height == 1) {
+<a name="line690">690: </a>        <font color="#4169E1">if</font> (partitioner == <font color="#666666">"zoltan"</font>) {
+<a name="line691">691: </a><font color="#A020F0">#ifdef PETSC_HAVE_ZOLTAN</font>
+<a name="line692">692: </a>          <font color="#4169E1">typedef</font> typename ALE::New::Zoltan::Partitioner&lt;bundle_type&gt; Partitioner;
+<a name="line693">693: </a>          <font color="#4169E1">typedef</font> typename Partitioner::part_type                     part_type;
+
+<a name="line695">695: </a>          part_type *assignment = scatterBundle&lt;Partitioner&gt;(bundle, dim, bundleNew, sendOverlap, recvOverlap, height);
+<a name="line696">696: </a>          <font color="#4169E1">if</font> (assignment != NULL) delete [] assignment;
+<a name="line697">697: </a><font color="#A020F0">#else</font>
+<a name="line698">698: </a>          throw ALE::Exception(<font color="#666666">"Zoltan is not installed. Reconfigure with the flag --download-zoltan"</font>);
+<a name="line699">699: </a><font color="#A020F0">#endif</font>
+<a name="line700">700: </a>        } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (partitioner == <font color="#666666">"parmetis"</font>) {
+<a name="line701">701: </a><font color="#A020F0">#ifdef PETSC_HAVE_PARMETIS</font>
+<a name="line702">702: </a>          <font color="#4169E1">typedef</font> typename ALE::New::ParMetis::Partitioner&lt;bundle_type&gt; Partitioner;
+<a name="line703">703: </a>          <font color="#4169E1">typedef</font> typename Partitioner::part_type                       part_type;
+
+<a name="line705">705: </a>          part_type *assignment = scatterBundle&lt;Partitioner&gt;(bundle, dim, bundleNew, sendOverlap, recvOverlap, height);
+<a name="line706">706: </a>          <font color="#4169E1">if</font> (assignment != NULL) delete [] assignment;
+<a name="line707">707: </a><font color="#A020F0">#else</font>
+<a name="line708">708: </a>          throw ALE::Exception(<font color="#666666">"ParMetis is not installed. Reconfigure with the flag --download-parmetis"</font>);
+<a name="line709">709: </a><font color="#A020F0">#endif</font>
+<a name="line710">710: </a>        } <font color="#4169E1">else</font> {
+<a name="line711">711: </a>          throw ALE::Exception(<font color="#666666">"Unknown partitioner"</font>);
+<a name="line712">712: </a>        }
+<a name="line713">713: </a>      } <font color="#4169E1">else</font> {
+<a name="line714">714: </a>        throw ALE::Exception(<font color="#666666">"Invalid partition height"</font>);
+<a name="line715">715: </a>      }
+<a name="line716">716: </a>    }
+<a name="line717">717: </a>    template&lt;typename Partitioner&gt;
+<a name="line718">718: </a>    static typename Partitioner::part_type *scatterBundle(const Obj&lt;bundle_type&gt;&amp; bundle, const int dim, const Obj&lt;bundle_type&gt;&amp; bundleNew, const Obj&lt;send_overlap_type&gt;&amp; sendOverlap, const Obj&lt;recv_overlap_type&gt;&amp; recvOverlap, const int height = 0) {
+<a name="line719">719: </a>      typename Partitioner::part_type *assignment = createAssignment&lt;Partitioner&gt;(bundle, dim, sendOverlap, recvOverlap, height);
+<a name="line720">720: </a>      const Obj&lt;sieve_type&gt;&amp;           sieve      = bundle-&gt;getSieve();
+<a name="line721">721: </a>      const Obj&lt;sieve_type&gt;&amp;           sieveNew   = bundleNew-&gt;getSieve();
+<a name="line722">722: </a>      const int                        numPoints  = bundle-&gt;heightStratum(height)-&gt;size();
+
+<a name="line724">724: </a><strong><font color="#FF0000">      sieveCompletion:</font></strong>:scatterSieve(bundle, sieve, dim, sieveNew, sendOverlap, recvOverlap, height, numPoints, assignment);
+<a name="line725">725: </a>      bundleNew-&gt;stratify();
+<a name="line726">726: </a>      <font color="#4169E1">return</font> assignment;
+<a name="line727">727: </a>    }
+<a name="line730">730: </a>    static Obj&lt;ALE::Mesh&lt;<A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>,<A href="../../docs/manualpages/Sys/PetscScalar.html#PetscScalar">PetscScalar</A>&gt; &gt; distributeMesh(const Obj&lt;ALE::Mesh&lt;<A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>,<A href="../../docs/manualpages/Sys/PetscScalar.html#PetscScalar">PetscScalar</A>&gt; &gt;&amp; serialMesh, const int height = 0, const std::string&amp; partitioner = <font color="#666666">"chaco"</font>) {
+<a name="line731">731: </a>      <font color="#4169E1">typedef</font> ALE::Mesh&lt;<A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>,<A href="../../docs/manualpages/Sys/PetscScalar.html#PetscScalar">PetscScalar</A>&gt; FlexMesh;
+<a name="line732">732: </a>      <A href="../../docs/manualpages/Sys/MPI_Comm.html#MPI_Comm">MPI_Comm</A>                         comm          = serialMesh-&gt;comm();
+<a name="line733">733: </a>      const int                        dim           = serialMesh-&gt;getDimension();
+<a name="line734">734: </a>      Obj&lt;FlexMesh&gt;                    parallelMesh  = new FlexMesh(comm, dim, serialMesh-&gt;debug());
+<a name="line735">735: </a>      const Obj&lt;FlexMesh::sieve_type&gt;&amp; parallelSieve = new FlexMesh::sieve_type(comm, serialMesh-&gt;debug());
+
+<a name="line737">737: </a>      ALE_LOG_EVENT_BEGIN;
+<a name="line738">738: </a>      parallelMesh-&gt;setSieve(parallelSieve);
+<a name="line739">739: </a>      <font color="#4169E1">if</font> (serialMesh-&gt;debug()) {serialMesh-&gt;view(<font color="#666666">"Serial mesh"</font>);}
+
+<a name="line741">741: </a>      // Distribute cones
+<a name="line742">742: </a>      Obj&lt;send_overlap_type&gt; sendOverlap = new send_overlap_type(comm, serialMesh-&gt;debug());
+<a name="line743">743: </a>      Obj&lt;recv_overlap_type&gt; recvOverlap = new recv_overlap_type(comm, serialMesh-&gt;debug());
+<a name="line744">744: </a>      scatterBundle(serialMesh, dim, parallelMesh, sendOverlap, recvOverlap, partitioner, height);
+<a name="line745">745: </a>      parallelMesh-&gt;setDistSendOverlap(sendOverlap);
+<a name="line746">746: </a>      parallelMesh-&gt;setDistRecvOverlap(recvOverlap);
+
+<a name="line748">748: </a>      // Distribute labels
+<a name="line749">749: </a>      const typename bundle_type::labels_type&amp; labels = serialMesh-&gt;getLabels();
+
+<a name="line751">751: </a>      <font color="#4169E1">for</font>(typename bundle_type::labels_type::const_iterator l_iter = labels.begin(); l_iter != labels.end(); ++l_iter) {
+<a name="line752">752: </a>        <font color="#4169E1">if</font> (parallelMesh-&gt;hasLabel(l_iter-&gt;first)) <font color="#4169E1">continue</font>;
+<a name="line753">753: </a>        const Obj&lt;typename bundle_type::label_type&gt;&amp; serialLabel   = l_iter-&gt;second;
+<a name="line754">754: </a>        const Obj&lt;typename bundle_type::label_type&gt;&amp; parallelLabel = parallelMesh-&gt;createLabel(l_iter-&gt;first);
+<a name="line755">755: </a>        // Create local label
+<a name="line756">756: </a><strong><font color="#228B22">#define NEW_LABEL</font></strong>
+<a name="line757">757: </a><font color="#A020F0">#ifdef NEW_LABEL</font>
+<a name="line758">758: </a>        parallelLabel-&gt;add(serialLabel, parallelSieve);
+<a name="line759">759: </a><font color="#A020F0">#else</font>
+<a name="line760">760: </a>        const Obj&lt;typename bundle_type::label_type::traits::baseSequence&gt;&amp; base = serialLabel-&gt;base();
+
+<a name="line762">762: </a>        <font color="#4169E1">for</font>(typename bundle_type::label_type::traits::baseSequence::iterator b_iter = base-&gt;begin(); b_iter != base-&gt;end(); ++b_iter) {
+<a name="line763">763: </a>          <font color="#4169E1">if</font> (parallelSieve-&gt;capContains(*b_iter) || parallelSieve-&gt;baseContains(*b_iter)) {
+<a name="line764">764: </a>            parallelLabel-&gt;addArrow(*serialLabel-&gt;cone(*b_iter)-&gt;begin(), *b_iter);
+<a name="line765">765: </a>          }
+<a name="line766">766: </a>        }
+<a name="line767">767: </a><font color="#A020F0">#endif</font>
+<a name="line768">768: </a>        // Get remote labels
+<a name="line769">769: </a><strong><font color="#FF0000">        sieveCompletion:</font></strong>:scatterCones(serialLabel, parallelLabel, sendOverlap, recvOverlap);
+<a name="line770">770: </a>      }
+
+<a name="line772">772: </a>      // Distribute sections
+<a name="line773">773: </a>      Obj&lt;std::set&lt;std::string&gt; &gt; sections = serialMesh-&gt;getRealSections();
+
+<a name="line775">775: </a>      <font color="#4169E1">for</font>(std::set&lt;std::string&gt;::iterator name = sections-&gt;begin(); name != sections-&gt;end(); ++name) {
+<a name="line776">776: </a>        parallelMesh-&gt;setRealSection(*name, distributeSection(serialMesh-&gt;getRealSection(*name), parallelMesh, sendOverlap, recvOverlap));
+<a name="line777">777: </a>      }
+<a name="line778">778: </a>      sections = serialMesh-&gt;getIntSections();
+<a name="line779">779: </a>      <font color="#4169E1">for</font>(std::set&lt;std::string&gt;::iterator name = sections-&gt;begin(); name != sections-&gt;end(); ++name) {
+<a name="line780">780: </a>        parallelMesh-&gt;setIntSection(*name, distributeSection(serialMesh-&gt;getIntSection(*name), parallelMesh, sendOverlap, recvOverlap));
+<a name="line781">781: </a>      }
+<a name="line782">782: </a>      sections = serialMesh-&gt;getArrowSections();
+
+<a name="line784">784: </a>      <font color="#4169E1">for</font>(std::set&lt;std::string&gt;::iterator name = sections-&gt;begin(); name != sections-&gt;end(); ++name) {
+<a name="line785">785: </a>        parallelMesh-&gt;setArrowSection(*name, distributeArrowSection(serialMesh-&gt;getArrowSection(*name), serialMesh, parallelMesh, sendOverlap, recvOverlap));
+<a name="line786">786: </a>      }
+<a name="line787">787: </a>      <font color="#4169E1">if</font> (parallelMesh-&gt;debug()) {parallelMesh-&gt;view(<font color="#666666">"Parallel Mesh"</font>);}
+<a name="line788">788: </a>      ALE_LOG_EVENT_END;
+<a name="line789">789: </a>      <font color="#4169E1">return</font> parallelMesh;
+<a name="line790">790: </a>    }
+<a name="line793">793: </a>    template&lt;typename Section&gt;
+<a name="line794">794: </a>    static void updateSectionLocal(const Obj&lt;Section&gt;&amp; oldSection, const Obj&lt;bundle_type&gt;&amp; newBundle, const Obj&lt;Section&gt;&amp; newSection) {
+<a name="line795">795: </a>      const Obj&lt;typename bundle_type::sieve_type&gt;&amp;    newSieve = newBundle-&gt;getSieve();
+<a name="line796">796: </a>      const typename Section::atlas_type::chart_type&amp; oldChart = oldSection-&gt;getChart();
+
+<a name="line798">798: </a>      <font color="#4169E1">for</font>(typename Section::atlas_type::chart_type::const_iterator c_iter = oldChart.begin(); c_iter != oldChart.end(); ++c_iter) {
+<a name="line799">799: </a>        <font color="#4169E1">if</font> (newSieve-&gt;capContains(*c_iter) || newSieve-&gt;baseContains(*c_iter)) {
+<a name="line800">800: </a>          newSection-&gt;setFiberDimension(*c_iter, oldSection-&gt;getFiberDimension(*c_iter));
+<a name="line801">801: </a>        }
+<a name="line802">802: </a>      }
+<a name="line803">803: </a>      newBundle-&gt;allocate(newSection);
+<a name="line804">804: </a>      const typename Section::atlas_type::chart_type&amp; newChart = newSection-&gt;getChart();
+
+<a name="line806">806: </a>      <font color="#4169E1">for</font>(typename Section::atlas_type::chart_type::const_iterator c_iter = newChart.begin(); c_iter != newChart.end(); ++c_iter) {
+<a name="line807">807: </a>        newSection-&gt;updatePointAll(*c_iter, oldSection-&gt;restrictPoint(*c_iter));
+<a name="line808">808: </a>      }
+<a name="line809">809: </a>    }
+<a name="line812">812: </a>    template&lt;typename RecvSection, typename Section&gt;
+<a name="line813">813: </a>    static void updateSectionRemote(const Obj&lt;recv_overlap_type&gt;&amp; recvOverlap, const Obj&lt;RecvSection&gt;&amp; recvSection, const Obj&lt;bundle_type&gt;&amp; newBundle, const Obj&lt;Section&gt;&amp; newSection) {
+<a name="line814">814: </a>      Obj&lt;typename recv_overlap_type::traits::baseSequence&gt; recvPoints = recvOverlap-&gt;base();
+
+<a name="line816">816: </a>      <font color="#4169E1">for</font>(typename recv_overlap_type::traits::baseSequence::iterator r_iter = recvPoints-&gt;begin(); r_iter != recvPoints-&gt;end(); ++r_iter) {
+<a name="line817">817: </a>        const Obj&lt;typename recv_overlap_type::traits::coneSequence&gt;&amp;     recvPatches = recvOverlap-&gt;cone(*r_iter);
+<a name="line818">818: </a>        const typename recv_overlap_type::traits::coneSequence::iterator end         = recvPatches-&gt;end();
+
+<a name="line820">820: </a>        <font color="#4169E1">for</font>(typename recv_overlap_type::traits::coneSequence::iterator p_iter = recvPatches-&gt;begin(); p_iter != end; ++p_iter) {
+<a name="line821">821: </a>          newSection-&gt;addPoint(*r_iter, recvSection-&gt;getSection(*p_iter)-&gt;getFiberDimension(*r_iter));
+<a name="line822">822: </a>        }
+<a name="line823">823: </a>      }
+<a name="line824">824: </a>      newBundle-&gt;reallocate(newSection);
+<a name="line825">825: </a>      <font color="#4169E1">for</font>(typename recv_overlap_type::traits::baseSequence::iterator r_iter = recvPoints-&gt;begin(); r_iter != recvPoints-&gt;end(); ++r_iter) {
+<a name="line826">826: </a>        const Obj&lt;typename recv_overlap_type::traits::coneSequence&gt;&amp;     recvPatches = recvOverlap-&gt;cone(*r_iter);
+<a name="line827">827: </a>        const typename recv_overlap_type::traits::coneSequence::iterator end         = recvPatches-&gt;end();
+
+<a name="line829">829: </a>        <font color="#4169E1">for</font>(typename recv_overlap_type::traits::coneSequence::iterator p_iter = recvPatches-&gt;begin(); p_iter != end; ++p_iter) {
+<a name="line830">830: </a>          <font color="#4169E1">if</font> (recvSection-&gt;getSection(*p_iter)-&gt;getFiberDimension(*r_iter)) {
+<a name="line831">831: </a>            newSection-&gt;updatePointAll(*r_iter, recvSection-&gt;getSection(*p_iter)-&gt;restrictPoint(*r_iter));
+<a name="line832">832: </a>          }
+<a name="line833">833: </a>        }
+<a name="line834">834: </a>      }
+<a name="line835">835: </a>    }
+<a name="line838">838: </a>    template&lt;typename Section&gt;
+<a name="line839">839: </a>    static Obj&lt;Section&gt; distributeSection(const Obj&lt;Section&gt;&amp; serialSection, const Obj&lt;bundle_type&gt;&amp; parallelBundle, const Obj&lt;send_overlap_type&gt;&amp; sendOverlap, const Obj&lt;recv_overlap_type&gt;&amp; recvOverlap) {
+<a name="line840">840: </a>      <font color="#4169E1">if</font> (serialSection-&gt;debug()) {
+<a name="line841">841: </a>        serialSection-&gt;view(<font color="#666666">"Serial Section"</font>);
+<a name="line842">842: </a>      }
+<a name="line843">843: </a>      <font color="#4169E1">typedef</font> typename alloc_type::template rebind&lt;typename Section::value_type&gt;::other value_alloc_type;
+<a name="line844">844: </a>      <font color="#4169E1">typedef</font> ALE::Field&lt;send_overlap_type, int, ALE::Section&lt;point_type, typename Section::value_type, value_alloc_type&gt; &gt; send_section_type;
+<a name="line845">845: </a>      <font color="#4169E1">typedef</font> ALE::Field&lt;recv_overlap_type, int, ALE::Section&lt;point_type, typename Section::value_type, value_alloc_type&gt; &gt; recv_section_type;
+<a name="line846">846: </a>      <font color="#4169E1">typedef</font> ALE::New::SizeSection&lt;Section&gt; SectionSizer;
+<a name="line847">847: </a>      Obj&lt;Section&gt;                 parallelSection = new Section(serialSection-&gt;comm(), serialSection-&gt;debug());
+<a name="line848">848: </a>      const Obj&lt;send_section_type&gt; sendSection     = new send_section_type(serialSection-&gt;comm(), serialSection-&gt;debug());
+<a name="line849">849: </a>      const Obj&lt;recv_section_type&gt; recvSection     = new recv_section_type(serialSection-&gt;comm(), sendSection-&gt;getTag(), serialSection-&gt;debug());
+<a name="line850">850: </a>      const Obj&lt;SectionSizer&gt;      sizer           = new SectionSizer(serialSection);
+
+<a name="line852">852: </a>      updateSectionLocal(serialSection, parallelBundle, parallelSection);
+<a name="line853">853: </a><strong><font color="#FF0000">      sectionCompletion:</font></strong>:completeSection(sendOverlap, recvOverlap, sizer, serialSection, sendSection, recvSection);
+<a name="line854">854: </a>      updateSectionRemote(recvOverlap, recvSection, parallelBundle, parallelSection);
+<a name="line855">855: </a>      <font color="#4169E1">if</font> (parallelSection-&gt;debug()) {
+<a name="line856">856: </a>        parallelSection-&gt;view(<font color="#666666">"Parallel Section"</font>);
+<a name="line857">857: </a>      }
+<a name="line858">858: </a>      <font color="#4169E1">return</font> parallelSection;
+<a name="line859">859: </a>    }
+<a name="line862">862: </a>    template&lt;typename Section&gt;
+<a name="line863">863: </a>    static void updateArrowSectionLocal(const Obj&lt;Section&gt;&amp; oldSection, const Obj&lt;bundle_type&gt;&amp; newBundle, const Obj&lt;Section&gt;&amp; newSection) {
+<a name="line864">864: </a>      const Obj&lt;typename bundle_type::sieve_type&gt;&amp;    newSieve = newBundle-&gt;getSieve();
+<a name="line865">865: </a>      const typename Section::atlas_type::chart_type&amp; oldChart = oldSection-&gt;getChart();
+
+<a name="line867">867: </a>      <font color="#4169E1">for</font>(typename Section::atlas_type::chart_type::const_iterator c_iter = oldChart.begin(); c_iter != oldChart.end(); ++c_iter) {
+<a name="line868">868: </a>        // Dmitry should provide a Sieve::contains(MinimalArrow) method
+<a name="line869">869: </a>        <font color="#4169E1">if</font> (newSieve-&gt;capContains(c_iter-&gt;source) &amp;&amp; newSieve-&gt;baseContains(c_iter-&gt;target)) {
+<a name="line870">870: </a>          newSection-&gt;setFiberDimension(*c_iter, oldSection-&gt;getFiberDimension(*c_iter));
+<a name="line871">871: </a>        }
+<a name="line872">872: </a>      }
+<a name="line873">873: </a>      //newBundle-&gt;allocate(newSection);
+<a name="line874">874: </a>      const typename Section::atlas_type::chart_type&amp; newChart = newSection-&gt;getChart();
+
+<a name="line876">876: </a>      <font color="#4169E1">for</font>(typename Section::atlas_type::chart_type::const_iterator c_iter = newChart.begin(); c_iter != newChart.end(); ++c_iter) {
+<a name="line877">877: </a>        newSection-&gt;updatePointAll(*c_iter, oldSection-&gt;restrictPoint(*c_iter));
+<a name="line878">878: </a>      }
+<a name="line879">879: </a>    }
+<a name="line882">882: </a>    template&lt;typename RecvSection, typename Section&gt;
+<a name="line883">883: </a>    static void updateArrowSectionRemote(const Obj&lt;recv_overlap_type&gt;&amp; recvOverlap, const Obj&lt;RecvSection&gt;&amp; recvSection, const Obj&lt;bundle_type&gt;&amp; newBundle, const Obj&lt;Section&gt;&amp; newSection) {
+<a name="line884">884: </a>      Obj&lt;typename recv_overlap_type::traits::baseSequence&gt; recvPoints = recvOverlap-&gt;base();
+
+<a name="line886">886: </a>      <font color="#4169E1">for</font>(typename recv_overlap_type::traits::baseSequence::iterator r_iter = recvPoints-&gt;begin(); r_iter != recvPoints-&gt;end(); ++r_iter) {
+<a name="line887">887: </a>        const Obj&lt;typename bundle_type::sieve_type::traits::coneSequence&gt;&amp;     cone = newBundle-&gt;getSieve()-&gt;cone(*r_iter);
+<a name="line888">888: </a>        const typename bundle_type::sieve_type::traits::coneSequence::iterator end  = cone-&gt;end();
+
+<a name="line890">890: </a>        <font color="#4169E1">for</font>(typename bundle_type::sieve_type::traits::coneSequence::iterator c_iter = cone-&gt;begin(); c_iter != end; ++c_iter) {
+<a name="line891">891: </a>          newSection-&gt;setFiberDimension(typename Section::point_type(*c_iter, *r_iter), 1);
+<a name="line892">892: </a>        }
+<a name="line893">893: </a>      }
+<a name="line894">894: </a>      //newBundle-&gt;reallocate(newSection);
+<a name="line895">895: </a>      <font color="#4169E1">for</font>(typename recv_overlap_type::traits::baseSequence::iterator r_iter = recvPoints-&gt;begin(); r_iter != recvPoints-&gt;end(); ++r_iter) {
+<a name="line896">896: </a>        const Obj&lt;typename recv_overlap_type::traits::coneSequence&gt;&amp;     recvPatches = recvOverlap-&gt;cone(*r_iter);
+<a name="line897">897: </a>        const typename recv_overlap_type::traits::coneSequence::iterator recvEnd     = recvPatches-&gt;end();
+
+<a name="line899">899: </a>        <font color="#4169E1">for</font>(typename recv_overlap_type::traits::coneSequence::iterator p_iter = recvPatches-&gt;begin(); p_iter != recvEnd; ++p_iter) {
+<a name="line900">900: </a>          const Obj&lt;typename RecvSection::section_type&gt;&amp; section = recvSection-&gt;getSection(*p_iter);
+
+<a name="line902">902: </a>          <font color="#4169E1">if</font> (section-&gt;getFiberDimension(*r_iter)) {
+<a name="line903">903: </a>            const Obj&lt;typename bundle_type::sieve_type::traits::coneSequence&gt;&amp;     cone    = newBundle-&gt;getSieve()-&gt;cone(*r_iter);
+<a name="line904">904: </a>            const typename bundle_type::sieve_type::traits::coneSequence::iterator end     = cone-&gt;end();
+<a name="line905">905: </a>            const typename RecvSection::value_type                                *values  = section-&gt;restrictPoint(*r_iter);
+<a name="line906">906: </a>            int                                                                    c       = -1;
+
+<a name="line908">908: </a>            <font color="#4169E1">for</font>(typename bundle_type::sieve_type::traits::coneSequence::iterator c_iter = cone-&gt;begin(); c_iter != end; ++c_iter) {
+<a name="line909">909: </a>              newSection-&gt;updatePoint(typename Section::point_type(*c_iter, *r_iter), &amp;values[++c]);
+<a name="line910">910: </a>            }
+<a name="line911">911: </a>          }
+<a name="line912">912: </a>        }
+<a name="line913">913: </a>      }
+<a name="line914">914: </a>    }
+<a name="line917">917: </a>    template&lt;typename Section&gt;
+<a name="line918">918: </a>    static Obj&lt;Section&gt; distributeArrowSection(const Obj&lt;Section&gt;&amp; serialSection, const Obj&lt;bundle_type&gt;&amp; serialBundle, const Obj&lt;bundle_type&gt;&amp; parallelBundle, const Obj&lt;send_overlap_type&gt;&amp; sendOverlap, const Obj&lt;recv_overlap_type&gt;&amp; recvOverlap) {
+<a name="line919">919: </a>      <font color="#4169E1">if</font> (serialSection-&gt;debug()) {
+<a name="line920">920: </a>        serialSection-&gt;view(<font color="#666666">"Serial ArrowSection"</font>);
+<a name="line921">921: </a>      }
+<a name="line922">922: </a>      <font color="#4169E1">typedef</font> typename alloc_type::template rebind&lt;typename Section::value_type&gt;::other value_alloc_type;
+<a name="line923">923: </a>      <font color="#4169E1">typedef</font> ALE::Field&lt;send_overlap_type, int, ALE::Section&lt;point_type, typename Section::value_type, value_alloc_type&gt; &gt; send_section_type;
+<a name="line924">924: </a>      <font color="#4169E1">typedef</font> ALE::Field&lt;recv_overlap_type, int, ALE::Section&lt;point_type, typename Section::value_type, value_alloc_type&gt; &gt; recv_section_type;
+<a name="line925">925: </a>      <font color="#4169E1">typedef</font> ALE::New::ConeSizeSection&lt;bundle_type, sieve_type&gt; SectionSizer;
+<a name="line926">926: </a>      <font color="#4169E1">typedef</font> ALE::New::ArrowSection&lt;sieve_type, Section&gt;        ArrowFiller;
+<a name="line927">927: </a>      Obj&lt;Section&gt;                 parallelSection = new Section(serialSection-&gt;comm(), serialSection-&gt;debug());
+<a name="line928">928: </a>      const Obj&lt;send_section_type&gt; sendSection     = new send_section_type(serialSection-&gt;comm(), serialSection-&gt;debug());
+<a name="line929">929: </a>      const Obj&lt;recv_section_type&gt; recvSection     = new recv_section_type(serialSection-&gt;comm(), sendSection-&gt;getTag(), serialSection-&gt;debug());
+<a name="line930">930: </a>      const Obj&lt;SectionSizer&gt;      sizer           = new SectionSizer(serialBundle, serialBundle-&gt;getSieve());
+<a name="line931">931: </a>      const Obj&lt;ArrowFiller&gt;       filler          = new ArrowFiller(serialBundle-&gt;getSieve(), serialSection);
+
+<a name="line933">933: </a>      updateArrowSectionLocal(serialSection, parallelBundle, parallelSection);
+<a name="line934">934: </a><strong><font color="#FF0000">      sectionCompletion:</font></strong>:completeSection(sendOverlap, recvOverlap, sizer, filler, sendSection, recvSection);
+<a name="line935">935: </a>      updateArrowSectionRemote(recvOverlap, recvSection, parallelBundle, parallelSection);
+<a name="line936">936: </a>      <font color="#4169E1">if</font> (parallelSection-&gt;debug()) {
+<a name="line937">937: </a>        parallelSection-&gt;view(<font color="#666666">"Parallel ArrowSection"</font>);
+<a name="line938">938: </a>      }
+<a name="line939">939: </a>      <font color="#4169E1">return</font> parallelSection;
+<a name="line940">940: </a>    }
+<a name="line941">941: </a>    static void unifyBundle(const Obj&lt;bundle_type&gt;&amp; bundle, const int dim, const Obj&lt;bundle_type&gt;&amp; bundleNew, const Obj&lt;send_overlap_type&gt;&amp; sendOverlap, const Obj&lt;recv_overlap_type&gt;&amp; recvOverlap) {
+<a name="line942">942: </a>      <font color="#4169E1">typedef</font> int part_type;
+<a name="line943">943: </a>      const Obj&lt;sieve_type&gt;&amp; sieve    = bundle-&gt;getSieve();
+<a name="line944">944: </a>      const Obj&lt;sieve_type&gt;&amp; sieveNew = bundleNew-&gt;getSieve();
+<a name="line945">945: </a>      const int              rank     = bundle-&gt;commRank();
+<a name="line946">946: </a>      const int              debug    = bundle-&gt;debug();
+
+<a name="line948">948: </a>      // 1) Form partition point overlap a priori
+<a name="line949">949: </a>      <font color="#4169E1">if</font> (rank == 0) {
+<a name="line950">950: </a>        <font color="#4169E1">for</font>(int p = 1; p &lt; sieve-&gt;commSize(); p++) {
+<a name="line951">951: </a>          // The arrow is from remote partition point 0 on rank p to local partition point 0
+<a name="line952">952: </a>          recvOverlap-&gt;addCone(p, 0, 0);
+<a name="line953">953: </a>        }
+<a name="line954">954: </a>      } <font color="#4169E1">else</font> {
+<a name="line955">955: </a>        // The arrow is from local partition point 0 to remote partition point 0 on rank 0
+<a name="line956">956: </a>        sendOverlap-&gt;addCone(0, 0, 0);
+<a name="line957">957: </a>      }
+<a name="line958">958: </a>      <font color="#4169E1">if</font> (debug) {
+<a name="line959">959: </a>        sendOverlap-&gt;view(<font color="#666666">"Send overlap for partition"</font>);
+<a name="line960">960: </a>        recvOverlap-&gt;view(<font color="#666666">"Receive overlap for partition"</font>);
+<a name="line961">961: </a>      }
+<a name="line962">962: </a>      // 2) Partition the mesh
+<a name="line963">963: </a>      int        numCells   = bundle-&gt;heightStratum(0)-&gt;size();
+<a name="line964">964: </a>      part_type *assignment = new part_type[numCells];
+
+<a name="line966">966: </a>      <font color="#4169E1">for</font>(int c = 0; c &lt; numCells; ++c) {
+<a name="line967">967: </a>        assignment[c] = 0;
+<a name="line968">968: </a>      }
+<a name="line969">969: </a>      // 3) Scatter the sieve
+<a name="line970">970: </a><strong><font color="#FF0000">      sieveCompletion:</font></strong>:scatterSieve(bundle, sieve, dim, sieveNew, sendOverlap, recvOverlap, 0, numCells, assignment);
+<a name="line971">971: </a>      bundleNew-&gt;stratify();
+<a name="line972">972: </a>      // 4) Cleanup
+<a name="line973">973: </a>      <font color="#4169E1">if</font> (assignment != NULL) delete [] assignment;
+<a name="line974">974: </a>    }
+<a name="line977">977: </a>    static Obj&lt;ALE::Mesh&lt;<A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>,<A href="../../docs/manualpages/Sys/PetscScalar.html#PetscScalar">PetscScalar</A>&gt; &gt; unifyMesh(const Obj&lt;ALE::Mesh&lt;<A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>,<A href="../../docs/manualpages/Sys/PetscScalar.html#PetscScalar">PetscScalar</A>&gt; &gt;&amp; parallelMesh) {
+<a name="line978">978: </a>      <font color="#4169E1">typedef</font> ALE::Mesh&lt;<A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>,<A href="../../docs/manualpages/Sys/PetscScalar.html#PetscScalar">PetscScalar</A>&gt; FlexMesh;
+<a name="line979">979: </a>      const int                        dim         = parallelMesh-&gt;getDimension();
+<a name="line980">980: </a>      Obj&lt;FlexMesh&gt;                    serialMesh  = new FlexMesh(parallelMesh-&gt;comm(), dim, parallelMesh-&gt;debug());
+<a name="line981">981: </a>      const Obj&lt;FlexMesh::sieve_type&gt;&amp; serialSieve = new FlexMesh::sieve_type(parallelMesh-&gt;comm(), parallelMesh-&gt;debug());
+
+<a name="line983">983: </a>      ALE_LOG_EVENT_BEGIN;
+<a name="line984">984: </a>      serialMesh-&gt;setSieve(serialSieve);
+<a name="line985">985: </a>      <font color="#4169E1">if</font> (parallelMesh-&gt;debug()) {
+<a name="line986">986: </a>        parallelMesh-&gt;view(<font color="#666666">"Parallel topology"</font>);
+<a name="line987">987: </a>      }
+
+<a name="line989">989: </a>      // Unify cones
+<a name="line990">990: </a>      Obj&lt;send_overlap_type&gt; sendOverlap = new send_overlap_type(serialMesh-&gt;comm(), serialMesh-&gt;debug());
+<a name="line991">991: </a>      Obj&lt;recv_overlap_type&gt; recvOverlap = new recv_overlap_type(serialMesh-&gt;comm(), serialMesh-&gt;debug());
+<a name="line992">992: </a>      unifyBundle(parallelMesh, dim, serialMesh, sendOverlap, recvOverlap);
+<a name="line993">993: </a>      serialMesh-&gt;setDistSendOverlap(sendOverlap);
+<a name="line994">994: </a>      serialMesh-&gt;setDistRecvOverlap(recvOverlap);
+
+<a name="line996">996: </a>      // Unify labels
+<a name="line997">997: </a>      const typename bundle_type::labels_type&amp; labels = parallelMesh-&gt;getLabels();
+
+<a name="line999">999: </a>      <font color="#4169E1">for</font>(typename bundle_type::labels_type::const_iterator l_iter = labels.begin(); l_iter != labels.end(); ++l_iter) {
+<a name="line1000">1000: </a>        <font color="#4169E1">if</font> (serialMesh-&gt;hasLabel(l_iter-&gt;first)) <font color="#4169E1">continue</font>;
+<a name="line1001">1001: </a>        const Obj&lt;typename bundle_type::label_type&gt;&amp; parallelLabel = l_iter-&gt;second;
+<a name="line1002">1002: </a>        const Obj&lt;typename bundle_type::label_type&gt;&amp; serialLabel   = serialMesh-&gt;createLabel(l_iter-&gt;first);
+
+<a name="line1004">1004: </a><strong><font color="#FF0000">        sieveCompletion:</font></strong>:scatterCones(parallelLabel, serialLabel, sendOverlap, recvOverlap);
+<a name="line1005">1005: </a>      }
+
+<a name="line1007">1007: </a>      // Unify coordinates
+<a name="line1008">1008: </a>      Obj&lt;std::set&lt;std::string&gt; &gt; sections = parallelMesh-&gt;getRealSections();
+
+<a name="line1010">1010: </a>      <font color="#4169E1">for</font>(std::set&lt;std::string&gt;::iterator name = sections-&gt;begin(); name != sections-&gt;end(); ++name) {
+<a name="line1011">1011: </a>        serialMesh-&gt;setRealSection(*name, distributeSection(parallelMesh-&gt;getRealSection(*name), serialMesh, sendOverlap, recvOverlap));
+<a name="line1012">1012: </a>      }
+<a name="line1013">1013: </a>      sections = parallelMesh-&gt;getIntSections();
+<a name="line1014">1014: </a>      <font color="#4169E1">for</font>(std::set&lt;std::string&gt;::iterator name = sections-&gt;begin(); name != sections-&gt;end(); ++name) {
+<a name="line1015">1015: </a>        serialMesh-&gt;setIntSection(*name, distributeSection(parallelMesh-&gt;getIntSection(*name), serialMesh, sendOverlap, recvOverlap));
+<a name="line1016">1016: </a>      }
+<a name="line1017">1017: </a>      sections = parallelMesh-&gt;getArrowSections();
+<a name="line1018">1018: </a>      <font color="#4169E1">for</font>(std::set&lt;std::string&gt;::iterator name = sections-&gt;begin(); name != sections-&gt;end(); ++name) {
+<a name="line1019">1019: </a>        serialMesh-&gt;setArrowSection(*name, distributeArrowSection(parallelMesh-&gt;getArrowSection(*name), parallelMesh, serialMesh, sendOverlap, recvOverlap));
+<a name="line1020">1020: </a>      }
+<a name="line1021">1021: </a>      <font color="#4169E1">if</font> (serialMesh-&gt;debug()) {serialMesh-&gt;view(<font color="#666666">"Serial Mesh"</font>);}
+<a name="line1022">1022: </a>      ALE_LOG_EVENT_END;
+<a name="line1023">1023: </a>      <font color="#4169E1">return</font> serialMesh;
+<a name="line1024">1024: </a>    }
+<a name="line1025">1025: </a><strong><font color="#FF0000">  public:</font></strong> // Do not like these
+<a name="line1028">1028: </a>    // This is just crappy. We could introduce another phase to find out exactly what
+<a name="line1029">1029: </a>    //   indices people <font color="#4169E1">do</font> not have in the global order after communication
+<a name="line1030">1030: </a>    template&lt;typename OrigSendOverlap, typename OrigRecvOverlap, typename SendSection, typename RecvSection&gt;
+<a name="line1031">1031: </a>    static void updateOverlap(const Obj&lt;OrigSendOverlap&gt;&amp; origSendOverlap, const Obj&lt;OrigRecvOverlap&gt;&amp; origRecvOverlap, const Obj&lt;SendSection&gt;&amp; sendSection, const Obj&lt;RecvSection&gt;&amp; recvSection, const Obj&lt;send_overlap_type&gt;&amp; sendOverlap, const Obj&lt;recv_overlap_type&gt;&amp; recvOverlap) {
+<a name="line1032">1032: </a>      const typename SendSection::sheaf_type&amp; sendRanks = sendSection-&gt;getPatches();
+<a name="line1033">1033: </a>      const typename RecvSection::sheaf_type&amp; recvRanks = recvSection-&gt;getPatches();
+
+<a name="line1035">1035: </a>      <font color="#4169E1">for</font>(typename SendSection::sheaf_type::const_iterator p_iter = sendRanks.begin(); p_iter != sendRanks.end(); ++p_iter) {
+<a name="line1036">1036: </a>        const typename SendSection::patch_type&amp;               rank    = p_iter-&gt;first;
+<a name="line1037">1037: </a>        const Obj&lt;typename SendSection::section_type&gt;&amp;        section = p_iter-&gt;second;
+<a name="line1038">1038: </a>        const typename SendSection::section_type::chart_type&amp; chart   = section-&gt;getChart();
+
+<a name="line1040">1040: </a>        <font color="#4169E1">for</font>(typename SendSection::section_type::chart_type::const_iterator b_iter = chart.begin(); b_iter != chart.end(); ++b_iter) {
+<a name="line1041">1041: </a>          const typename SendSection::value_type *points = section-&gt;restrictPoint(*b_iter);
+<a name="line1042">1042: </a>          const int                               size   = section-&gt;getFiberDimension(*b_iter);
+
+<a name="line1044">1044: </a>          <font color="#4169E1">for</font>(int p = 0; p &lt; size; p++) {
+<a name="line1045">1045: </a>            <font color="#4169E1">if</font> (origSendOverlap-&gt;support(points[p])-&gt;size() == 0) {
+<a name="line1046">1046: </a>              sendOverlap-&gt;addArrow(points[p], rank, points[p]);
+<a name="line1047">1047: </a>            }
+<a name="line1048">1048: </a>          }
+<a name="line1049">1049: </a>        }
+<a name="line1050">1050: </a>      }
+<a name="line1051">1051: </a>      <font color="#4169E1">for</font>(typename RecvSection::sheaf_type::const_iterator p_iter = recvRanks.begin(); p_iter != recvRanks.end(); ++p_iter) {
+<a name="line1052">1052: </a>        const typename RecvSection::patch_type&amp;               rank    = p_iter-&gt;first;
+<a name="line1053">1053: </a>        const Obj&lt;typename RecvSection::section_type&gt;&amp;        section = p_iter-&gt;second;
+<a name="line1054">1054: </a>        const typename RecvSection::section_type::chart_type&amp; chart   = section-&gt;getChart();
+
+<a name="line1056">1056: </a>        <font color="#4169E1">for</font>(typename RecvSection::section_type::chart_type::const_iterator b_iter = chart.begin(); b_iter != chart.end(); ++b_iter) {
+<a name="line1057">1057: </a>          const typename RecvSection::value_type *points = section-&gt;restrictPoint(*b_iter);
+<a name="line1058">1058: </a>          const int                               size   = section-&gt;getFiberDimension(*b_iter);
+
+<a name="line1060">1060: </a>          <font color="#4169E1">for</font>(int p = 0; p &lt; size; p++) {
+<a name="line1061">1061: </a>            <font color="#4169E1">if</font> (origRecvOverlap-&gt;support(rank, points[p])-&gt;size() == 0) {
+<a name="line1062">1062: </a>              recvOverlap-&gt;addArrow(rank, points[p], points[p]);
+<a name="line1063">1063: </a>            }
+<a name="line1064">1064: </a>          }
+<a name="line1065">1065: </a>        }
+<a name="line1066">1066: </a>      }
+<a name="line1067">1067: </a>    }
+<a name="line1070">1070: </a>    template&lt;typename RecvOverlap, typename RecvSection&gt;
+<a name="line1071">1071: </a>    static void updateSieve(const Obj&lt;RecvOverlap&gt;&amp; recvOverlap, const Obj&lt;RecvSection&gt;&amp; recvSection, const Obj&lt;sieve_type&gt;&amp; sieve) {
+<a name="line1072">1072: </a><font color="#A020F0">#if 1</font>
+<a name="line1073">1073: </a>      Obj&lt;typename RecvOverlap::traits::baseSequence&gt; recvPoints = recvOverlap-&gt;base();
+
+<a name="line1075">1075: </a>      <font color="#4169E1">for</font>(typename RecvOverlap::traits::baseSequence::iterator p_iter = recvPoints-&gt;begin(); p_iter != recvPoints-&gt;end(); ++p_iter) {
+<a name="line1076">1076: </a>        const Obj&lt;typename RecvOverlap::traits::coneSequence&gt;&amp; ranks      = recvOverlap-&gt;cone(*p_iter);
+<a name="line1077">1077: </a>        const typename RecvOverlap::target_type&amp;               localPoint = *p_iter;
+
+<a name="line1079">1079: </a>        <font color="#4169E1">for</font>(typename RecvOverlap::traits::coneSequence::iterator r_iter = ranks-&gt;begin(); r_iter != ranks-&gt;end(); ++r_iter) {
+<a name="line1080">1080: </a>          const typename RecvOverlap::target_type&amp;       remotePoint = r_iter.color();
+<a name="line1081">1081: </a>          const int                                      rank        = *r_iter;
+<a name="line1082">1082: </a>          const Obj&lt;typename RecvSection::section_type&gt;&amp; section     = recvSection-&gt;getSection(rank);
+<a name="line1083">1083: </a>          const typename RecvSection::value_type        *points      = section-&gt;restrictPoint(remotePoint);
+<a name="line1084">1084: </a>          const int                                      size        = section-&gt;getFiberDimension(remotePoint);
+<a name="line1085">1085: </a>          int                                            c           = 0;
+
+<a name="line1087">1087: </a>          ///std::cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;recvSection-&gt;commRank()&lt;&lt;<font color="#666666">"]: Receiving "</font> &lt;&lt; size &lt;&lt; <font color="#666666">" points from rank "</font> &lt;&lt; rank &lt;&lt; std::endl;
+<a name="line1088">1088: </a>          <font color="#4169E1">for</font>(int p = 0; p &lt; size; p++) {
+<a name="line1089">1089: </a>            // rank -- remote point --&gt; local point
+<a name="line1090">1090: </a>            <font color="#4169E1">if</font> (recvOverlap-&gt;support(rank, points[p])-&gt;size()) {
+<a name="line1091">1091: </a>              sieve-&gt;addArrow(*recvOverlap-&gt;support(rank, points[p])-&gt;begin(), localPoint, c);
+<a name="line1092">1092: </a>              ///std::cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;recvSection-&gt;commRank()&lt;&lt;<font color="#666666">"]:   1Adding arrow "</font> &lt;&lt; *recvOverlap-&gt;support(rank, points[p])-&gt;begin() &lt;&lt; <font color="#666666">"("</font>&lt;&lt;points[p]&lt;&lt;<font color="#666666">") --&gt; "</font> &lt;&lt; localPoint &lt;&lt; std::endl;
+<a name="line1093">1093: </a>            } <font color="#4169E1">else</font> {
+<a name="line1094">1094: </a>              sieve-&gt;addArrow(points[p], localPoint, c);
+<a name="line1095">1095: </a>              ///std::cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;recvSection-&gt;commRank()&lt;&lt;<font color="#666666">"]:   2Adding arrow "</font> &lt;&lt; points[p] &lt;&lt; <font color="#666666">" --&gt; "</font> &lt;&lt; localPoint &lt;&lt; std::endl;
+<a name="line1096">1096: </a>            }
+<a name="line1097">1097: </a>          }
+<a name="line1098">1098: </a>        }
+<a name="line1099">1099: </a>      }
+<a name="line1100">1100: </a><font color="#A020F0">#else</font>
+<a name="line1101">1101: </a>      const typename RecvSection::sheaf_type&amp; ranks = recvSection-&gt;getPatches();
+
+<a name="line1103">1103: </a>      <font color="#4169E1">for</font>(typename RecvSection::sheaf_type::const_iterator p_iter = ranks.begin(); p_iter != ranks.end(); ++p_iter) {
+<a name="line1104">1104: </a>        const Obj&lt;typename RecvSection::section_type&gt;&amp;        section = p_iter-&gt;second;
+<a name="line1105">1105: </a>        const typename RecvSection::section_type::chart_type&amp; chart   = section-&gt;getChart();
+
+<a name="line1107">1107: </a>        <font color="#4169E1">for</font>(typename RecvSection::section_type::chart_type::const_iterator b_iter = chart.begin(); b_iter != chart.end(); ++b_iter) {
+<a name="line1108">1108: </a>          const typename RecvSection::value_type *points = section-&gt;restrictPoint(*b_iter);
+<a name="line1109">1109: </a>          int                                     size   = section-&gt;getFiberDimension(*b_iter);
+<a name="line1110">1110: </a>          int                                     c      = 0;
+
+<a name="line1112">1112: </a><strong><font color="#FF0000">          std:</font></strong>:cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;recvSection-&gt;commRank()&lt;&lt;<font color="#666666">"]: Receiving "</font> &lt;&lt; size &lt;&lt; <font color="#666666">" points from rank "</font> &lt;&lt; p_iter-&gt;first &lt;&lt; std::endl;
+<a name="line1113">1113: </a>          <font color="#4169E1">for</font>(int p = 0; p &lt; size; p++) {
+<a name="line1114">1114: </a>            //sieve-&gt;addArrow(points[p], *b_iter, c++);
+<a name="line1115">1115: </a>            sieve-&gt;addArrow(points[p], *b_iter, c);
+<a name="line1116">1116: </a><strong><font color="#FF0000">            std:</font></strong>:cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;recvSection-&gt;commRank()&lt;&lt;<font color="#666666">"]:   Adding arrow "</font> &lt;&lt; points[p] &lt;&lt; <font color="#666666">" --&gt; "</font> &lt;&lt; *b_iter &lt;&lt; std::endl;
+<a name="line1117">1117: </a>          }
+<a name="line1118">1118: </a>        }
+<a name="line1119">1119: </a>      }
+<a name="line1120">1120: </a><font color="#A020F0">#endif</font>
+<a name="line1121">1121: </a>    }
+<a name="line1124">1124: </a>    template&lt;typename SendOverlap, typename RecvOverlap, typename SendSection, typename RecvSection&gt;
+<a name="line1125">1125: </a>    static void coneCompletion(const Obj&lt;SendOverlap&gt;&amp; sendOverlap, const Obj&lt;RecvOverlap&gt;&amp; recvOverlap, const Obj&lt;bundle_type&gt;&amp; bundle, const Obj&lt;SendSection&gt;&amp; sendSection, const Obj&lt;RecvSection&gt;&amp; recvSection) {
+<a name="line1126">1126: </a>      <font color="#4169E1">if</font> (sendOverlap-&gt;commSize() == 1) <font color="#4169E1">return</font>;
+<a name="line1127">1127: </a>      // Distribute cones
+<a name="line1128">1128: </a>      const Obj&lt;sieve_type&gt;&amp;                                 sieve           = bundle-&gt;getSieve();
+<a name="line1129">1129: </a>      const Obj&lt;typename sieveCompletion::topology_type&gt;     secTopology     = sieveCompletion::completion::createSendTopology(sendOverlap);
+<a name="line1130">1130: </a>      const Obj&lt;typename sieveCompletion::cone_size_section&gt; coneSizeSection = new typename sieveCompletion::cone_size_section(bundle, sieve);
+<a name="line1131">1131: </a>      const Obj&lt;typename sieveCompletion::cone_section&gt;      coneSection     = new typename sieveCompletion::cone_section(sieve);
+<a name="line1132">1132: </a><strong><font color="#FF0000">      sieveCompletion:</font></strong>:completion::completeSection(sendOverlap, recvOverlap, coneSizeSection, coneSection, sendSection, recvSection);
+<a name="line1133">1133: </a>      // Update cones
+<a name="line1134">1134: </a>      updateSieve(recvOverlap, recvSection, sieve);
+<a name="line1135">1135: </a>    }
+<a name="line1138">1138: </a>    template&lt;typename Section&gt;
+<a name="line1139">1139: </a>    static void completeSection(const Obj&lt;bundle_type&gt;&amp; bundle, const Obj&lt;Section&gt;&amp; section) {
+<a name="line1140">1140: </a>      <font color="#4169E1">typedef</font> typename Distribution&lt;bundle_type&gt;::sieveCompletion sieveCompletion;
+<a name="line1141">1141: </a>      <font color="#4169E1">typedef</font> typename bundle_type::send_overlap_type             send_overlap_type;
+<a name="line1142">1142: </a>      <font color="#4169E1">typedef</font> typename bundle_type::recv_overlap_type             recv_overlap_type;
+<a name="line1143">1143: </a>      <font color="#4169E1">typedef</font> typename Section::value_type                        value_type;
+<a name="line1144">1144: </a>      <font color="#4169E1">typedef</font> typename alloc_type::template rebind&lt;typename Section::value_type&gt;::other value_alloc_type;
+<a name="line1145">1145: </a>      <font color="#4169E1">typedef</font> typename ALE::Field&lt;send_overlap_type, int, ALE::Section&lt;point_type, value_type, value_alloc_type&gt; &gt; send_section_type;
+<a name="line1146">1146: </a>      <font color="#4169E1">typedef</font> typename ALE::Field&lt;recv_overlap_type, int, ALE::Section&lt;point_type, value_type, value_alloc_type&gt; &gt; recv_section_type;
+<a name="line1147">1147: </a>      <font color="#4169E1">typedef</font> ALE::New::SizeSection&lt;Section&gt;                                SectionSizer;
+<a name="line1148">1148: </a>      const int debug = section-&gt;debug();
+
+<a name="line1150">1150: </a>      bundle-&gt;constructOverlap();
+<a name="line1151">1151: </a>      const Obj&lt;send_overlap_type&gt; sendOverlap = bundle-&gt;getSendOverlap();
+<a name="line1152">1152: </a>      const Obj&lt;recv_overlap_type&gt; recvOverlap = bundle-&gt;getRecvOverlap();
+<a name="line1153">1153: </a>      const Obj&lt;send_section_type&gt; sendSection = new send_section_type(section-&gt;comm(), section-&gt;debug());
+<a name="line1154">1154: </a>      const Obj&lt;recv_section_type&gt; recvSection = new recv_section_type(section-&gt;comm(), sendSection-&gt;getTag(), section-&gt;debug());
+<a name="line1155">1155: </a>      const Obj&lt;SectionSizer&gt;      sizer       = new SectionSizer(section);
+
+<a name="line1157">1157: </a><strong><font color="#FF0000">      sectionCompletion:</font></strong>:completeSection(sendOverlap, recvOverlap, sizer, section, sendSection, recvSection);
+<a name="line1158">1158: </a>      // Update section with remote data
+<a name="line1159">1159: </a>      const Obj&lt;typename recv_overlap_type::traits::baseSequence&gt; recvPoints = bundle-&gt;getRecvOverlap()-&gt;base();
+
+<a name="line1161">1161: </a>      <font color="#4169E1">for</font>(typename recv_overlap_type::traits::baseSequence::iterator r_iter = recvPoints-&gt;begin(); r_iter != recvPoints-&gt;end(); ++r_iter) {
+<a name="line1162">1162: </a>        const Obj&lt;typename recv_overlap_type::traits::coneSequence&gt;&amp;     recvPatches = recvOverlap-&gt;cone(*r_iter);
+<a name="line1163">1163: </a>        const typename recv_overlap_type::traits::coneSequence::iterator end         = recvPatches-&gt;end();
+
+<a name="line1165">1165: </a>        <font color="#4169E1">for</font>(typename recv_overlap_type::traits::coneSequence::iterator p_iter = recvPatches-&gt;begin(); p_iter != end; ++p_iter) {
+<a name="line1166">1166: </a>          <font color="#4169E1">if</font> (recvSection-&gt;getSection(*p_iter)-&gt;getFiberDimension(p_iter.color())) {
+<a name="line1167">1167: </a>            <font color="#4169E1">if</font> (debug) {std::cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;section-&gt;commRank()&lt;&lt;<font color="#666666">"]Completed point "</font> &lt;&lt; *r_iter &lt;&lt; std::endl;}
+<a name="line1168">1168: </a>            section-&gt;updateAddPoint(*r_iter, recvSection-&gt;getSection(*p_iter)-&gt;restrictPoint(p_iter.color()));
+<a name="line1169">1169: </a>          }
+<a name="line1170">1170: </a>        }
+<a name="line1171">1171: </a>      }
+<a name="line1172">1172: </a>    }
+<a name="line1173">1173: </a>  };
+<a name="line1174">1174: </a>}
+<a name="line1175">1175: </a><font color="#A020F0">#endif</font>
+</pre>
+</body>
+
+</html>

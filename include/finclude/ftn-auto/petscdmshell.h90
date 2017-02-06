@@ -1,0 +1,60 @@
+        subroutine DMGlobalToLocalBeginDefaultShell(dm, g, mode, l ,ierr&
+     &)
+       DM dm ! DM
+       Vec g ! Vec
+       InsertMode mode ! InsertMode
+       Vec l ! Vec
+       integer ierr
+       end subroutine
+        subroutine DMGlobalToLocalEndDefaultShell(dm, g, mode, l ,ierr)
+       DM dm ! DM
+       Vec g ! Vec
+       InsertMode mode ! InsertMode
+       Vec l ! Vec
+       integer ierr
+       end subroutine
+        subroutine DMLocalToGlobalBeginDefaultShell(dm, l, mode, g ,ierr&
+     &)
+       DM dm ! DM
+       Vec l ! Vec
+       InsertMode mode ! InsertMode
+       Vec g ! Vec
+       integer ierr
+       end subroutine
+        subroutine DMLocalToGlobalEndDefaultShell(dm, l, mode, g ,ierr)
+       DM dm ! DM
+       Vec l ! Vec
+       InsertMode mode ! InsertMode
+       Vec g ! Vec
+       integer ierr
+       end subroutine
+        subroutine DMShellSetMatrix(dm, J ,ierr)
+       DM dm ! DM
+       Mat J ! Mat
+       integer ierr
+       end subroutine
+        subroutine DMShellSetGlobalVector(dm, X ,ierr)
+       DM dm ! DM
+       Vec X ! Vec
+       integer ierr
+       end subroutine
+        subroutine DMShellSetLocalVector(dm, X ,ierr)
+       DM dm ! DM
+       Vec X ! Vec
+       integer ierr
+       end subroutine
+        subroutine DMShellSetGlobalToLocalVecScatter(dm, gtol ,ierr)
+       DM dm ! DM
+       VecScatter gtol ! VecScatter
+       integer ierr
+       end subroutine
+        subroutine DMShellSetLocalToGlobalVecScatter(dm, ltog ,ierr)
+       DM dm ! DM
+       VecScatter ltog ! VecScatter
+       integer ierr
+       end subroutine
+        subroutine DMShellCreate(comm, dm ,ierr)
+       integer comm ! MPI_Comm
+       DM dm ! DM
+       integer ierr
+       end subroutine

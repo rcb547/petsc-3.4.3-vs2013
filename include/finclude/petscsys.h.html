@@ -1,0 +1,284 @@
+<center><a href="petscsys.h">Actual source code: petscsys.h</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="http://www.mcs.anl.gov/petsc/petsc-current/include/finclude/petscsys.h.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2013-10-15T17:08:20+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>petsc-3.4.3 2013-10-15</b></div>
+<pre width="80"><a name="line1">  1: </a>!
+<a name="line2">  2: </a>!
+<a name="line3">  3: </a>!  Base include file <font color="#4169E1">for</font> Fortran use of the PETSc package.
+<a name="line4">  4: </a>!
+<a name="line5">  5: </a><font color="#A020F0">#include </font><font color="#666666">"petscconf.h"</font><font color="#A020F0"></font>
+<a name="line6"> 6: </a> #include <A href="../../include/petscversion.h.html">petscversion.h</A>
+<a name="line7"> 7: </a> #include <A href="../../include/finclude/petscsysdef.h.html">finclude/petscsysdef.h</A>
+
+<a name="line9">  9: </a><font color="#A020F0">#if !defined(PETSC_AVOID_MPIF_H)</font>
+<a name="line10"> 10: </a><font color="#A020F0">#include </font><font color="#666666">"mpif.h"</font><font color="#A020F0"></font>
+<a name="line11"> 11: </a><font color="#A020F0">#endif</font>
+
+<a name="line13"> 13: </a>! ------------------------------------------------------------------------
+<a name="line14"> 14: </a>!     Non Common block Stuff declared first
+<a name="line15"> 15: </a>!
+<a name="line16"> 16: </a>!     Flags
+<a name="line17"> 17: </a>!
+<a name="line18"> 18: </a>      <A href="../../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A>  <A href="../../docs/manualpages/Sys/PETSC_TRUE.html#PETSC_TRUE">PETSC_TRUE</A>
+<a name="line19"> 19: </a>      <A href="../../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A>  <A href="../../docs/manualpages/Sys/PETSC_FALSE.html#PETSC_FALSE">PETSC_FALSE</A>
+<a name="line20"> 20: </a><font color="#A020F0">#if defined(PETSC_FORTRAN_PETSCTRUTH_INT)</font>
+<a name="line21"> 21: </a>      parameter (<A href="../../docs/manualpages/Sys/PETSC_TRUE.html#PETSC_TRUE">PETSC_TRUE</A> = 1,<A href="../../docs/manualpages/Sys/PETSC_FALSE.html#PETSC_FALSE">PETSC_FALSE</A> = 0)
+<a name="line22"> 22: </a><font color="#A020F0">#else</font>
+<a name="line23"> 23: </a>      parameter (<A href="../../docs/manualpages/Sys/PETSC_TRUE.html#PETSC_TRUE">PETSC_TRUE</A> = .true.,<A href="../../docs/manualpages/Sys/PETSC_FALSE.html#PETSC_FALSE">PETSC_FALSE</A> = .false.)
+<a name="line24"> 24: </a><font color="#A020F0">#endif</font>
+<a name="line25"> 25: </a>      <A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>   <A href="../../docs/manualpages/Sys/PETSC_DECIDE.html#PETSC_DECIDE">PETSC_DECIDE</A>,<A href="../../docs/manualpages/Sys/PETSC_DETERMINE.html#PETSC_DETERMINE">PETSC_DETERMINE</A>
+<a name="line26"> 26: </a>      parameter (<A href="../../docs/manualpages/Sys/PETSC_DECIDE.html#PETSC_DECIDE">PETSC_DECIDE</A>=-1,<A href="../../docs/manualpages/Sys/PETSC_DETERMINE.html#PETSC_DETERMINE">PETSC_DETERMINE</A>=-1)
+
+<a name="line28"> 28: </a>      <A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>  PETSC_DEFAULT_INTEGER
+<a name="line29"> 29: </a>      parameter (PETSC_DEFAULT_INTEGER = -2)
+
+<a name="line31"> 31: </a>      PetscFortranDouble PETSC_DEFAULT_DOUBLE_PRECISION
+<a name="line32"> 32: </a>      parameter (PETSC_DEFAULT_DOUBLE_PRECISION=-2.0d0)
+
+<a name="line34"> 34: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PETSC_FP_TRAP_OFF
+<a name="line35"> 35: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PETSC_FP_TRAP_ON
+<a name="line36"> 36: </a>      parameter (PETSC_FP_TRAP_OFF = 0,PETSC_FP_TRAP_ON = 1)
+
+
+
+<a name="line40"> 40: </a>!
+<a name="line41"> 41: </a>!     Default <A href="../../docs/manualpages/Viewer/PetscViewers.html#PetscViewers">PetscViewers</A>.
+<a name="line42"> 42: </a>!
+<a name="line43"> 43: </a>      <A href="../../docs/manualpages/Sys/PetscFortranAddr.html#PetscFortranAddr">PetscFortranAddr</A> <A href="../../docs/manualpages/Viewer/PETSC_VIEWER_DRAW_WORLD.html#PETSC_VIEWER_DRAW_WORLD">PETSC_VIEWER_DRAW_WORLD</A>
+<a name="line44"> 44: </a>      <A href="../../docs/manualpages/Sys/PetscFortranAddr.html#PetscFortranAddr">PetscFortranAddr</A> <A href="../../docs/manualpages/Viewer/PETSC_VIEWER_DRAW_SELF.html#PETSC_VIEWER_DRAW_SELF">PETSC_VIEWER_DRAW_SELF</A>
+<a name="line45"> 45: </a>      <A href="../../docs/manualpages/Sys/PetscFortranAddr.html#PetscFortranAddr">PetscFortranAddr</A> <A href="../../docs/manualpages/Viewer/PETSC_VIEWER_SOCKET_WORLD.html#PETSC_VIEWER_SOCKET_WORLD">PETSC_VIEWER_SOCKET_WORLD</A>
+<a name="line46"> 46: </a>      <A href="../../docs/manualpages/Sys/PetscFortranAddr.html#PetscFortranAddr">PetscFortranAddr</A> <A href="../../docs/manualpages/Viewer/PETSC_VIEWER_SOCKET_SELF.html#PETSC_VIEWER_SOCKET_SELF">PETSC_VIEWER_SOCKET_SELF</A>
+<a name="line47"> 47: </a>      <A href="../../docs/manualpages/Sys/PetscFortranAddr.html#PetscFortranAddr">PetscFortranAddr</A> <A href="../../docs/manualpages/Viewer/PETSC_VIEWER_STDOUT_WORLD.html#PETSC_VIEWER_STDOUT_WORLD">PETSC_VIEWER_STDOUT_WORLD</A>
+<a name="line48"> 48: </a>      <A href="../../docs/manualpages/Sys/PetscFortranAddr.html#PetscFortranAddr">PetscFortranAddr</A> <A href="../../docs/manualpages/Viewer/PETSC_VIEWER_STDOUT_SELF.html#PETSC_VIEWER_STDOUT_SELF">PETSC_VIEWER_STDOUT_SELF</A>
+<a name="line49"> 49: </a>      <A href="../../docs/manualpages/Sys/PetscFortranAddr.html#PetscFortranAddr">PetscFortranAddr</A> PETSC_VIEWER_STDERR_WORLD
+<a name="line50"> 50: </a>      <A href="../../docs/manualpages/Sys/PetscFortranAddr.html#PetscFortranAddr">PetscFortranAddr</A> PETSC_VIEWER_STDERR_SELF
+<a name="line51"> 51: </a>      <A href="../../docs/manualpages/Sys/PetscFortranAddr.html#PetscFortranAddr">PetscFortranAddr</A> <A href="../../docs/manualpages/Viewer/PETSC_VIEWER_BINARY_WORLD.html#PETSC_VIEWER_BINARY_WORLD">PETSC_VIEWER_BINARY_WORLD</A>
+<a name="line52"> 52: </a>      <A href="../../docs/manualpages/Sys/PetscFortranAddr.html#PetscFortranAddr">PetscFortranAddr</A> <A href="../../docs/manualpages/Viewer/PETSC_VIEWER_BINARY_SELF.html#PETSC_VIEWER_BINARY_SELF">PETSC_VIEWER_BINARY_SELF</A>
+<a name="line53"> 53: </a>      <A href="../../docs/manualpages/Sys/PetscFortranAddr.html#PetscFortranAddr">PetscFortranAddr</A> <A href="../../docs/manualpages/Viewer/PETSC_VIEWER_MATLAB_WORLD.html#PETSC_VIEWER_MATLAB_WORLD">PETSC_VIEWER_MATLAB_WORLD</A>
+<a name="line54"> 54: </a>      <A href="../../docs/manualpages/Sys/PetscFortranAddr.html#PetscFortranAddr">PetscFortranAddr</A> <A href="../../docs/manualpages/Viewer/PETSC_VIEWER_MATLAB_SELF.html#PETSC_VIEWER_MATLAB_SELF">PETSC_VIEWER_MATLAB_SELF</A>
+
+<a name="line56"> 56: </a>!
+<a name="line57"> 57: </a>!     The numbers used below should match those in
+<a name="line58"> 58: </a>!     petsc-private/fortranimpl.h
+<a name="line59"> 59: </a>!
+<a name="line60"> 60: </a>      parameter (<A href="../../docs/manualpages/Viewer/PETSC_VIEWER_DRAW_WORLD.html#PETSC_VIEWER_DRAW_WORLD">PETSC_VIEWER_DRAW_WORLD</A>   = 4)
+<a name="line61"> 61: </a>      parameter (<A href="../../docs/manualpages/Viewer/PETSC_VIEWER_DRAW_SELF.html#PETSC_VIEWER_DRAW_SELF">PETSC_VIEWER_DRAW_SELF</A>    = 5)
+<a name="line62"> 62: </a>      parameter (<A href="../../docs/manualpages/Viewer/PETSC_VIEWER_SOCKET_WORLD.html#PETSC_VIEWER_SOCKET_WORLD">PETSC_VIEWER_SOCKET_WORLD</A> = 6)
+<a name="line63"> 63: </a>      parameter (<A href="../../docs/manualpages/Viewer/PETSC_VIEWER_SOCKET_SELF.html#PETSC_VIEWER_SOCKET_SELF">PETSC_VIEWER_SOCKET_SELF</A>  = 7)
+<a name="line64"> 64: </a>      parameter (<A href="../../docs/manualpages/Viewer/PETSC_VIEWER_STDOUT_WORLD.html#PETSC_VIEWER_STDOUT_WORLD">PETSC_VIEWER_STDOUT_WORLD</A> = 8)
+<a name="line65"> 65: </a>      parameter (<A href="../../docs/manualpages/Viewer/PETSC_VIEWER_STDOUT_SELF.html#PETSC_VIEWER_STDOUT_SELF">PETSC_VIEWER_STDOUT_SELF</A>  = 9)
+<a name="line66"> 66: </a>      parameter (PETSC_VIEWER_STDERR_WORLD = 10)
+<a name="line67"> 67: </a>      parameter (PETSC_VIEWER_STDERR_SELF  = 11)
+<a name="line68"> 68: </a>      parameter (<A href="../../docs/manualpages/Viewer/PETSC_VIEWER_BINARY_WORLD.html#PETSC_VIEWER_BINARY_WORLD">PETSC_VIEWER_BINARY_WORLD</A> = 12)
+<a name="line69"> 69: </a>      parameter (<A href="../../docs/manualpages/Viewer/PETSC_VIEWER_BINARY_SELF.html#PETSC_VIEWER_BINARY_SELF">PETSC_VIEWER_BINARY_SELF</A>  = 13)
+<a name="line70"> 70: </a>      parameter (<A href="../../docs/manualpages/Viewer/PETSC_VIEWER_MATLAB_WORLD.html#PETSC_VIEWER_MATLAB_WORLD">PETSC_VIEWER_MATLAB_WORLD</A> = 14)
+<a name="line71"> 71: </a>      parameter (<A href="../../docs/manualpages/Viewer/PETSC_VIEWER_MATLAB_SELF.html#PETSC_VIEWER_MATLAB_SELF">PETSC_VIEWER_MATLAB_SELF</A>  = 15)
+<a name="line72"> 72: </a>!
+<a name="line73"> 73: </a>!     PETSc DataTypes
+<a name="line74"> 74: </a>!
+<a name="line75"> 75: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PETSC_INT
+<a name="line76"> 76: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PETSC_DOUBLE
+<a name="line77"> 77: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PETSC_COMPLEX
+<a name="line78"> 78: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PETSC_LONG
+<a name="line79"> 79: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PETSC_SHORT
+<a name="line80"> 80: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PETSC_FLOAT
+<a name="line81"> 81: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PETSC_CHAR
+<a name="line82"> 82: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PETSC_BIT_LOGICAL
+<a name="line83"> 83: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PETSC_ENUM
+<a name="line84"> 84: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PETSC_BOOL
+<a name="line85"> 85: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PETSC___FLOAT128
+
+<a name="line87"> 87: </a><font color="#A020F0">#if defined(PETSC_USE_REAL_SINGLE)</font>
+<a name="line88"> 88: </a><strong><font color="#228B22">#define PETSC_REAL PETSC_FLOAT</font></strong>
+<a name="line89"> 89: </a><font color="#A020F0">#elif defined(PETSC_USE_REAL___FLOAT128)</font>
+<a name="line90"> 90: </a><strong><font color="#228B22">#define PETSC_REAL PETSC___FLOAT128</font></strong>
+<a name="line91"> 91: </a><font color="#A020F0">#else</font>
+<a name="line92"> 92: </a><strong><font color="#228B22">#define PETSC_REAL PETSC_DOUBLE</font></strong>
+<a name="line93"> 93: </a><font color="#A020F0">#endif</font>
+<a name="line94"> 94: </a><strong><font color="#228B22">#define PETSC_FORTRANADDR PETSC_LONG</font></strong>
+
+<a name="line96"> 96: </a>      parameter (PETSC_INT=0,PETSC_DOUBLE=1,PETSC_COMPLEX=2)
+<a name="line97"> 97: </a>      parameter (PETSC_LONG=3,PETSC_SHORT=4,PETSC_FLOAT=5)
+<a name="line98"> 98: </a>      parameter (PETSC_CHAR=6,PETSC_BIT_LOGICAL=7,PETSC_ENUM=8)
+<a name="line99"> 99: </a>      parameter (PETSC_BOOL=9,PETSC___FLOAT128=10)
+<a name="line100">100: </a>!
+<a name="line101">101: </a>!
+<a name="line102">102: </a>!
+<a name="line103">103: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PETSC_COPY_VALUES
+<a name="line104">104: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PETSC_OWN_POINTER
+<a name="line105">105: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PETSC_USE_POINTER
+
+<a name="line107">107: </a>      parameter (PETSC_COPY_VALUES = 0)
+<a name="line108">108: </a>      parameter (PETSC_OWN_POINTER = 1)
+<a name="line109">109: </a>      parameter (PETSC_USE_POINTER = 2)
+<a name="line110">110: </a>!
+<a name="line111">111: </a>! ------------------------------------------------------------------------
+<a name="line112">112: </a>!     PETSc mathematics include file. Defines certain basic mathematical
+<a name="line113">113: </a>!    constants and functions <font color="#4169E1">for</font> working with single and double precision
+<a name="line114">114: </a>!    floating point numbers as well as complex and integers.
+<a name="line115">115: </a>!
+<a name="line116">116: </a>!     Representation of complex i
+<a name="line117">117: </a>!
+<a name="line118">118: </a>      PetscFortranComplex <A href="../../docs/manualpages/Sys/PETSC_i.html#PETSC_i">PETSC_i</A>
+<a name="line119">119: </a><font color="#A020F0">#if defined(PETSC_USE_REAL_SINGLE)</font>
+<a name="line120">120: </a>      parameter (<A href="../../docs/manualpages/Sys/PETSC_i.html#PETSC_i">PETSC_i</A> = (0.0e0,1.0e0))
+<a name="line121">121: </a><font color="#A020F0">#else</font>
+<a name="line122">122: </a>      parameter (<A href="../../docs/manualpages/Sys/PETSC_i.html#PETSC_i">PETSC_i</A> = (0.0d0,1.0d0))
+<a name="line123">123: </a><font color="#A020F0">#endif</font>
+
+<a name="line125">125: </a>!
+<a name="line126">126: </a>!     Basic constants
+<a name="line127">127: </a>!
+<a name="line128">128: </a>      PetscFortranDouble PETSC_PI
+<a name="line129">129: </a>      PetscFortranDouble PETSC_MAX_REAL
+<a name="line130">130: </a>      PetscFortranDouble PETSC_MIN_REAL
+
+<a name="line132">132: </a>      parameter (PETSC_PI = 3.14159265358979323846264d0)
+<a name="line133">133: </a>      parameter (PETSC_MAX_REAL = 1.d300,PETSC_MIN_REAL = -1.d300)
+
+<a name="line135">135: </a>      PetscFortranDouble PETSC_MACHINE_EPSILON
+<a name="line136">136: </a>      PetscFortranDouble PETSC_SQRT_MACHINE_EPSILON
+<a name="line137">137: </a>      PetscFortranDouble PETSC_SMALL
+
+<a name="line139">139: </a><font color="#A020F0">#if defined(PETSC_USE_REAL_SINGLE)</font>
+<a name="line140">140: </a>      parameter (PETSC_MACHINE_EPSILON = 1.e-7)
+<a name="line141">141: </a>      parameter (PETSC_SQRT_MACHINE_EPSILON = 3.e-4)
+<a name="line142">142: </a>      parameter (PETSC_SMALL = 1.e-5)
+<a name="line143">143: </a><font color="#A020F0">#else</font>
+<a name="line144">144: </a>      parameter (PETSC_MACHINE_EPSILON = 1.d-14)
+<a name="line145">145: </a>      parameter (PETSC_SQRT_MACHINE_EPSILON = 1.d-7)
+<a name="line146">146: </a>      parameter (PETSC_SMALL = 1.d-10)
+<a name="line147">147: </a><font color="#A020F0">#endif</font>
+<a name="line148">148: </a>!
+<a name="line149">149: </a>! ----------------------------------------------------------------------------
+<a name="line150">150: </a>!    BEGIN PETSc aliases <font color="#4169E1">for</font> MPI_ constants
+<a name="line151">151: </a>!
+<a name="line152">152: </a>      integer <A href="../../docs/manualpages/Sys/MPIU_SCALAR.html#MPIU_SCALAR">MPIU_SCALAR</A>
+<a name="line153">153: </a><font color="#A020F0">#if defined(PETSC_USE_COMPLEX)</font>
+<a name="line154">154: </a><font color="#A020F0">#if defined (PETSC_USE_REAL_SINGLE)</font>
+<a name="line155">155: </a>      parameter(<A href="../../docs/manualpages/Sys/MPIU_SCALAR.html#MPIU_SCALAR">MPIU_SCALAR</A> = MPI_COMPLEX)
+<a name="line156">156: </a><font color="#A020F0">#else</font>
+<a name="line157">157: </a>      parameter(<A href="../../docs/manualpages/Sys/MPIU_SCALAR.html#MPIU_SCALAR">MPIU_SCALAR</A> = MPI_DOUBLE_COMPLEX)
+<a name="line158">158: </a><font color="#A020F0">#endif</font>
+<a name="line159">159: </a><font color="#A020F0">#else</font>
+<a name="line160">160: </a><font color="#A020F0">#if defined (PETSC_USE_REAL_SINGLE)</font>
+<a name="line161">161: </a>      parameter (<A href="../../docs/manualpages/Sys/MPIU_SCALAR.html#MPIU_SCALAR">MPIU_SCALAR</A> = MPI_REAL)
+<a name="line162">162: </a><font color="#A020F0">#else</font>
+<a name="line163">163: </a>      parameter(<A href="../../docs/manualpages/Sys/MPIU_SCALAR.html#MPIU_SCALAR">MPIU_SCALAR</A> = MPI_DOUBLE_PRECISION)
+<a name="line164">164: </a><font color="#A020F0">#endif</font>
+<a name="line165">165: </a><font color="#A020F0">#endif</font>
+
+<a name="line167">167: </a>      integer MPIU_INTEGER
+<a name="line168">168: </a><font color="#A020F0">#if defined(PETSC_USE_64BIT_INDICES)</font>
+<a name="line169">169: </a>      parameter(MPIU_INTEGER = MPI_INTEGER8)
+<a name="line170">170: </a><font color="#A020F0">#else</font>
+<a name="line171">171: </a>      parameter(MPIU_INTEGER = MPI_INTEGER)
+<a name="line172">172: </a><font color="#A020F0">#endif</font>
+
+<a name="line174">174: </a>!
+<a name="line175">175: </a>! ----------------------------------------------------------------------------
+<a name="line176">176: </a>!    BEGIN COMMON-BLOCK VARIABLES
+<a name="line177">177: </a>!
+<a name="line178">178: </a>!
+<a name="line179">179: </a>!     PETSc world communicator
+<a name="line180">180: </a>!
+<a name="line181">181: </a>      <A href="../../docs/manualpages/Sys/MPI_Comm.html#MPI_Comm">MPI_Comm</A> <A href="../../docs/manualpages/Sys/PETSC_COMM_WORLD.html#PETSC_COMM_WORLD">PETSC_COMM_WORLD</A>
+<a name="line182">182: </a>      <A href="../../docs/manualpages/Sys/MPI_Comm.html#MPI_Comm">MPI_Comm</A> <A href="../../docs/manualpages/Sys/PETSC_COMM_SELF.html#PETSC_COMM_SELF">PETSC_COMM_SELF</A>
+<a name="line183">183: </a>!
+<a name="line184">184: </a>!     Fortran Null
+<a name="line185">185: </a>!
+<a name="line186">186: </a>      PetscChar(80)       PETSC_NULL_CHARACTER
+<a name="line187">187: </a>      <A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>            PETSC_NULL_INTEGER
+<a name="line188">188: </a>      PetscFortranDouble  PETSC_NULL_DOUBLE
+<a name="line189">189: </a>      <A href="../../docs/manualpages/Sys/PetscObject.html#PetscObject">PetscObject</A>         PETSC_NULL_OBJECT
+<a name="line190">190: </a>!
+<a name="line191">191: </a>!      A PETSC_NULL_FUNCTION pointer
+<a name="line192">192: </a>!
+<a name="line193">193: </a>      external PETSC_NULL_FUNCTION
+<a name="line194">194: </a>      <A href="../../docs/manualpages/Sys/PetscScalar.html#PetscScalar">PetscScalar</A>   PETSC_NULL_SCALAR
+<a name="line195">195: </a>      <A href="../../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>     PETSC_NULL_REAL
+<a name="line196">196: </a>      <A href="../../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A>     PETSC_NULL_BOOL
+<a name="line197">197: </a>!
+<a name="line198">198: </a>!     Common Block to store some of the PETSc constants.
+<a name="line199">199: </a>!     which can be set - only at runtime.
+<a name="line200">200: </a>!
+<a name="line201">201: </a>!
+<a name="line202">202: </a>!     A string should be in a different common block
+<a name="line203">203: </a>!
+<a name="line204">204: </a>      common /petscfortran1/ PETSC_NULL_CHARACTER
+<a name="line205">205: </a>      common /petscfortran2/ PETSC_NULL_INTEGER
+<a name="line206">206: </a>      common /petscfortran4/ PETSC_NULL_SCALAR
+<a name="line207">207: </a>      common /petscfortran5/ PETSC_NULL_DOUBLE
+<a name="line208">208: </a>      common /petscfortran6/ PETSC_NULL_REAL
+<a name="line209">209: </a>      common /petscfortran7/ PETSC_NULL_BOOL
+<a name="line210">210: </a>      common /petscfortran8/ PETSC_NULL_OBJECT
+<a name="line211">211: </a>      common /petscfortran9/ <A href="../../docs/manualpages/Sys/PETSC_COMM_WORLD.html#PETSC_COMM_WORLD">PETSC_COMM_WORLD</A>
+<a name="line212">212: </a>      common /petscfortran10/ <A href="../../docs/manualpages/Sys/PETSC_COMM_SELF.html#PETSC_COMM_SELF">PETSC_COMM_SELF</A>
+<a name="line213">213: </a>!
+<a name="line214">214: </a>!     Possible arguments to <A href="../../docs/manualpages/Sys/PetscPushErrorHandler.html#PetscPushErrorHandler">PetscPushErrorHandler</A>()
+<a name="line215">215: </a>!
+<a name="line216">216: </a>      external PETSCTRACEBACKERRORHANDLER
+<a name="line217">217: </a>      external PETSCABORTERRORHANDLER
+<a name="line218">218: </a>      external PETSCEMACSCLIENTERRORHANDLER
+<a name="line219">219: </a>      external PETSCATTACHDEBUGGERERRORHANDLER
+<a name="line220">220: </a>      external PETSCIGNOREERRORHANDLER
+<a name="line221">221: </a>!
+<a name="line222">222: </a>      external PetscIsInfOrNanScalar
+<a name="line223">223: </a>      external PetscIsInfOrNanReal
+<a name="line224">224: </a>      <A href="../../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A>  PetscIsInfOrNanScalar
+<a name="line225">225: </a>      <A href="../../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A>  PetscIsInfOrNanReal
+
+
+<a name="line228">228: </a>!    END COMMON-BLOCK VARIABLES
+<a name="line229">229: </a>! ----------------------------------------------------------------------------
+<a name="line230">230: </a>!
+<a name="line231">231: </a>!
+<a name="line232">232: </a>!     Random numbers
+<a name="line233">233: </a>!
+<a name="line234">234: </a><strong><font color="#228B22">#define PETSCRAND 'rand'</font></strong>
+<a name="line235">235: </a><strong><font color="#228B22">#define PETSCRAND48 'rand48'</font></strong>
+<a name="line236">236: </a><strong><font color="#228B22">#define PETSCSPRNG 'sprng'</font></strong>
+<a name="line237">237: </a>!
+<a name="line238">238: </a>!
+<a name="line239">239: </a>!
+<a name="line240">240: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PETSC_BINARY_INT_SIZE
+<a name="line241">241: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PETSC_BINARY_FLOAT_SIZE
+<a name="line242">242: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PETSC_BINARY_CHAR_SIZE
+<a name="line243">243: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PETSC_BINARY_SHORT_SIZE
+<a name="line244">244: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PETSC_BINARY_DOUBLE_SIZE
+<a name="line245">245: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PETSC_BINARY_SCALAR_SIZE
+
+<a name="line247">247: </a>      parameter (PETSC_BINARY_INT_SIZE = 4)
+<a name="line248">248: </a>      parameter (PETSC_BINARY_FLOAT_SIZE = 4)
+<a name="line249">249: </a>      parameter (PETSC_BINARY_CHAR_SIZE = 1)
+<a name="line250">250: </a>      parameter (PETSC_BINARY_SHORT_SIZE = 2)
+<a name="line251">251: </a>      parameter (PETSC_BINARY_DOUBLE_SIZE = 8)
+<a name="line252">252: </a><font color="#A020F0">#if defined(PETSC_USE_COMPLEX)</font>
+<a name="line253">253: </a>      parameter (PETSC_BINARY_SCALAR_SIZE = 16)
+<a name="line254">254: </a><font color="#A020F0">#else</font>
+<a name="line255">255: </a>      parameter (PETSC_BINARY_SCALAR_SIZE = 8)
+<a name="line256">256: </a><font color="#A020F0">#endif</font>
+
+<a name="line258">258: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PETSC_BINARY_SEEK_SET
+<a name="line259">259: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PETSC_BINARY_SEEK_CUR
+<a name="line260">260: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PETSC_BINARY_SEEK_END
+
+<a name="line262">262: </a>      parameter (PETSC_BINARY_SEEK_SET = 0,PETSC_BINARY_SEEK_CUR = 1)
+<a name="line263">263: </a>      parameter (PETSC_BINARY_SEEK_END = 2)
+
+<a name="line265">265: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PETSC_BUILDTWOSIDED_ALLREDUCE
+<a name="line266">266: </a>      <A href="../../docs/manualpages/Sys/PetscEnum.html#PetscEnum">PetscEnum</A> PETSC_BUILDTWOSIDED_IBARRIER
+<a name="line267">267: </a>      parameter (PETSC_BUILDTWOSIDED_ALLREDUCE = 0)
+<a name="line268">268: </a>      parameter (PETSC_BUILDTWOSIDED_IBARRIER = 1)
+<a name="line269">269: </a>!
+</pre>
+</body>
+
+</html>

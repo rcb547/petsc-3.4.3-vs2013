@@ -1,0 +1,188 @@
+<center><a href="petsc-threadcommimpl.h">Actual source code: petsc-threadcommimpl.h</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="http://www.mcs.anl.gov/petsc/petsc-current/include/petsc-private/threadcommimpl.h.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2013-10-15T16:56:00+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>petsc-3.4.3 2013-10-15</b></div>
+<pre width="80">
+<a name="line2">  2: </a><font color="#A020F0">#ifndef __THREADCOMMIMPL_H</font>
+
+<a name="line5">  5: </a><font color="#A020F0">#include &lt;petscthreadcomm.h&gt;</font>
+<a name="line6">  6: </a><font color="#A020F0">#include &lt;petsc-private/petscimpl.h&gt;</font>
+
+<a name="line8">  8: </a><font color="#A020F0">#if defined(PETSC_HAVE_SYS_SYSINFO_H)</font>
+<a name="line9">  9: </a><font color="#A020F0">#include &lt;sys/sysinfo.h&gt;</font>
+<a name="line10"> 10: </a><font color="#A020F0">#endif</font>
+<a name="line11"> 11: </a><font color="#A020F0">#if defined(PETSC_HAVE_UNISTD_H)</font>
+<a name="line12"> 12: </a><font color="#A020F0">#include &lt;unistd.h&gt;</font>
+<a name="line13"> 13: </a><font color="#A020F0">#endif</font>
+<a name="line14"> 14: </a><font color="#A020F0">#if defined(PETSC_HAVE_SYS_SYSCTL_H)</font>
+<a name="line15"> 15: </a><font color="#A020F0">#include &lt;sys/sysctl.h&gt;</font>
+<a name="line16"> 16: </a><font color="#A020F0">#endif</font>
+<a name="line17"> 17: </a><font color="#A020F0">#if defined(PETSC_HAVE_WINDOWS_H)</font>
+<a name="line18"> 18: </a><font color="#A020F0">#include &lt;windows.h&gt;</font>
+<a name="line19"> 19: </a><font color="#A020F0">#endif</font>
+
+<a name="line21"> 21: </a>PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscMPIInt.html#PetscMPIInt">PetscMPIInt</A> Petsc_ThreadComm_keyval;
+
+<a name="line23"> 23: </a><font color="#B22222">/* Max. number of arguments for kernel */</font>
+<a name="line24"> 24: </a><strong><font color="#228B22">#define PETSC_KERNEL_NARGS_MAX 10</font></strong>
+
+<a name="line26"> 26: </a><font color="#B22222">/* Reduction status of threads */</font>
+<a name="line27"> 27: </a><strong><font color="#228B22">#define THREADCOMM_THREAD_WAITING_FOR_NEWRED 0</font></strong>
+<a name="line28"> 28: </a><strong><font color="#228B22">#define THREADCOMM_THREAD_POSTED_LOCALRED    1</font></strong>
+<a name="line29"> 29: </a><font color="#B22222">/* Status of the reduction */</font>
+<a name="line30"> 30: </a><strong><font color="#228B22">#define THREADCOMM_REDUCTION_NONE           -1</font></strong>
+<a name="line31"> 31: </a><strong><font color="#228B22">#define THREADCOMM_REDUCTION_NEW             0</font></strong>
+<a name="line32"> 32: </a><strong><font color="#228B22">#define THREADCOMM_REDUCTION_COMPLETE        1</font></strong>
+
+<a name="line34"> 34: </a><font color="#B22222">/* Job status for threads */</font>
+<a name="line35"> 35: </a><strong><font color="#228B22">#define THREAD_JOB_NONE       -1</font></strong>
+<a name="line36"> 36: </a><strong><font color="#228B22">#define THREAD_JOB_POSTED      1</font></strong>
+<a name="line37"> 37: </a><strong><font color="#228B22">#define THREAD_JOB_RECIEVED    2</font></strong>
+<a name="line38"> 38: </a><strong><font color="#228B22">#define THREAD_JOB_COMPLETED   0</font></strong>
+
+<a name="line40"> 40: </a><strong><font color="#228B22">#define PetscReadOnce(type,val) (*(volatile type *)&amp;val)</font></strong>
+
+<a name="line42"> 42: </a><font color="#A020F0">#if defined(PETSC_MEMORY_BARRIER)</font>
+<a name="line43"> 43: </a><strong><font color="#228B22">#define PetscMemoryBarrier() do {PETSC_MEMORY_BARRIER();} while(0)</font></strong>
+<a name="line44"> 44: </a><font color="#A020F0">#else</font>
+<a name="line45"> 45: </a><strong><font color="#228B22">#define PetscMemoryBarrier()</font></strong>
+<a name="line46"> 46: </a><font color="#A020F0">#endif</font>
+<a name="line47"> 47: </a><font color="#A020F0">#if defined(PETSC_READ_MEMORY_BARRIER)</font>
+<a name="line48"> 48: </a><strong><font color="#228B22">#define PetscReadMemoryBarrier() do {PETSC_READ_MEMORY_BARRIER();} while(0)</font></strong>
+<a name="line49"> 49: </a><font color="#A020F0">#else</font>
+<a name="line50"> 50: </a><strong><font color="#228B22">#define PetscReadMemoryBarrier()</font></strong>
+<a name="line51"> 51: </a><font color="#A020F0">#endif</font>
+<a name="line52"> 52: </a><font color="#A020F0">#if defined(PETSC_WRITE_MEMORY_BARRIER)</font>
+<a name="line53"> 53: </a><strong><font color="#228B22">#define PetscWriteMemoryBarrier() do {PETSC_WRITE_MEMORY_BARRIER();} while(0)</font></strong>
+<a name="line54"> 54: </a><font color="#A020F0">#else</font>
+<a name="line55"> 55: </a><strong><font color="#228B22">#define PetscWriteMemoryBarrier()</font></strong>
+<a name="line56"> 56: </a><font color="#A020F0">#endif</font>
+
+<a name="line58"> 58: </a><font color="#4169E1">typedef struct _p_PetscThreadCommRedCtx *PetscThreadCommRedCtx;</font>
+<a name="line59"> 59: </a><font color="#4169E1"><a name="_p_PetscThreadCommRedCtx"></a>struct _p_PetscThreadCommRedCtx</font>{
+<a name="line60"> 60: </a>  PetscThreadComm               tcomm;          <font color="#B22222">/* The associated threadcomm */</font>
+<a name="line61"> 61: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>                      red_status;     <font color="#B22222">/* Reduction status */</font>
+<a name="line62"> 62: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>                      *thread_status; <font color="#B22222">/* Reduction status of each thread */</font>
+<a name="line63"> 63: </a>  void                          *local_red;     <font color="#B22222">/* Array to hold local reduction contribution from each thread */</font>
+<a name="line64"> 64: </a>  PetscThreadCommReductionOp    op;             <font color="#B22222">/* The reduction operation */</font>
+<a name="line65"> 65: </a>  <A href="../docs/manualpages/Sys/PetscDataType.html#PetscDataType">PetscDataType</A>                 type;           <font color="#B22222">/* The reduction data type */</font>
+<a name="line66"> 66: </a>};
+
+<a name="line68"> 68: </a><font color="#4169E1"><a name="_p_PetscThreadCommReduction"></a>struct _p_PetscThreadCommReduction</font>{
+<a name="line69"> 69: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>              nreds;                              <font color="#B22222">/* Number of reductions in operation */</font>
+<a name="line70"> 70: </a>  PetscThreadCommRedCtx redctx;                             <font color="#B22222">/* Reduction objects */</font>
+<a name="line71"> 71: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>               ctr;                               <font color="#B22222">/* Global Reduction counter */</font>
+<a name="line72"> 72: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>              *thread_ctr;                        <font color="#B22222">/* Reduction counter for each thread */</font>
+<a name="line73"> 73: </a>};
+
+<a name="line75"> 75: </a><font color="#4169E1">typedef struct _p_PetscThreadCommJobCtx* PetscThreadCommJobCtx;</font>
+<a name="line76"> 76: </a><font color="#4169E1">struct</font>  _p_PetscThreadCommJobCtx{
+<a name="line77"> 77: </a>  PetscThreadComm   tcomm;                         <font color="#B22222">/* The thread communicator */</font>
+<a name="line78"> 78: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>          nargs;                         <font color="#B22222">/* Number of arguments for the kernel */</font>
+<a name="line79"> 79: </a>  PetscThreadKernel pfunc;                         <font color="#B22222">/* Kernel function */</font>
+<a name="line80"> 80: </a>  void              *args[PETSC_KERNEL_NARGS_MAX]; <font color="#B22222">/* Array of void* to hold the arguments */</font>
+<a name="line81"> 81: </a>  <A href="../docs/manualpages/Sys/PetscScalar.html#PetscScalar">PetscScalar</A>       scalars[3];                    <font color="#B22222">/* Array to hold three scalar values */</font>
+<a name="line82"> 82: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>          ints[3];                       <font color="#B22222">/* Array to hold three integer values */</font>
+<a name="line83"> 83: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>          *job_status;                   <font color="#B22222">/* Thread job status */</font>
+<a name="line84"> 84: </a>};
+
+<a name="line86"> 86: </a><font color="#B22222">/* Structure to manage job queue */</font>
+<a name="line87"> 87: </a><font color="#4169E1">typedef struct _p_PetscThreadCommJobQueue* PetscThreadCommJobQueue;</font>
+<a name="line88"> 88: </a><font color="#4169E1"><a name="_p_PetscThreadCommJobQueue"></a>struct _p_PetscThreadCommJobQueue</font>{
+<a name="line89"> 89: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A> ctr;                                         <font color="#B22222">/* job counter */</font>
+<a name="line90"> 90: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A> kernel_ctr;                                  <font color="#B22222">/* kernel counter .. need this otherwise race conditions are unavoidable */</font>
+<a name="line91"> 91: </a>  PetscThreadCommJobCtx jobs;                           <font color="#B22222">/* queue of jobs */</font>
+<a name="line92"> 92: </a>};
+
+<a name="line94"> 94: </a>extern PetscThreadCommJobQueue PetscJobQueue;
+
+<a name="line96"> 96: </a><font color="#4169E1">typedef struct _PetscThreadCommOps* PetscThreadCommOps;</font>
+<a name="line97"> 97: </a><font color="#4169E1"><a name="_PetscThreadCommOps"></a>struct _PetscThreadCommOps </font>{
+<a name="line98"> 98: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*destroy)(PetscThreadComm);
+<a name="line99"> 99: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*runkernel)(PetscThreadComm,PetscThreadCommJobCtx);
+<a name="line100">100: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*view)(PetscThreadComm,<A href="../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A>);
+<a name="line101">101: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*barrier)(PetscThreadComm);
+<a name="line102">102: </a>  <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> (*getrank)(<A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>*);
+<a name="line103">103: </a>};
+
+<a name="line105">105: </a><font color="#4169E1"><a name="_p_PetscThreadComm"></a>struct _p_PetscThreadComm</font>{
+<a name="line106">106: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>                refct;
+<a name="line107">107: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>                nworkThreads; <font color="#B22222">/* Number of threads in the pool */</font>
+<a name="line108">108: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>                *affinities;  <font color="#B22222">/* Thread affinity */</font>
+<a name="line109">109: </a>  PetscThreadCommOps      ops;          <font color="#B22222">/* Operations table */</font>
+<a name="line110">110: </a>  void                    *data;        <font color="#B22222">/* implementation specific data */</font>
+<a name="line111">111: </a>  char                    type[256];    <font color="#B22222">/* Thread model type */</font>
+<a name="line112">112: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>                leader;       <font color="#B22222">/* Rank of the leader thread. This thread manages</font>
+<a name="line113">113: </a><font color="#B22222">                                           the synchronization for collective operatons like reductions.</font>
+<a name="line114">114: </a><font color="#B22222">                                        */</font>
+<a name="line115">115: </a>  PetscThreadCommReduction red;         <font color="#B22222">/* Reduction context */</font>
+<a name="line116">116: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>                job_ctr;      <font color="#B22222">/* which job is this threadcomm running in the job queue */</font>
+<a name="line117">117: </a>  <A href="../docs/manualpages/Sys/PetscBool.html#PetscBool">PetscBool</A>               isnothread;   <font color="#B22222">/* No threading model used */</font>
+<a name="line118">118: </a>  <A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>                nkernels;     <font color="#B22222">/* Maximum kernels launched */</font>
+<a name="line119">119: </a>};
+
+<a name="line121">121: </a><font color="#B22222">/* Global thread communicator that manages all the threads. Other threadcomms</font>
+<a name="line122">122: </a><font color="#B22222">   use threads from PETSC_THREAD_COMM_WORLD</font>
+<a name="line123">123: </a><font color="#B22222">*/</font>
+<a name="line124">124: </a>extern PetscThreadComm PETSC_THREAD_COMM_WORLD;
+
+<a name="line126">126: </a><font color="#B22222">/* register thread communicator models */</font>
+<a name="line127">127: </a><strong><font color="#4169E1"><a name="PetscThreadCommRegister"></a>PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> PetscThreadCommRegister(const char[],<A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A>(*)(PetscThreadComm)</font></strong>);
+<a name="line128">128: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/PetscThreadComm/PetscThreadCommRegisterAll.html#PetscThreadCommRegisterAll">PetscThreadCommRegisterAll</A>(void)</font></strong>;
+
+<a name="line132">132: </a><strong><font color="#4169E1"><a name="PetscRunKernel"></a>PETSC_STATIC_INLINE <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> PetscRunKernel(<A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A> trank,<A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A> nargs,PetscThreadCommJobCtx job)</font></strong>
+<a name="line133">133: </a>{
+<a name="line134">134: </a>  <font color="#4169E1">switch</font>(nargs) {
+<a name="line135">135: </a>  <font color="#4169E1">case</font> 0:
+<a name="line136">136: </a>    (*job-&gt;pfunc)(trank);
+<a name="line137">137: </a>    <font color="#4169E1">break</font>;
+<a name="line138">138: </a>  <font color="#4169E1">case</font> 1:
+<a name="line139">139: </a>    (*job-&gt;pfunc)(trank,job-&gt;args[0]);
+<a name="line140">140: </a>    <font color="#4169E1">break</font>;
+<a name="line141">141: </a>  <font color="#4169E1">case</font> 2:
+<a name="line142">142: </a>    (*job-&gt;pfunc)(trank,job-&gt;args[0],job-&gt;args[1]);
+<a name="line143">143: </a>    <font color="#4169E1">break</font>;
+<a name="line144">144: </a>  <font color="#4169E1">case</font> 3:
+<a name="line145">145: </a>    (*job-&gt;pfunc)(trank,job-&gt;args[0],job-&gt;args[1],job-&gt;args[2]);
+<a name="line146">146: </a>    <font color="#4169E1">break</font>;
+<a name="line147">147: </a>  <font color="#4169E1">case</font> 4:
+<a name="line148">148: </a>    (*job-&gt;pfunc)(trank,job-&gt;args[0],job-&gt;args[1],job-&gt;args[2],job-&gt;args[3]);
+<a name="line149">149: </a>    <font color="#4169E1">break</font>;
+<a name="line150">150: </a>  <font color="#4169E1">case</font> 5:
+<a name="line151">151: </a>    (*job-&gt;pfunc)(trank,job-&gt;args[0],job-&gt;args[1],job-&gt;args[2],job-&gt;args[3],job-&gt;args[4]);
+<a name="line152">152: </a>    <font color="#4169E1">break</font>;
+<a name="line153">153: </a>  <font color="#4169E1">case</font> 6:
+<a name="line154">154: </a>    (*job-&gt;pfunc)(trank,job-&gt;args[0],job-&gt;args[1],job-&gt;args[2],job-&gt;args[3],job-&gt;args[4],job-&gt;args[5]);
+<a name="line155">155: </a>    <font color="#4169E1">break</font>;
+<a name="line156">156: </a>  <font color="#4169E1">case</font> 7:
+<a name="line157">157: </a>    (*job-&gt;pfunc)(trank,job-&gt;args[0],job-&gt;args[1],job-&gt;args[2],job-&gt;args[3],job-&gt;args[4],job-&gt;args[5],job-&gt;args[6]);
+<a name="line158">158: </a>    <font color="#4169E1">break</font>;
+<a name="line159">159: </a>  <font color="#4169E1">case</font> 8:
+<a name="line160">160: </a>    (*job-&gt;pfunc)(trank,job-&gt;args[0],job-&gt;args[1],job-&gt;args[2],job-&gt;args[3],job-&gt;args[4],job-&gt;args[5],job-&gt;args[6],job-&gt;args[7]);
+<a name="line161">161: </a>    <font color="#4169E1">break</font>;
+<a name="line162">162: </a>  <font color="#4169E1">case</font> 9:
+<a name="line163">163: </a>    (*job-&gt;pfunc)(trank,job-&gt;args[0],job-&gt;args[1],job-&gt;args[2],job-&gt;args[3],job-&gt;args[4],job-&gt;args[5],job-&gt;args[6],job-&gt;args[7],job-&gt;args[8]);
+<a name="line164">164: </a>    <font color="#4169E1">break</font>;
+<a name="line165">165: </a>  <font color="#4169E1">case</font> 10:
+<a name="line166">166: </a>    (*job-&gt;pfunc)(trank,job-&gt;args[0],job-&gt;args[1],job-&gt;args[2],job-&gt;args[3],job-&gt;args[4],job-&gt;args[5],job-&gt;args[6],job-&gt;args[7],job-&gt;args[8],job-&gt;args[9]);
+<a name="line167">167: </a>    <font color="#4169E1">break</font>;
+<a name="line168">168: </a>  }
+<a name="line169">169: </a>  <font color="#4169E1">return</font> 0;
+<a name="line170">170: </a>}
+
+<a name="line172">172: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> PetscThreadCommReductionCreate(PetscThreadComm,PetscThreadCommReduction*)</font></strong>;
+<a name="line173">173: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> PetscThreadCommReductionDestroy(PetscThreadCommReduction)</font></strong>;
+
+<a name="line175">175: </a>PETSC_EXTERN <A href="../docs/manualpages/Profiling/PetscLogEvent.html#PetscLogEvent">PetscLogEvent</A> ThreadComm_RunKernel, ThreadComm_Barrier;
+<a name="line176">176: </a><font color="#A020F0">#endif</font>
+</pre>
+</body>
+
+</html>

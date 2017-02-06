@@ -1,0 +1,89 @@
+<center><a href="ALE_exception.hh">Actual source code: ALE_exception.hh</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="http://www.mcs.anl.gov/petsc/petsc-current/include/sieve/ALE_exception.hh.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2013-10-15T17:08:50+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>petsc-3.4.3 2013-10-15</b></div>
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#ifndef included_ALE_exception_hh</font>
+<a name="line2">  2: </a><strong><font color="#228B22">#define included_ALE_exception_hh</font></strong>
+
+<a name="line4">  4: </a><font color="#A020F0">#include &lt;stdexcept&gt;</font>
+<a name="line5">  5: </a><font color="#A020F0">#include &lt;string&gt;</font>
+<a name="line6">  6: </a><font color="#A020F0">#include &lt;sstream&gt;</font>
+
+<a name="line8">  8: </a><font color="#4169E1">typedef</font> std::basic_ostringstream&lt;char&gt; ostringstream;
+<a name="line9">  9: </a><font color="#4169E1">typedef</font> std::basic_ostringstream&lt;char&gt; ostrstr;
+<a name="line10"> 10: </a><font color="#4169E1">typedef</font> std::string                    string;
+
+
+<a name="line13"> 13: </a>namespace ALE {
+<a name="line14"> 14: </a>  class Exception : public std::runtime_error {
+<a name="line15"> 15: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line16"> 16: </a>    explicit Exception(const char         * msg) : std::runtime_error(msg){};
+<a name="line17"> 17: </a>    explicit Exception(const string&amp;        msg) : std::runtime_error(msg){};
+<a name="line18"> 18: </a>    explicit Exception(const ostringstream&amp; txt) : std::runtime_error(txt.str()){};
+<a name="line19"> 19: </a>    Exception(const Exception&amp; e)      : std::runtime_error(e.what()) {};
+<a name="line20"> 20: </a>    string msg()     const  {<font color="#4169E1">return</font> std::string(this-&gt;what());};
+<a name="line21"> 21: </a>    const char   *message() const  {<font color="#4169E1">return</font> this-&gt;what();};
+<a name="line22"> 22: </a>    // Printing
+<a name="line23"> 23: </a>    template &lt;typename Stream_&gt;
+<a name="line24"> 24: </a>    friend Stream_&amp; operator&lt;&lt;(Stream_&amp; os, const Exception&amp; e) {
+<a name="line25"> 25: </a>      os &lt;&lt; <font color="#666666">"ERROR: "</font> &lt;&lt; e.message() &lt;&lt; std::endl;
+<a name="line26"> 26: </a>      <font color="#4169E1">return</font> os;
+<a name="line27"> 27: </a>    }
+<a name="line28"> 28: </a>  };
+
+<a name="line30"> 30: </a>  class XException {
+<a name="line31"> 31: </a>    ostrstr _txt;
+<a name="line32"> 32: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line33"> 33: </a>    XException(){};
+<a name="line34"> 34: </a>    explicit
+<a name="line35"> 35: </a>    XException(const string&amp; msg)   {this-&gt;_txt &lt;&lt; msg;};
+<a name="line36"> 36: </a>    explicit
+<a name="line37"> 37: </a>    XException(const ostrstr&amp; txt)  {this-&gt;_txt &lt;&lt; txt.str();};
+<a name="line38"> 38: </a>    XException(const XException&amp; e) {this-&gt;_txt &lt;&lt; e._txt.str();};
+<a name="line39"> 39: </a>    //
+<a name="line40"> 40: </a>    const string msg()     const {<font color="#4169E1">return</font> this-&gt;_txt.str();};
+<a name="line41"> 41: </a>    const char   *message() const {<font color="#4169E1">return</font> this-&gt;_txt.str().c_str();};
+<a name="line42"> 42: </a>    // Message input
+<a name="line43"> 43: </a>    template&lt;typename Input_&gt;
+<a name="line44"> 44: </a>    XException&amp; operator&lt;&lt;(const Input_&amp; in) {
+<a name="line45"> 45: </a>      this-&gt;_txt &lt;&lt; in;
+<a name="line46"> 46: </a>      <font color="#4169E1">return</font> *this;
+<a name="line47"> 47: </a>    }
+<a name="line48"> 48: </a>    // Printing
+<a name="line49"> 49: </a>    template &lt;typename Stream_&gt;
+<a name="line50"> 50: </a>    friend Stream_&amp; operator&lt;&lt;(Stream_&amp; os, const XException&amp; e) {
+<a name="line51"> 51: </a>      os &lt;&lt; <font color="#666666">"ERROR: "</font> &lt;&lt; e.message() &lt;&lt; std::endl;
+<a name="line52"> 52: </a>      <font color="#4169E1">return</font> os;
+<a name="line53"> 53: </a>    }
+<a name="line54"> 54: </a>  };// class XException
+
+
+<a name="line57"> 57: </a>  // A helper function that throws an ALE::Exception with a message identifying the function that returned the given error code,
+<a name="line58"> 58: </a>  // including the function and the line where the error occured.
+<a name="line59"> 59: </a>  void ERROR(<A href="../../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> ierr, const char *func, int line, const char *msg);
+<a name="line60"> 60: </a>  // A helper function that allocates and assembles an error message from a format string
+<a name="line61"> 61: </a>  const char *ERRORMSG(const char *fmt, ...);
+<a name="line62"> 62: </a>  // A helper function <font color="#4169E1">for</font> converting MPI errors to exception
+<a name="line63"> 63: </a>  void MPIERROR(<A href="../../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> ierr, const char *func, int line, const char *msg);
+<a name="line64"> 64: </a>}// namespace ALE
+
+<a name="line66"> 66: </a>// A helper macro that passes __FUNCT__ and __LINE__ with the error msg to the ERROR routine
+<a name="line67"> 67: </a><strong><font color="#228B22">#define CHKERROR(ierr, msg) \</font></strong>
+<a name="line68"> 68: </a><strong><font color="#228B22">  ::ALE::ERROR(ierr, __FUNCT__,  __LINE__, msg);</font></strong>
+
+<a name="line70"> 70: </a>// A helper macro that passes __FUNCT__ and __LINE__ with the error msg to the MPIERROR routine
+<a name="line71"> 71: </a><strong><font color="#228B22">#define CHKMPIERROR(ierr, msg) \</font></strong>
+<a name="line72"> 72: </a><strong><font color="#228B22">  ::ALE::MPIERROR(ierr, __FUNCT__,  __LINE__, msg);</font></strong>
+
+<a name="line74"> 74: </a><font color="#A020F0">#endif</font>
+</pre>
+</body>
+
+</html>

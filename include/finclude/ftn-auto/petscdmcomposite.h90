@@ -1,0 +1,18 @@
+        subroutine DMCompositeGetNumberDM(dm, nDM ,ierr)
+       DM dm ! DM
+       PetscInt nDM ! PetscInt
+       integer ierr
+       end subroutine
+        subroutine DMCompositeScatterArray(dm, gvec, lvecs ,ierr)
+       DM dm ! DM
+       Vec gvec ! Vec
+       Vec lvecs ! Vec
+       integer ierr
+       end subroutine
+        subroutine DMCompositeGatherArray(dm, gvec, imode, lvecs ,ierr)
+       DM dm ! DM
+       Vec gvec ! Vec
+       InsertMode imode ! InsertMode
+       Vec lvecs ! Vec
+       integer ierr
+       end subroutine

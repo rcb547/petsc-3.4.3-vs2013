@@ -1,0 +1,53 @@
+<center><a href="petscviewerhdf5.h">Actual source code: petscviewerhdf5.h</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="http://www.mcs.anl.gov/petsc/petsc-current/include/petscviewerhdf5.h.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2013-10-15T16:54:35+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>petsc-3.4.3 2013-10-15</b></div>
+<pre width="80">
+
+<a name="line5">  5: </a><font color="#A020F0">#include &lt;petscviewer.h&gt;</font>
+
+<a name="line7">  7: </a><font color="#A020F0">#if defined(PETSC_HAVE_HDF5)</font>
+
+<a name="line9">  9: </a><font color="#A020F0">#include &lt;hdf5.h&gt;</font>
+<a name="line10"> 10: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Viewer/PetscViewerHDF5GetFileId.html#PetscViewerHDF5GetFileId">PetscViewerHDF5GetFileId</A>(<A href="../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A>,hid_t*)</font></strong>;
+<a name="line11"> 11: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> PetscViewerHDF5OpenGroup(<A href="../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A>, hid_t *, hid_t *)</font></strong>;
+
+<a name="line13"> 13: </a><font color="#B22222">/* On 32 bit systems HDF5 is limited by size of integer, because hsize_t is defined as size_t */</font>
+<a name="line14"> 14: </a><strong><font color="#228B22">#define PETSC_HDF5_INT_MAX  2147483647</font></strong>
+<a name="line15"> 15: </a><strong><font color="#228B22">#define PETSC_HDF5_INT_MIN -2147483647</font></strong>
+
+<a name="line19"> 19: </a><strong><font color="#4169E1"><a name="PetscHDF5IntCast"></a>PETSC_STATIC_INLINE <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> PetscHDF5IntCast(<A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A> a,hsize_t *b)</font></strong>
+<a name="line20"> 20: </a>{
+<a name="line22"> 22: </a><font color="#A020F0">#if defined(PETSC_USE_64BIT_INDICES) &amp;&amp; (PETSC_SIZEOF_SIZE_T == 4)</font>
+<a name="line23"> 23: </a>  <font color="#4169E1">if</font> ((a) &gt; PETSC_HDF5_INT_MAX) <A href="../docs/manualpages/Sys/SETERRQ.html#SETERRQ">SETERRQ</A>(<A href="../docs/manualpages/Sys/PETSC_COMM_SELF.html#PETSC_COMM_SELF">PETSC_COMM_SELF</A>,PETSC_ERR_ARG_OUTOFRANGE,<font color="#666666">"Array too long for HDF5"</font>);
+<a name="line24"> 24: </a><font color="#A020F0">#endif</font>
+<a name="line25"> 25: </a>  *b =  (hsize_t)(a);
+<a name="line26"> 26: </a>  <font color="#4169E1">return</font>(0);
+<a name="line27"> 27: </a>}
+
+<a name="line29"> 29: </a><font color="#A020F0">#endif  </font><font color="#B22222">/* defined(PETSC_HAVE_HDF5) */</font><font color="#A020F0"></font>
+
+<a name="line31"> 31: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> PetscViewerHDF5WriteSDS(<A href="../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A>,float *,int,int *,int)</font></strong>;
+
+<a name="line33"> 33: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Viewer/PetscViewerHDF5Open.html#PetscViewerHDF5Open">PetscViewerHDF5Open</A>(<A href="../docs/manualpages/Sys/MPI_Comm.html#MPI_Comm">MPI_Comm</A>,const char[],<A href="../docs/manualpages/Sys/PetscFileMode.html#PetscFileMode">PetscFileMode</A>,<A href="../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A>*)</font></strong>;
+<a name="line34"> 34: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Viewer/PetscViewerHDF5PushGroup.html#PetscViewerHDF5PushGroup">PetscViewerHDF5PushGroup</A>(<A href="../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A>,const char *)</font></strong>;
+<a name="line35"> 35: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Viewer/PetscViewerHDF5PopGroup.html#PetscViewerHDF5PopGroup">PetscViewerHDF5PopGroup</A>(<A href="../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A>)</font></strong>;
+<a name="line36"> 36: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Viewer/PetscViewerHDF5GetGroup.html#PetscViewerHDF5GetGroup">PetscViewerHDF5GetGroup</A>(<A href="../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A>, const char **)</font></strong>;
+<a name="line37"> 37: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Viewer/PetscViewerHDF5IncrementTimestep.html#PetscViewerHDF5IncrementTimestep">PetscViewerHDF5IncrementTimestep</A>(<A href="../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A>)</font></strong>;
+<a name="line38"> 38: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Viewer/PetscViewerHDF5SetTimestep.html#PetscViewerHDF5SetTimestep">PetscViewerHDF5SetTimestep</A>(<A href="../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A>,<A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>)</font></strong>;
+<a name="line39"> 39: </a><strong><font color="#4169E1">PETSC_EXTERN <A href="../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> <A href="../docs/manualpages/Viewer/PetscViewerHDF5GetTimestep.html#PetscViewerHDF5GetTimestep">PetscViewerHDF5GetTimestep</A>(<A href="../docs/manualpages/Viewer/PetscViewer.html#PetscViewer">PetscViewer</A>,<A href="../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>*)</font></strong>;
+
+<a name="line41"> 41: </a><font color="#B22222">/* Reset __FUNCT__ in case the user does not define it themselves */</font>
+
+<a name="line45"> 45: </a><font color="#A020F0">#endif</font>
+</pre>
+</body>
+
+</html>

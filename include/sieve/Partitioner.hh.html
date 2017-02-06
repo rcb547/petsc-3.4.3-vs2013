@@ -1,0 +1,2104 @@
+<center><a href="Partitioner.hh">Actual source code: Partitioner.hh</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="http://www.mcs.anl.gov/petsc/petsc-current/include/sieve/Partitioner.hh.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2013-10-15T17:08:34+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>petsc-3.4.3 2013-10-15</b></div>
+<pre width="80"><a name="line1">  1: </a><font color="#A020F0">#ifndef included_ALE_Partitioner_hh</font>
+<a name="line2">  2: </a><strong><font color="#228B22">#define included_ALE_Partitioner_hh</font></strong>
+
+<a name="line4">  4: </a><font color="#A020F0">#ifndef  included_ALE_Completion_hh</font>
+<a name="line5">  5: </a><font color="#A020F0">#include &lt;sieve/Completion.hh&gt;</font>
+<a name="line6">  6: </a><font color="#A020F0">#endif</font>
+
+<a name="line8">  8: </a><font color="#A020F0">#ifdef PETSC_HAVE_ZOLTAN</font>
+<a name="line9">  9: </a><font color="#A020F0">#include &lt;zoltan.h&gt;</font>
+
+<a name="line11"> 11: </a>extern <font color="#666666">"C"</font> {
+<a name="line12"> 12: </a>  // Inputs
+<a name="line13"> 13: </a>  extern int  nvtxs_Zoltan;   // The number of vertices
+<a name="line14"> 14: </a>  extern int  nhedges_Zoltan; // The number of hyperedges
+<a name="line15"> 15: </a>  extern int *eptr_Zoltan;    // The offsets of each hyperedge
+<a name="line16"> 16: </a>  extern int *eind_Zoltan;    // The vertices in each hyperedge, indexed by eptr
+
+<a name="line18"> 18: </a>  int getNumVertices_Zoltan(void *, int *);
+
+<a name="line20"> 20: </a>  void getLocalElements_Zoltan(void *, int, int, ZOLTAN_ID_PTR, ZOLTAN_ID_PTR, int, float *, int *);
+
+<a name="line22"> 22: </a>  void getHgSizes_Zoltan(void *, int *, int *, int *, int *);
+
+<a name="line24"> 24: </a>  void getHg_Zoltan(void *, int, int, int, int, ZOLTAN_ID_PTR, int *, ZOLTAN_ID_PTR, int *);
+<a name="line25"> 25: </a>}
+
+<a name="line27"> 27: </a><font color="#A020F0">#endif</font>
+
+<a name="line29"> 29: </a><font color="#A020F0">#ifdef PETSC_HAVE_CHACO</font>
+<a name="line30"> 30: </a><font color="#A020F0">#ifdef PETSC_HAVE_UNISTD_H</font>
+<a name="line31"> 31: </a><font color="#A020F0">#include &lt;unistd.h&gt;</font>
+<a name="line32"> 32: </a><font color="#A020F0">#endif</font>
+<a name="line33"> 33: </a><font color="#B22222">/* Chaco does not have an include file */</font>
+<a name="line34"> 34: </a>extern <font color="#666666">"C"</font> {
+<a name="line35"> 35: </a>  extern int interface(int nvtxs, int *start, int *adjacency, int *vwgts,
+<a name="line36"> 36: </a>                       float *ewgts, float *x, float *y, float *z, char *outassignname,
+<a name="line37"> 37: </a>                       char *outfilename, short *assignment, int architecture, int ndims_tot,
+<a name="line38"> 38: </a>                       int mesh_dims[3], double *goal, int global_method, int local_method,
+<a name="line39"> 39: </a>                       int rqi_flag, int vmax, int ndims, double eigtol, long seed);
+
+<a name="line41"> 41: </a>  extern int FREE_GRAPH;
+<a name="line42"> 42: </a>}
+<a name="line43"> 43: </a><font color="#A020F0">#endif</font>
+<a name="line44"> 44: </a><font color="#A020F0">#ifdef PETSC_HAVE_PARMETIS</font>
+<a name="line45"> 45: </a><font color="#A020F0">  #include &lt;parmetis.h&gt;</font>
+<a name="line46"> 46: </a><font color="#A020F0">#endif</font>
+<a name="line47"> 47: </a><font color="#A020F0">#ifdef PETSC_HAVE_HMETIS</font>
+<a name="line48"> 48: </a>extern <font color="#666666">"C"</font> {
+<a name="line49"> 49: </a>  extern void HMETIS_PartKway(int nvtxs, int nhedges, int *vwgts, int *eptr, int *eind, int *hewgts, int nparts, int ubfactor, int *options, int *part, int *edgeCut);
+<a name="line50"> 50: </a>}
+<a name="line51"> 51: </a><font color="#A020F0">#endif</font>
+
+<a name="line53"> 53: </a>namespace ALE {
+<a name="line54"> 54: </a><font color="#A020F0">#if 1</font>
+<a name="line55"> 55: </a><font color="#A020F0">#ifdef PETSC_HAVE_CHACO</font>
+<a name="line56"> 56: </a>  namespace Chaco {
+<a name="line57"> 57: </a>    template&lt;typename Alloc_ = malloc_allocator&lt;short int&gt; &gt;
+<a name="line58"> 58: </a>    class Partitioner {
+<a name="line59"> 59: </a><strong><font color="#FF0000">    public:</font></strong>
+<a name="line60"> 60: </a>      <font color="#4169E1">typedef</font> short int part_type;
+<a name="line61"> 61: </a>      <font color="#4169E1">typedef</font> Alloc_    alloc_type;
+<a name="line62"> 62: </a>      <font color="#4169E1">enum</font> {DEFAULT_METHOD = 1, INERTIAL_METHOD = 3};
+<a name="line63"> 63: </a><strong><font color="#FF0000">    protected:</font></strong>
+<a name="line64"> 64: </a>      const int  logSize;
+<a name="line65"> 65: </a>      char      *msgLog;
+<a name="line66"> 66: </a>      int        fd_stdout, fd_pipe[2];
+<a name="line67"> 67: </a>      alloc_type _allocator;
+<a name="line68"> 68: </a><strong><font color="#FF0000">    public:</font></strong>
+<a name="line69"> 69: </a>      Partitioner(): logSize(10000) {};
+<a name="line70"> 70: </a>      ~Partitioner() {};
+<a name="line71"> 71: </a><strong><font color="#FF0000">    protected:</font></strong>
+<a name="line72"> 72: </a>      // Chaco outputs to stdout. We redirect this to a buffer.
+<a name="line73"> 73: </a>      // TODO: check error codes <font color="#4169E1">for</font> UNIX calls
+<a name="line74"> 74: </a>      void startStdoutRedirect() {
+<a name="line75"> 75: </a><font color="#A020F0">#ifdef PETSC_HAVE_UNISTD_H</font>
+<a name="line76"> 76: </a>        this-&gt;fd_stdout = dup(1);
+<a name="line77"> 77: </a>        pipe(this-&gt;fd_pipe);
+<a name="line78"> 78: </a>        close(1);
+<a name="line79"> 79: </a>        dup2(this-&gt;fd_pipe[1], 1);
+<a name="line80"> 80: </a><font color="#A020F0">#endif</font>
+<a name="line81"> 81: </a>      };
+<a name="line82"> 82: </a>      void stopStdoutRedirect() {
+<a name="line83"> 83: </a><font color="#A020F0">#ifdef PETSC_HAVE_UNISTD_H</font>
+<a name="line84"> 84: </a>        int count;
+
+<a name="line86"> 86: </a>        fflush(stdout);
+<a name="line87"> 87: </a>        this-&gt;msgLog = new char[this-&gt;logSize];
+<a name="line88"> 88: </a>        count = read(this-&gt;fd_pipe[0], this-&gt;msgLog, (this-&gt;logSize-1)*<font color="#4169E1">sizeof</font>(char));
+<a name="line89"> 89: </a>        <font color="#4169E1">if</font> (count &lt; 0) count = 0;
+<a name="line90"> 90: </a>        this-&gt;msgLog[count] = 0;
+<a name="line91"> 91: </a>        close(1);
+<a name="line92"> 92: </a>        dup2(this-&gt;fd_stdout, 1);
+<a name="line93"> 93: </a>        close(this-&gt;fd_stdout);
+<a name="line94"> 94: </a>        close(this-&gt;fd_pipe[0]);
+<a name="line95"> 95: </a>        close(this-&gt;fd_pipe[1]);
+<a name="line96"> 96: </a>        //std::cout &lt;&lt; this-&gt;msgLog &lt;&lt; std::endl;
+<a name="line97"> 97: </a>        delete [] this-&gt;msgLog;
+<a name="line98"> 98: </a><font color="#A020F0">#endif</font>
+<a name="line99"> 99: </a>      };
+<a name="line100">100: </a><strong><font color="#FF0000">    public:</font></strong>
+<a name="line101">101: </a>      static bool zeroBase() {<font color="#4169E1">return</font> false;}
+<a name="line102">102: </a>      // This method returns the partition section mapping sieve points (here cells) to partitions
+<a name="line103">103: </a>      //   start:     start of edge list <font color="#4169E1">for</font> each vertex
+<a name="line104">104: </a>      //   adjacency: adj[start[v]] is edge list data <font color="#4169E1">for</font> vertex v
+<a name="line105">105: </a>      //   partition: this section is over the partitions and takes points as values
+<a name="line106">106: </a>      // TODO: Read global and local methods from options
+<a name="line107">107: </a>      template&lt;typename Section, typename MeshManager&gt;
+<a name="line108">108: </a>      void partition(const int numVertices, const int start[], const int adjacency[], const Obj&lt;Section&gt;&amp; partition, const MeshManager&amp; manager) {
+<a name="line109">109: </a>        FREE_GRAPH = 0;                         <font color="#B22222">/* Do not let Chaco free my memory */</font>
+<a name="line110">110: </a>        int nvtxs = numVertices;                <font color="#B22222">/* number of vertices in full graph */</font>
+<a name="line111">111: </a>        int *vwgts = NULL;                      <font color="#B22222">/* weights for all vertices */</font>
+<a name="line112">112: </a>        float *ewgts = NULL;                    <font color="#B22222">/* weights for all edges */</font>
+<a name="line113">113: </a>        float *x = NULL, *y = NULL, *z = NULL;  <font color="#B22222">/* coordinates for inertial method */</font>
+<a name="line114">114: </a>        char *outassignname = NULL;             <font color="#B22222">/*  name of assignment output file */</font>
+<a name="line115">115: </a>        char *outfilename = NULL;               <font color="#B22222">/* output file name */</font>
+<a name="line116">116: </a>        int architecture = 1;                   <font color="#B22222">/* 0 =&gt; hypercube, d =&gt; d-dimensional mesh */</font>
+<a name="line117">117: </a>        int ndims_tot = 0;                      <font color="#B22222">/* total number of cube dimensions to divide */</font>
+<a name="line118">118: </a>        int mesh_dims[3];                       <font color="#B22222">/* dimensions of mesh of processors */</font>
+<a name="line119">119: </a>        double *goal = NULL;                    <font color="#B22222">/* desired set sizes for each set */</font>
+<a name="line120">120: </a>        int global_method = 1;                  <font color="#B22222">/* global partitioning algorithm */</font>
+<a name="line121">121: </a>        int local_method = 1;                   <font color="#B22222">/* local partitioning algorithm */</font>
+<a name="line122">122: </a>        int rqi_flag = 0;                       <font color="#B22222">/* should I use RQI/Symmlq eigensolver? */</font>
+<a name="line123">123: </a>        int vmax = 200;                         <font color="#B22222">/* how many vertices to coarsen down to? */</font>
+<a name="line124">124: </a>        int ndims = 1;                          <font color="#B22222">/* number of eigenvectors (2^d sets) */</font>
+<a name="line125">125: </a>        double eigtol = 0.001;                  <font color="#B22222">/* tolerance on eigenvectors */</font>
+<a name="line126">126: </a>        long seed = 123636512;                  <font color="#B22222">/* for random graph mutations */</font>
+<a name="line127">127: </a>        int maxSize = 0;
+
+<a name="line129">129: </a>        <font color="#4169E1">if</font> (global_method == INERTIAL_METHOD) {manager.createCellCoordinates(nvtxs, &amp;x, &amp;y, &amp;z);}
+<a name="line130">130: </a>        mesh_dims[0] = partition-&gt;commSize(); mesh_dims[1] = 1; mesh_dims[2] = 1;
+<a name="line131">131: </a>        part_type *assignment = this-&gt;_allocator.allocate(nvtxs);
+<a name="line132">132: </a>        <font color="#4169E1">for</font>(int i = 0; i &lt; nvtxs; ++i) {this-&gt;_allocator.construct(assignment+i, 0);}
+
+<a name="line134">134: </a>        this-&gt;startStdoutRedirect();
+<a name="line135">135: </a>        interface(nvtxs, (int *) start, (int *) adjacency, vwgts, ewgts, x, y, z, outassignname, outfilename,
+<a name="line136">136: </a>                  assignment, architecture, ndims_tot, mesh_dims, goal, global_method, local_method, rqi_flag,
+<a name="line137">137: </a>                  vmax, ndims, eigtol, seed);
+<a name="line138">138: </a>        this-&gt;stopStdoutRedirect();
+
+<a name="line140">140: </a>        <font color="#4169E1">for</font>(int v = 0; v &lt; nvtxs; ++v) {partition-&gt;addFiberDimension(assignment[v], 1);}
+<a name="line141">141: </a>        partition-&gt;allocatePoint();
+<a name="line142">142: </a>        <font color="#4169E1">for</font>(int p = 0; p &lt; partition-&gt;commSize(); ++p) {
+<a name="line143">143: </a>          maxSize = std::max(maxSize, partition-&gt;getFiberDimension(p));
+<a name="line144">144: </a>        }
+<a name="line145">145: </a>        typename Section::value_type *values = new typename Section::value_type[maxSize];
+
+<a name="line147">147: </a>        <font color="#4169E1">for</font>(int p = 0; p &lt; partition-&gt;commSize(); ++p) {
+<a name="line148">148: </a>          int k = 0;
+
+<a name="line150">150: </a>          <font color="#4169E1">for</font>(int v = 0; v &lt; nvtxs; ++v) {
+<a name="line151">151: </a>            <font color="#4169E1">if</font> (assignment[v] == p) values[k++] = manager.getCell(v);
+<a name="line152">152: </a>          }
+<a name="line153">153: </a>          <font color="#4169E1">if</font> (k != partition-&gt;getFiberDimension(p)) throw ALE::Exception(<font color="#666666">"Invalid partition"</font>);
+<a name="line154">154: </a>          partition-&gt;updatePoint(p, values);
+<a name="line155">155: </a>        }
+<a name="line156">156: </a>        delete [] values;
+
+<a name="line158">158: </a>        <font color="#4169E1">if</font> (global_method == INERTIAL_METHOD) {manager.destroyCellCoordinates(nvtxs, &amp;x, &amp;y, &amp;z);}
+<a name="line159">159: </a>        <font color="#4169E1">for</font>(int i = 0; i &lt; nvtxs; ++i) {this-&gt;_allocator.destroy(assignment+i);}
+<a name="line160">160: </a>        this-&gt;_allocator.deallocate(assignment, nvtxs);
+<a name="line161">161: </a>      };
+<a name="line162">162: </a>    };
+<a name="line163">163: </a>  }
+<a name="line164">164: </a><font color="#A020F0">#endif</font>
+<a name="line165">165: </a><font color="#A020F0">#ifdef PETSC_HAVE_PARMETIS</font>
+<a name="line166">166: </a>  namespace ParMetis {
+<a name="line167">167: </a>    template&lt;typename Alloc_ = malloc_allocator&lt;int&gt; &gt;
+<a name="line168">168: </a>    class Partitioner {
+<a name="line169">169: </a><strong><font color="#FF0000">    public:</font></strong>
+<a name="line170">170: </a>      <font color="#4169E1">typedef</font> int    part_type;
+<a name="line171">171: </a>      <font color="#4169E1">typedef</font> Alloc_ alloc_type;
+<a name="line172">172: </a><strong><font color="#FF0000">    protected:</font></strong>
+<a name="line173">173: </a>      alloc_type _allocator;
+<a name="line174">174: </a><strong><font color="#FF0000">    public:</font></strong>
+<a name="line175">175: </a>      static bool zeroBase() {<font color="#4169E1">return</font> true;}
+<a name="line176">176: </a>      // This method returns the partition section mapping sieve points (here cells) to partitions
+<a name="line177">177: </a>      //   start:     start of edge list <font color="#4169E1">for</font> each vertex
+<a name="line178">178: </a>      //   adjacency: adj[start[v]] is edge list data <font color="#4169E1">for</font> vertex v
+<a name="line179">179: </a>      //   partition: this section is over the partitions and takes points as values
+<a name="line180">180: </a>      // TODO: Read parameters from options
+<a name="line181">181: </a>      template&lt;typename Section, typename MeshManager&gt;
+<a name="line182">182: </a>      void partition(const <A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A> numVertices, const <A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A> start[], const <A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A> adjacency[], const Obj&lt;Section&gt;&amp; partition, const MeshManager&amp; manager) {
+<a name="line183">183: </a>        //static part_type *partitionSieve(const Obj&lt;bundle_type&gt;&amp; bundle, const int dim) {
+<a name="line184">184: </a>        <A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>   nvtxs      = numVertices; // The number of vertices in full graph
+<a name="line185">185: </a>        <A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>  *vtxdist;                  // Distribution of vertices across processes
+<a name="line186">186: </a>        <A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>  *xadj       = const_cast&lt;<A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>*&gt;(start);       // Start of edge list <font color="#4169E1">for</font> each vertex
+<a name="line187">187: </a>        <A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>  *adjncy     = const_cast&lt;<A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>*&gt;(adjacency);   // Edge lists <font color="#4169E1">for</font> all vertices
+<a name="line188">188: </a>        <A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>  *vwgt       = NULL;        // Vertex weights
+<a name="line189">189: </a>        <A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>  *adjwgt     = NULL;        // Edge weights
+<a name="line190">190: </a>        <A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>   wgtflag    = 0;           // Indicates which weights are present
+<a name="line191">191: </a>        <A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>   numflag    = 0;           // Indicates initial offset (0 or 1)
+<a name="line192">192: </a>        <A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>   ncon       = 1;           // The number of weights per vertex
+<a name="line193">193: </a>        <A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>   nparts     = partition-&gt;commSize(); // The number of partitions
+<a name="line194">194: </a>        <A href="../../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A> *tpwgts;                   // The fraction of vertex weights assigned to each partition
+<a name="line195">195: </a>        <A href="../../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A> *ubvec;                    // The balance intolerance <font color="#4169E1">for</font> vertex weights
+<a name="line196">196: </a>        <A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>   options[5];               // Options
+<a name="line197">197: </a>        <A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>   maxSize    = 0;
+<a name="line198">198: </a>        // Outputs
+<a name="line199">199: </a>        <A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>   edgeCut;                  // The number of edges cut by the partition
+<a name="line200">200: </a>        part_type *assignment;
+
+<a name="line202">202: </a>        options[0] = 0; // Use all defaults
+<a name="line203">203: </a>        // Calculate vertex distribution
+<a name="line204">204: </a>        //   Not sure this still works in parallel
+<a name="line205">205: </a>        vtxdist    = new <A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>[nparts+1];
+<a name="line206">206: </a>        vtxdist[0] = 0;
+<a name="line207">207: </a>        <A href="http://www.mcs.anl.gov/mpi/www/www3/MPI_Allgather.html#MPI_Allgather">MPI_Allgather</A>(&amp;nvtxs, 1, MPIU_INT, &amp;vtxdist[1], 1, MPIU_INT, partition-&gt;comm());
+<a name="line208">208: </a>        <font color="#4169E1">for</font>(<A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A> p = 2; p &lt;= nparts; ++p) {
+<a name="line209">209: </a>          vtxdist[p] += vtxdist[p-1];
+<a name="line210">210: </a>        }
+<a name="line211">211: </a>        // Calculate weights
+<a name="line212">212: </a>        tpwgts     = new <A href="../../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>[ncon*nparts];
+<a name="line213">213: </a>        <font color="#4169E1">for</font>(int p = 0; p &lt; nparts; ++p) {
+<a name="line214">214: </a>          tpwgts[p] = 1.0/nparts;
+<a name="line215">215: </a>        }
+<a name="line216">216: </a>        ubvec      = new <A href="../../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>[ncon];
+<a name="line217">217: </a>        ubvec[0]   = 1.05;
+
+<a name="line219">219: </a>        assignment = this-&gt;_allocator.allocate(nvtxs);
+<a name="line220">220: </a>        <font color="#4169E1">for</font>(<A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A> i = 0; i &lt; nvtxs; ++i) {this-&gt;_allocator.construct(assignment+i, 0);}
+
+<a name="line222">222: </a>        <font color="#4169E1">if</font> (partition-&gt;commSize() == 1) {
+<a name="line223">223: </a>          <A href="../../docs/manualpages/Sys/PetscMemzero.html#PetscMemzero">PetscMemzero</A>(assignment, nvtxs * <font color="#4169E1">sizeof</font>(part_type));
+<a name="line224">224: </a>        } <font color="#4169E1">else</font> {
+<a name="line225">225: </a>          <font color="#4169E1">if</font> (partition-&gt;debug() &amp;&amp; nvtxs) {
+<a name="line226">226: </a>            <font color="#4169E1">for</font>(int p = 0; p &lt;= nvtxs; ++p) {
+<a name="line227">227: </a><strong><font color="#FF0000">              std:</font></strong>:cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;partition-&gt;commRank()&lt;&lt;<font color="#666666">"]xadj["</font>&lt;&lt;p&lt;&lt;<font color="#666666">"] = "</font> &lt;&lt; xadj[p] &lt;&lt; std::endl;
+<a name="line228">228: </a>            }
+<a name="line229">229: </a>            <font color="#4169E1">for</font>(int i = 0; i &lt; xadj[nvtxs]; ++i) {
+<a name="line230">230: </a><strong><font color="#FF0000">              std:</font></strong>:cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;partition-&gt;commRank()&lt;&lt;<font color="#666666">"]adjncy["</font>&lt;&lt;i&lt;&lt;<font color="#666666">"] = "</font> &lt;&lt; adjncy[i] &lt;&lt; std::endl;
+<a name="line231">231: </a>            }
+<a name="line232">232: </a>          }
+<a name="line233">233: </a>          <font color="#4169E1">if</font> (vtxdist[1] == vtxdist[nparts]) {
+<a name="line234">234: </a>            <font color="#4169E1">if</font> (partition-&gt;commRank() == 0) {
+<a name="line235">235: </a>              <font color="#B22222">/* Parameters changes (Matt, check to make sure works):</font>
+<a name="line236">236: </a><font color="#B22222">               * (removed) numflags</font>
+<a name="line237">237: </a><font color="#B22222">               * (changed) options -&gt; NULL implies all defaults (only for  METIS, not ParMETIS!)</font>
+<a name="line238">238: </a><font color="#B22222">               */</font>
+<a name="line239">239: </a>              METIS_PartGraphKway(&amp;nvtxs, &amp;ncon, xadj, adjncy, vwgt, NULL, adjwgt, &amp;nparts, tpwgts, ubvec, NULL, &amp;edgeCut, assignment);
+<a name="line240">240: </a>              <font color="#4169E1">if</font> (partition-&gt;debug()) {std::cout &lt;&lt; <font color="#666666">"Metis: edgecut is "</font> &lt;&lt; edgeCut &lt;&lt; std::endl;}
+<a name="line241">241: </a>            }
+<a name="line242">242: </a>          } <font color="#4169E1">else</font> {
+<a name="line243">243: </a>            <A href="../../docs/manualpages/Sys/MPI_Comm.html#MPI_Comm">MPI_Comm</A> comm = partition-&gt;comm();
+
+<a name="line245">245: </a>            ParMETIS_V3_PartKway(vtxdist, xadj, adjncy, vwgt, adjwgt, &amp;wgtflag, &amp;numflag, &amp;ncon, &amp;nparts, tpwgts, ubvec, options, &amp;edgeCut, assignment, &amp;comm);
+<a name="line246">246: </a>            <font color="#4169E1">if</font> (partition-&gt;debug()) {std::cout &lt;&lt; <font color="#666666">"ParMetis: edgecut is "</font> &lt;&lt; edgeCut &lt;&lt; std::endl;}
+<a name="line247">247: </a>          }
+<a name="line248">248: </a>        }
+<a name="line249">249: </a>        delete [] vtxdist;
+<a name="line250">250: </a>        delete [] tpwgts;
+<a name="line251">251: </a>        delete [] ubvec;
+
+<a name="line253">253: </a>        <font color="#4169E1">for</font>(<A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A> v = 0; v &lt; nvtxs; ++v) {partition-&gt;addFiberDimension(assignment[v], 1);}
+<a name="line254">254: </a>        partition-&gt;allocatePoint();
+<a name="line255">255: </a>        <font color="#4169E1">for</font>(<A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A> p = 0; p &lt; partition-&gt;commSize(); ++p) {
+<a name="line256">256: </a>          maxSize = std::max(maxSize, partition-&gt;getFiberDimension(p));
+<a name="line257">257: </a>        }
+<a name="line258">258: </a>        typename Section::value_type *values = new typename Section::value_type[maxSize];
+
+<a name="line260">260: </a>        <font color="#4169E1">for</font>(<A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A> p = 0; p &lt; partition-&gt;commSize(); ++p) {
+<a name="line261">261: </a>          int k = 0;
+
+<a name="line263">263: </a>          <font color="#4169E1">for</font>(<A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A> v = 0; v &lt; nvtxs; ++v) {
+<a name="line264">264: </a>            <font color="#4169E1">if</font> (assignment[v] == p) values[k++] = manager.getCell(v);
+<a name="line265">265: </a>          }
+<a name="line266">266: </a>          <font color="#4169E1">if</font> (k != partition-&gt;getFiberDimension(p)) throw ALE::Exception(<font color="#666666">"Invalid partition"</font>);
+<a name="line267">267: </a>          partition-&gt;updatePoint(p, values);
+<a name="line268">268: </a>        }
+<a name="line269">269: </a>        delete [] values;
+
+<a name="line271">271: </a>        <font color="#4169E1">for</font>(<A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A> i = 0; i &lt; nvtxs; ++i) {this-&gt;_allocator.destroy(assignment+i);}
+<a name="line272">272: </a>        this-&gt;_allocator.deallocate(assignment, nvtxs);
+<a name="line273">273: </a>      };
+<a name="line274">274: </a>    };
+<a name="line275">275: </a>  };
+<a name="line276">276: </a><font color="#A020F0">#endif</font>
+<a name="line277">277: </a>  namespace Simple {
+<a name="line278">278: </a>    template&lt;typename Alloc_ = malloc_allocator&lt;short int&gt; &gt;
+<a name="line279">279: </a>    class Partitioner {
+<a name="line280">280: </a><strong><font color="#FF0000">    public:</font></strong>
+<a name="line281">281: </a>      <font color="#4169E1">typedef</font> int    part_type;
+<a name="line282">282: </a>      <font color="#4169E1">typedef</font> Alloc_ alloc_type;
+<a name="line283">283: </a><strong><font color="#FF0000">    protected:</font></strong>
+<a name="line284">284: </a>      alloc_type _allocator;
+<a name="line285">285: </a><strong><font color="#FF0000">    public:</font></strong>
+<a name="line286">286: </a>      Partitioner() {};
+<a name="line287">287: </a>      ~Partitioner() {};
+<a name="line288">288: </a><strong><font color="#FF0000">    public:</font></strong>
+<a name="line289">289: </a>      static bool zeroBase() {<font color="#4169E1">return</font> true;}
+<a name="line290">290: </a>      template&lt;typename Section, typename MeshManager&gt;
+<a name="line291">291: </a>      void partition(const int numVertices, const int start[], const int adjacency[], const Obj&lt;Section&gt;&amp; partition, const MeshManager&amp; manager) {
+<a name="line292">292: </a>        const int numProcs = partition-&gt;commSize();
+<a name="line293">293: </a>        const int rank     = partition-&gt;commRank();
+<a name="line294">294: </a>        int       maxSize  = 0;
+
+<a name="line296">296: </a>        <font color="#4169E1">for</font>(int p = 0; p &lt; numProcs; ++p) {
+<a name="line297">297: </a>          partition-&gt;setFiberDimension(p, numVertices/numProcs + ((numVertices % numProcs) &gt; rank));
+<a name="line298">298: </a>          maxSize = std::max(maxSize, partition-&gt;getFiberDimension(p));
+<a name="line299">299: </a>        }
+<a name="line300">300: </a>        partition-&gt;allocatePoint();
+<a name="line301">301: </a>        typename Section::value_type *values = new typename Section::value_type[maxSize];
+
+<a name="line303">303: </a>        <font color="#4169E1">for</font>(int p = 0; p &lt; partition-&gt;commSize(); ++p) {
+<a name="line304">304: </a>          const int start = p*(numVertices/numProcs)     + p*((numVertices % numProcs) &gt; p+1);
+<a name="line305">305: </a>          const int end   = (p+1)*(numVertices/numProcs) + (p+1)*((numVertices % numProcs) &gt; p+2);
+<a name="line306">306: </a>          int       k     = 0;
+
+<a name="line308">308: </a>          <font color="#4169E1">for</font>(int v = start; v &lt; end; ++v, ++k) {
+<a name="line309">309: </a>            values[k] = manager.getCell(v);
+<a name="line310">310: </a>          }
+<a name="line311">311: </a>          <font color="#4169E1">if</font> (k != partition-&gt;getFiberDimension(p)) throw ALE::Exception(<font color="#666666">"Invalid partition"</font>);
+<a name="line312">312: </a>          partition-&gt;updatePoint(p, values);
+<a name="line313">313: </a>        }
+<a name="line314">314: </a>        delete [] values;
+<a name="line315">315: </a>      }
+<a name="line316">316: </a>    };
+<a name="line317">317: </a>  }
+<a name="line318">318: </a><font color="#A020F0">#ifdef PETSC_HAVE_CHACO</font>
+<a name="line319">319: </a>  template&lt;typename GraphPartitioner = ALE::Chaco::Partitioner&lt;&gt;, typename Alloc_ = malloc_allocator&lt;int&gt; &gt;
+<a name="line320">320: </a><font color="#A020F0">#elif defined(PETSC_HAVE_PARMETIS)</font>
+<a name="line321">321: </a>  template&lt;typename GraphPartitioner = ALE::ParMetis::Partitioner&lt;&gt;, typename Alloc_ = malloc_allocator&lt;int&gt; &gt;
+<a name="line322">322: </a><font color="#A020F0">#else</font>
+<a name="line323">323: </a>  template&lt;typename GraphPartitioner = ALE::Simple::Partitioner&lt;&gt;, typename Alloc_ = malloc_allocator&lt;int&gt; &gt;
+<a name="line324">324: </a><font color="#A020F0">#endif</font>
+<a name="line325">325: </a>  class Partitioner {
+<a name="line326">326: </a><strong><font color="#FF0000">  public:</font></strong>
+<a name="line327">327: </a>    <font color="#4169E1">typedef</font> Alloc_                               alloc_type;
+<a name="line328">328: </a>    <font color="#4169E1">typedef</font> GraphPartitioner                     graph_partitioner_type;
+<a name="line329">329: </a>    <font color="#4169E1">typedef</font> typename GraphPartitioner::part_type part_type;
+<a name="line330">330: </a>    template&lt;typename Mesh&gt;
+<a name="line331">331: </a>    class MeshManager {
+<a name="line332">332: </a><strong><font color="#FF0000">    public:</font></strong>
+<a name="line333">333: </a>      <font color="#4169E1">typedef</font> typename Mesh::point_type point_type;
+<a name="line334">334: </a><strong><font color="#FF0000">    protected:</font></strong>
+<a name="line335">335: </a>      const Obj&lt;Mesh&gt;&amp; mesh;
+<a name="line336">336: </a>      bool             simpleCellNumbering;
+<a name="line337">337: </a>      point_type      *cells;
+<a name="line338">338: </a><strong><font color="#FF0000">      std:</font></strong>:map&lt;point_type, point_type&gt; numbers;
+<a name="line339">339: </a><strong><font color="#FF0000">    protected:</font></strong>
+<a name="line340">340: </a>      void createCells(const int height) {
+<a name="line341">341: </a>        const Obj&lt;typename Mesh::label_sequence&gt;&amp;     mcells   = mesh-&gt;heightStratum(height);
+<a name="line342">342: </a>        const typename Mesh::label_sequence::iterator cEnd     = mcells-&gt;end();
+<a name="line343">343: </a>        const int                                     numCells = mcells-&gt;size();
+<a name="line344">344: </a>        int                                           c        = 0;
+
+<a name="line346">346: </a>        this-&gt;cells               = NULL;
+<a name="line347">347: </a>        this-&gt;simpleCellNumbering = true;
+<a name="line348">348: </a>        <font color="#4169E1">for</font>(typename Mesh::label_sequence::iterator c_iter = mcells-&gt;begin(); c_iter != cEnd; ++c_iter, ++c) {
+<a name="line349">349: </a>          <font color="#4169E1">if</font> (*c_iter != c) {
+<a name="line350">350: </a>            this-&gt;simpleCellNumbering = false;
+<a name="line351">351: </a>            <font color="#4169E1">break</font>;
+<a name="line352">352: </a>          }
+<a name="line353">353: </a>        }
+<a name="line354">354: </a>        <font color="#4169E1">if</font> (!this-&gt;simpleCellNumbering) {
+<a name="line355">355: </a>          this-&gt;cells = new point_type[numCells];
+<a name="line356">356: </a>          c           = 0;
+<a name="line357">357: </a>          <font color="#4169E1">for</font>(typename Mesh::label_sequence::iterator c_iter = mcells-&gt;begin(); c_iter != cEnd; ++c_iter, ++c) {
+<a name="line358">358: </a>            // OPT: Could use map only <font color="#4169E1">for</font> exceptional points
+<a name="line359">359: </a>            this-&gt;cells[c] = *c_iter;
+<a name="line360">360: </a>            this-&gt;numbers[*c_iter] = c;
+<a name="line361">361: </a>          }
+<a name="line362">362: </a>        }
+<a name="line363">363: </a>      };
+<a name="line364">364: </a><strong><font color="#FF0000">    public:</font></strong>
+<a name="line365">365: </a>      MeshManager(const Obj&lt;Mesh&gt;&amp; mesh, const int height = 0): mesh(mesh) {
+<a name="line366">366: </a>        this-&gt;createCells(height);
+<a name="line367">367: </a>      };
+<a name="line368">368: </a>      ~MeshManager() {
+<a name="line369">369: </a>        <font color="#4169E1">if</font> (this-&gt;cells) {delete [] this-&gt;cells;}
+<a name="line370">370: </a>      };
+<a name="line371">371: </a><strong><font color="#FF0000">    public:</font></strong>
+<a name="line372">372: </a>      template&lt;typename Float&gt;
+<a name="line373">373: </a>      void createCellCoordinates(const int numVertices, Float *X[], Float *Y[], Float *Z[]) const {
+<a name="line374">374: </a>        const Obj&lt;typename Mesh::real_section_type&gt;&amp; coordinates = mesh-&gt;getRealSection(<font color="#666666">"coordinates"</font>);
+<a name="line375">375: </a>        const int dim = mesh-&gt;getDimension();
+<a name="line376">376: </a>        <font color="#4169E1">typedef</font> typename alloc_type::template rebind&lt;Float&gt;::other float_alloc_type;
+<a name="line377">377: </a>        Float *x = float_alloc_type().allocate(numVertices*3);
+<a name="line378">378: </a>        <font color="#4169E1">for</font>(int i = 0; i &lt; numVertices*3; ++i) {float_alloc_type().construct(x+i, 0.0);}
+<a name="line379">379: </a>        Float *y = x+numVertices;
+<a name="line380">380: </a>        Float *z = y+numVertices;
+<a name="line381">381: </a>        Float *vCoords[3];
+
+<a name="line383">383: </a>        vCoords[0] = x; vCoords[1] = y; vCoords[2] = z;
+<a name="line384">384: </a>        const Obj&lt;typename Mesh::label_sequence&gt;&amp; cells = mesh-&gt;heightStratum(0);
+<a name="line385">385: </a>        const int corners = mesh-&gt;size(coordinates, *(cells-&gt;begin()))/dim;
+<a name="line386">386: </a>        int       c       = 0;
+
+<a name="line388">388: </a>        <font color="#4169E1">for</font>(typename Mesh::label_sequence::iterator c_iter = cells-&gt;begin(); c_iter !=cells-&gt;end(); ++c_iter, ++c) {
+<a name="line389">389: </a>          const typename Mesh::real_section_type::value_type *coords = mesh-&gt;restrictClosure(coordinates, *c_iter);
+
+<a name="line391">391: </a>          <font color="#4169E1">for</font>(int d = 0; d &lt; dim; ++d) {
+<a name="line392">392: </a>            vCoords[d][c] = 0.0;
+<a name="line393">393: </a>          }
+<a name="line394">394: </a>          <font color="#4169E1">for</font>(int v = 0; v &lt; corners; ++v) {
+<a name="line395">395: </a>            <font color="#4169E1">for</font>(int d = 0; d &lt; dim; ++d) {
+<a name="line396">396: </a>              vCoords[d][c] += coords[v*dim+d];
+<a name="line397">397: </a>            }
+<a name="line398">398: </a>          }
+<a name="line399">399: </a>          <font color="#4169E1">for</font>(int d = 0; d &lt; dim; ++d) {
+<a name="line400">400: </a>            vCoords[d][c] /= corners;
+<a name="line401">401: </a>          }
+<a name="line402">402: </a>        }
+<a name="line403">403: </a>        *X = x;
+<a name="line404">404: </a>        *Y = y;
+<a name="line405">405: </a>        *Z = z;
+<a name="line406">406: </a>      }
+<a name="line407">407: </a>      template&lt;typename Float&gt;
+<a name="line408">408: </a>      void destroyCellCoordinates(const int numVertices, Float *X[], Float *Y[], Float *Z[]) const {
+<a name="line409">409: </a>        <font color="#4169E1">typedef</font> typename alloc_type::template rebind&lt;Float&gt;::other float_alloc_type;
+<a name="line410">410: </a>        Float *x = *X;
+
+<a name="line412">412: </a>        <font color="#4169E1">for</font>(int i = 0; i &lt; numVertices*3; ++i) {float_alloc_type().destroy(x+i);}
+<a name="line413">413: </a>        float_alloc_type().deallocate(x, numVertices*3);
+<a name="line414">414: </a>      }
+<a name="line415">415: </a>      point_type getCell(const point_type cellNumber) const {
+<a name="line416">416: </a>        <font color="#4169E1">if</font> (this-&gt;simpleCellNumbering) {
+<a name="line417">417: </a>          <font color="#4169E1">return</font> cellNumber;
+<a name="line418">418: </a>        }
+<a name="line419">419: </a>        <font color="#4169E1">return</font> this-&gt;cells[cellNumber];
+<a name="line420">420: </a>      }
+<a name="line421">421: </a>      point_type getNumber(const point_type cell) {
+<a name="line422">422: </a>        <font color="#4169E1">if</font> (this-&gt;simpleCellNumbering) {
+<a name="line423">423: </a>          <font color="#4169E1">return</font> cell;
+<a name="line424">424: </a>        }
+<a name="line425">425: </a>        <font color="#4169E1">return</font> this-&gt;numbers[cell];
+<a name="line426">426: </a>      }
+<a name="line427">427: </a>    };
+<a name="line428">428: </a>    template&lt;typename Sieve&gt;
+<a name="line429">429: </a>    class OffsetVisitor {
+<a name="line430">430: </a>      const Sieve&amp; sieve;
+<a name="line431">431: </a>      const Sieve&amp; overlapSieve;
+<a name="line432">432: </a>      int         *offsets;
+<a name="line433">433: </a><strong><font color="#FF0000">    public:</font></strong>
+<a name="line434">434: </a>      OffsetVisitor(const Sieve&amp; s, const Sieve&amp; ovS, int off[]) : sieve(s), overlapSieve(ovS), offsets(off) {};
+<a name="line435">435: </a>      void visitPoint(const typename Sieve::point_type&amp; point) {};
+<a name="line436">436: </a>      void visitArrow(const typename Sieve::arrow_type&amp; arrow) {
+<a name="line437">437: </a>        const typename Sieve::point_type cell   = arrow.target;
+<a name="line438">438: </a>        const typename Sieve::point_type face   = arrow.source;
+<a name="line439">439: </a>        const int                        size   = this-&gt;sieve.getSupportSize(face);
+<a name="line440">440: </a>        const int                        ovSize = this-&gt;overlapSieve.getSupportSize(face);
+
+<a name="line442">442: </a>        <font color="#4169E1">if</font> (size == 2) {
+<a name="line443">443: </a>          offsets[cell+1]++;
+<a name="line444">444: </a>        } <font color="#4169E1">else</font> <font color="#4169E1">if</font> ((size == 1) &amp;&amp; (ovSize == 1)) {
+<a name="line445">445: </a>          offsets[cell+1]++;
+<a name="line446">446: </a>        }
+<a name="line447">447: </a>      };
+<a name="line448">448: </a>    };
+<a name="line449">449: </a>    template&lt;typename Sieve&gt;
+<a name="line450">450: </a>    class AdjVisitor {
+<a name="line451">451: </a><strong><font color="#FF0000">    protected:</font></strong>
+<a name="line452">452: </a>      typename Sieve::point_type cell;
+<a name="line453">453: </a>      int                       *adjacency;
+<a name="line454">454: </a>      const int                  cellOffset;
+<a name="line455">455: </a>      int                        offset;
+<a name="line456">456: </a><strong><font color="#FF0000">    public:</font></strong>
+<a name="line457">457: </a>      AdjVisitor(int adj[], const bool zeroBase) : adjacency(adj), cellOffset(zeroBase ? 0 : 1), offset(0) {};
+<a name="line458">458: </a>      void visitPoint(const typename Sieve::point_type&amp; point) {};
+<a name="line459">459: </a>      void visitArrow(const typename Sieve::arrow_type&amp; arrow) {
+<a name="line460">460: </a>        const int neighbor = arrow.target;
+
+<a name="line462">462: </a>        <font color="#4169E1">if</font> (neighbor != this-&gt;cell) {
+<a name="line463">463: </a>          //std::cout &lt;&lt; <font color="#666666">"Adding dual edge from "</font> &lt;&lt; cell &lt;&lt; <font color="#666666">" to "</font> &lt;&lt; neighbor &lt;&lt; std::endl;
+<a name="line464">464: </a>          this-&gt;adjacency[this-&gt;offset++] = neighbor + this-&gt;cellOffset;
+<a name="line465">465: </a>        }
+<a name="line466">466: </a>      };
+<a name="line467">467: </a><strong><font color="#FF0000">    public:</font></strong>
+<a name="line468">468: </a>      void setCell(const typename Sieve::point_type cell) {this-&gt;cell = cell;};
+<a name="line469">469: </a>      int  getOffset() {<font color="#4169E1">return</font> this-&gt;offset;}
+<a name="line470">470: </a>    };
+<a name="line471">471: </a>    template&lt;typename Mesh, int maxSize = 10&gt;
+<a name="line472">472: </a>    class FaceRecognizer {
+<a name="line473">473: </a><strong><font color="#FF0000">    public:</font></strong>
+<a name="line474">474: </a>      <font color="#4169E1">typedef</font> typename Mesh::point_type point_type;
+<a name="line475">475: </a><strong><font color="#FF0000">    protected:</font></strong>
+<a name="line476">476: </a>      int numCases;
+<a name="line477">477: </a>      int numFaceVertices[maxSize];
+<a name="line478">478: </a><strong><font color="#FF0000">    public:</font></strong>
+<a name="line479">479: </a>      FaceRecognizer(Mesh&amp; mesh, const int debug = 0) : numCases(0) {
+<a name="line480">480: </a>        <font color="#4169E1">if</font> (mesh.depth() != 1) {throw ALE::Exception(<font color="#666666">"Only works for depth 1 meshes"</font>);}
+<a name="line481">481: </a>        const int                                 dim   = mesh.getDimension();
+<a name="line482">482: </a>        const Obj&lt;typename Mesh::sieve_type&gt;&amp;     sieve = mesh.getSieve();
+<a name="line483">483: </a>        const Obj&lt;typename Mesh::label_sequence&gt;&amp; cells = mesh.heightStratum(0);
+<a name="line484">484: </a><strong><font color="#FF0000">        std:</font></strong>:set&lt;int&gt;                             cornersSeen;
+
+<a name="line486">486: </a>        <font color="#4169E1">if</font> (debug) {std::cout &lt;&lt; <font color="#666666">"Building Recognizer"</font> &lt;&lt; std::endl;}
+<a name="line487">487: </a>        <font color="#4169E1">for</font>(typename Mesh::label_sequence::iterator c_iter = cells-&gt;begin(); c_iter != cells-&gt;end(); ++c_iter) {
+<a name="line488">488: </a>          const int corners = sieve-&gt;getConeSize(*c_iter);
+
+<a name="line490">490: </a>          <font color="#4169E1">if</font> (cornersSeen.find(corners) == cornersSeen.end()) {
+<a name="line491">491: </a>            <font color="#4169E1">if</font> (numCases &gt;= maxSize) {throw ALE::Exception(<font color="#666666">"Exceeded maximum number of cases"</font>);}
+<a name="line492">492: </a>            cornersSeen.insert(corners);
+
+<a name="line494">494: </a>            <font color="#4169E1">if</font> (corners == dim+1) {
+<a name="line495">495: </a>              numFaceVertices[numCases] = dim;
+<a name="line496">496: </a>              <font color="#4169E1">if</font> (debug) {std::cout &lt;&lt; <font color="#666666">"  Recognizing simplices"</font> &lt;&lt; std::endl;}
+<a name="line497">497: </a>            } <font color="#4169E1">else</font> <font color="#4169E1">if</font> ((dim == 1) &amp;&amp; (corners == 3)) {
+<a name="line498">498: </a>              numFaceVertices[numCases] = 3;
+<a name="line499">499: </a>              <font color="#4169E1">if</font> (debug) {std::cout &lt;&lt; <font color="#666666">"  Recognizing quadratic edges"</font> &lt;&lt; std::endl;}
+<a name="line500">500: </a>            } <font color="#4169E1">else</font> <font color="#4169E1">if</font> ((dim == 2) &amp;&amp; (corners == 4)) {
+<a name="line501">501: </a>              numFaceVertices[numCases] = 2;
+<a name="line502">502: </a>              <font color="#4169E1">if</font> (debug) {std::cout &lt;&lt; <font color="#666666">"  Recognizing quads"</font> &lt;&lt; std::endl;}
+<a name="line503">503: </a>            } <font color="#4169E1">else</font> <font color="#4169E1">if</font> ((dim == 2) &amp;&amp; (corners == 6)) {
+<a name="line504">504: </a>              numFaceVertices[numCases] = 3;
+<a name="line505">505: </a>              <font color="#4169E1">if</font> (debug) {std::cout &lt;&lt; <font color="#666666">"  Recognizing tri and quad cohesive Lagrange cells"</font> &lt;&lt; std::endl;}
+<a name="line506">506: </a>            } <font color="#4169E1">else</font> <font color="#4169E1">if</font> ((dim == 2) &amp;&amp; (corners == 9)) {
+<a name="line507">507: </a>              numFaceVertices[numCases] = 3;
+<a name="line508">508: </a>              <font color="#4169E1">if</font> (debug) {std::cout &lt;&lt; <font color="#666666">"  Recognizing quadratic quads and quadratic quad cohesive Lagrange cells"</font> &lt;&lt; std::endl;}
+<a name="line509">509: </a>            } <font color="#4169E1">else</font> <font color="#4169E1">if</font> ((dim == 3) &amp;&amp; (corners == 6)) {
+<a name="line510">510: </a>              numFaceVertices[numCases] = 4;
+<a name="line511">511: </a>              <font color="#4169E1">if</font> (debug) {std::cout &lt;&lt; <font color="#666666">"  Recognizing tet cohesive cells"</font> &lt;&lt; std::endl;}
+<a name="line512">512: </a>            } <font color="#4169E1">else</font> <font color="#4169E1">if</font> ((dim == 3) &amp;&amp; (corners == 8)) {
+<a name="line513">513: </a>              numFaceVertices[numCases] = 4;
+<a name="line514">514: </a>              <font color="#4169E1">if</font> (debug) {std::cout &lt;&lt; <font color="#666666">"  Recognizing hexes"</font> &lt;&lt; std::endl;}
+<a name="line515">515: </a>            } <font color="#4169E1">else</font> <font color="#4169E1">if</font> ((dim == 3) &amp;&amp; (corners == 9)) {
+<a name="line516">516: </a>              numFaceVertices[numCases] = 6;
+<a name="line517">517: </a>              <font color="#4169E1">if</font> (debug) {std::cout &lt;&lt; <font color="#666666">"  Recognizing tet cohesive Lagrange cells"</font> &lt;&lt; std::endl;}
+<a name="line518">518: </a>            } <font color="#4169E1">else</font> <font color="#4169E1">if</font> ((dim == 3) &amp;&amp; (corners == 10)) {
+<a name="line519">519: </a>              numFaceVertices[numCases] = 6;
+<a name="line520">520: </a>              <font color="#4169E1">if</font> (debug) {std::cout &lt;&lt; <font color="#666666">"  Recognizing quadratic tets"</font> &lt;&lt; std::endl;}
+<a name="line521">521: </a>            } <font color="#4169E1">else</font> <font color="#4169E1">if</font> ((dim == 3) &amp;&amp; (corners == 12)) {
+<a name="line522">522: </a>              numFaceVertices[numCases] = 6;
+<a name="line523">523: </a>              <font color="#4169E1">if</font> (debug) {std::cout &lt;&lt; <font color="#666666">"  Recognizing hex cohesive Lagrange cells"</font> &lt;&lt; std::endl;}
+<a name="line524">524: </a>            } <font color="#4169E1">else</font> <font color="#4169E1">if</font> ((dim == 3) &amp;&amp; (corners == 18)) {
+<a name="line525">525: </a>              numFaceVertices[numCases] = 6;
+<a name="line526">526: </a>              <font color="#4169E1">if</font> (debug) {std::cout &lt;&lt; <font color="#666666">"  Recognizing quadratic tet cohesive Lagrange cells"</font> &lt;&lt; std::endl;}
+<a name="line527">527: </a>            } <font color="#4169E1">else</font> <font color="#4169E1">if</font> ((dim == 3) &amp;&amp; (corners == 27)) {
+<a name="line528">528: </a>              numFaceVertices[numCases] = 9;
+<a name="line529">529: </a>              <font color="#4169E1">if</font> (debug) {std::cout &lt;&lt; <font color="#666666">"  Recognizing quadratic hexes and quadratic hex cohesive Lagrange cells"</font> &lt;&lt; std::endl;}
+<a name="line530">530: </a>            } <font color="#4169E1">else</font> {
+<a name="line531">531: </a>              throw ALE::Exception(<font color="#666666">"Could not determine number of face vertices"</font>);
+<a name="line532">532: </a>            }
+<a name="line533">533: </a>            ++numCases;
+<a name="line534">534: </a>          }
+<a name="line535">535: </a>        }
+<a name="line536">536: </a>      };
+<a name="line537">537: </a>      ~FaceRecognizer() {};
+<a name="line538">538: </a><strong><font color="#FF0000">    public:</font></strong>
+<a name="line539">539: </a>      bool operator()(point_type cellA, point_type cellB, int meetSize) {
+<a name="line540">540: </a>        // Could concievably make this depend on the cells, but it seems slow
+<a name="line541">541: </a>        <font color="#4169E1">for</font>(int i = 0; i &lt; numCases; ++i) {
+<a name="line542">542: </a>          <font color="#4169E1">if</font> (meetSize == numFaceVertices[i]) {
+<a name="line543">543: </a>            //std::cout &lt;&lt; <font color="#666666">"  Recognized case "</font> &lt;&lt; i &lt;&lt;<font color="#666666">"("</font>&lt;&lt;numFaceVertices[i]&lt;&lt;<font color="#666666">") for &lt;"</font> &lt;&lt; cellA &lt;&lt;<font color="#666666">","</font>&lt;&lt; cellB &lt;&lt; <font color="#666666">"&gt;"</font> &lt;&lt; std::endl;
+<a name="line544">544: </a>            <font color="#4169E1">return</font> true;
+<a name="line545">545: </a>          }
+<a name="line546">546: </a>        }
+<a name="line547">547: </a>        <font color="#4169E1">return</font> false;
+<a name="line548">548: </a>      };
+<a name="line549">549: </a>    };
+<a name="line550">550: </a>    template&lt;typename Mesh&gt;
+<a name="line551">551: </a>    class SimpleFaceRecognizer {
+<a name="line552">552: </a><strong><font color="#FF0000">    public:</font></strong>
+<a name="line553">553: </a>      <font color="#4169E1">typedef</font> typename Mesh::point_type point_type;
+<a name="line554">554: </a><strong><font color="#FF0000">    protected:</font></strong>
+<a name="line555">555: </a>      int dim;
+<a name="line556">556: </a><strong><font color="#FF0000">    public:</font></strong>
+<a name="line557">557: </a>      SimpleFaceRecognizer(Mesh&amp; mesh, const int debug = 0) {
+<a name="line558">558: </a>        <font color="#4169E1">if</font> (mesh.depth() != 1) {throw ALE::Exception(<font color="#666666">"Only works for depth 1 meshes"</font>);}
+<a name="line559">559: </a>        this-&gt;dim = mesh.getDimension();
+<a name="line560">560: </a>      };
+<a name="line561">561: </a>      ~SimpleFaceRecognizer() {};
+<a name="line562">562: </a><strong><font color="#FF0000">    public:</font></strong>
+<a name="line563">563: </a>      bool operator()(point_type cellA, point_type cellB, int meetSize) {
+<a name="line564">564: </a>        <font color="#4169E1">if</font> (meetSize &gt;= dim) {
+<a name="line565">565: </a>          <font color="#4169E1">return</font> true;
+<a name="line566">566: </a>        }
+<a name="line567">567: </a>        <font color="#4169E1">return</font> false;
+<a name="line568">568: </a>      };
+<a name="line569">569: </a>    };
+<a name="line570">570: </a>    template&lt;typename Sieve, typename Manager, typename Recognizer&gt;
+<a name="line571">571: </a>    class MeetVisitor {
+<a name="line572">572: </a><strong><font color="#FF0000">    public:</font></strong>
+<a name="line573">573: </a>      <font color="#4169E1">typedef</font> std::set&lt;typename Sieve::point_type&gt; neighbors_type;
+<a name="line574">574: </a><strong><font color="#FF0000">    protected:</font></strong>
+<a name="line575">575: </a>      const Sieve&amp; sieve;
+<a name="line576">576: </a>      Manager&amp; manager;
+<a name="line577">577: </a>      Recognizer&amp; faceRecognizer;
+<a name="line578">578: </a>      const int numCells;
+<a name="line579">579: </a>      neighbors_type *neighborCells;
+<a name="line580">580: </a>      typename ISieveVisitor::PointRetriever&lt;Sieve&gt; *pR;
+<a name="line581">581: </a>      typename Sieve::point_type cell;
+<a name="line582">582: </a><strong><font color="#FF0000">    public:</font></strong>
+<a name="line583">583: </a>      MeetVisitor(const Sieve&amp; s, Manager&amp; manager, Recognizer&amp; faceRecognizer, const int n) : sieve(s), manager(manager), faceRecognizer(faceRecognizer), numCells(n) {
+<a name="line584">584: </a>        this-&gt;neighborCells = new std::set&lt;typename Sieve::point_type&gt;[numCells];
+<a name="line585">585: </a>        this-&gt;pR            = new typename ISieveVisitor::PointRetriever&lt;Sieve&gt;(this-&gt;sieve.getMaxConeSize());
+<a name="line586">586: </a>      };
+<a name="line587">587: </a>      ~MeetVisitor() {delete [] this-&gt;neighborCells; delete this-&gt;pR;};
+<a name="line588">588: </a>      void visitArrow(const typename Sieve::arrow_type&amp; arrow) {};
+<a name="line589">589: </a>      void visitPoint(const typename Sieve::point_type&amp; point) {
+<a name="line590">590: </a>        const typename Sieve::point_type&amp; neighbor = point;
+
+<a name="line592">592: </a>        <font color="#4169E1">if</font> (this-&gt;cell == neighbor) <font color="#4169E1">return</font>;
+<a name="line593">593: </a>        this-&gt;pR-&gt;clear();
+<a name="line594">594: </a>        this-&gt;sieve.meet(this-&gt;cell, neighbor, *this-&gt;pR);
+<a name="line595">595: </a>        <font color="#4169E1">if</font> (faceRecognizer(this-&gt;cell, neighbor, this-&gt;pR-&gt;getSize())) {
+<a name="line596">596: </a>          this-&gt;neighborCells[this-&gt;manager.getNumber(this-&gt;cell)].insert(this-&gt;manager.getNumber(neighbor));
+<a name="line597">597: </a>        }
+<a name="line598">598: </a>      };
+<a name="line599">599: </a><strong><font color="#FF0000">    public:</font></strong>
+<a name="line600">600: </a>      void setCell(const typename Sieve::point_type&amp; c) {this-&gt;cell = c;};
+<a name="line601">601: </a>      const neighbors_type *getNeighbors() {<font color="#4169E1">return</font> this-&gt;neighborCells;};
+<a name="line602">602: </a>    };
+<a name="line603">603: </a><strong><font color="#FF0000">  public:</font></strong> // Creating overlaps
+<a name="line604">604: </a>    // Create a partition point overlap <font color="#4169E1">for</font> distribution
+<a name="line605">605: </a>    //   This is the <font color="#4169E1">default</font> overlap which comes from distributing a serial mesh on process 0
+<a name="line606">606: </a>    template&lt;typename SendOverlap, typename RecvOverlap&gt;
+<a name="line607">607: </a>    static void createDistributionPartOverlap(const Obj&lt;SendOverlap&gt;&amp; sendOverlap, const Obj&lt;RecvOverlap&gt;&amp; recvOverlap) {
+<a name="line608">608: </a>      const int rank = sendOverlap-&gt;commRank();
+<a name="line609">609: </a>      const int size = sendOverlap-&gt;commSize();
+
+<a name="line611">611: </a>      <font color="#4169E1">if</font> (rank == 0) {
+<a name="line612">612: </a>        <font color="#4169E1">for</font>(int p = 1; p &lt; size; p++) {
+<a name="line613">613: </a>          // The arrow is from local partition point p (source) to remote partition point p (color) on rank p (target)
+<a name="line614">614: </a>          sendOverlap-&gt;addCone(p, p, p);
+<a name="line615">615: </a>        }
+<a name="line616">616: </a>      }
+<a name="line617">617: </a>      <font color="#4169E1">if</font> (rank != 0) {
+<a name="line618">618: </a>        // The arrow is from remote partition point rank (color) on rank 0 (source) to local partition point rank (target)
+<a name="line619">619: </a>        recvOverlap-&gt;addCone(0, rank, rank);
+<a name="line620">620: </a>      }
+<a name="line621">621: </a>    }
+<a name="line622">622: </a>    // Create a mesh point overlap <font color="#4169E1">for</font> distribution
+<a name="line623">623: </a>    //   A local numbering is created <font color="#4169E1">for</font> the remote points
+<a name="line624">624: </a>    //   This is the <font color="#4169E1">default</font> overlap which comes from distributing a serial mesh on process 0
+<a name="line625">625: </a>    template&lt;typename Section, typename RecvPartOverlap, typename Renumbering, typename SendOverlap, typename RecvOverlap&gt;
+<a name="line626">626: </a>    static void createDistributionMeshOverlap(const Obj&lt;Section&gt;&amp; partition, const Obj&lt;RecvPartOverlap&gt;&amp; recvPartOverlap, Renumbering&amp; renumbering, const Obj&lt;Section&gt;&amp; overlapPartition, const Obj&lt;SendOverlap&gt;&amp; sendOverlap, const Obj&lt;RecvOverlap&gt;&amp; recvOverlap) {
+<a name="line627">627: </a>      const typename Section::chart_type&amp; chart = partition-&gt;getChart();
+<a name="line628">628: </a>      int numRanks = 0;
+
+<a name="line630">630: </a>      <font color="#4169E1">for</font>(typename Section::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
+<a name="line631">631: </a>        <font color="#4169E1">if</font> (*p_iter != sendOverlap-&gt;commRank() &amp;&amp; partition-&gt;getFiberDimension(*p_iter)) numRanks++;
+<a name="line632">632: </a>      }
+<a name="line633">633: </a>      sendOverlap-&gt;setBaseSize(numRanks); // setNumRanks
+<a name="line634">634: </a>      <font color="#4169E1">for</font>(typename Section::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
+<a name="line635">635: </a>        const int coneSize = partition-&gt;getFiberDimension(*p_iter);
+
+<a name="line637">637: </a>        <font color="#4169E1">if</font> (*p_iter != sendOverlap-&gt;commRank() &amp;&amp; coneSize) {
+<a name="line638">638: </a>          sendOverlap-&gt;setConeSize(*p_iter, coneSize); // setNumPoints
+<a name="line639">639: </a>        }
+<a name="line640">640: </a>      }
+<a name="line641">641: </a>      sendOverlap-&gt;assemble();
+<a name="line642">642: </a>      <font color="#4169E1">for</font>(typename Section::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
+<a name="line643">643: </a>        <font color="#4169E1">if</font> (*p_iter == sendOverlap-&gt;commRank()) <font color="#4169E1">continue</font>;
+<a name="line644">644: </a>        const typename Section::value_type *points     = partition-&gt;restrictPoint(*p_iter);
+<a name="line645">645: </a>        const int                           numPoints  = partition-&gt;getFiberDimension(*p_iter);
+
+<a name="line647">647: </a>        <font color="#4169E1">for</font>(int i = 0; i &lt; numPoints; ++i) {
+<a name="line648">648: </a>          // Notice here that we <font color="#4169E1">do</font> not know the local renumbering (but we <font color="#4169E1">do</font> not use it)
+<a name="line649">649: </a>          sendOverlap-&gt;addArrow(points[i], *p_iter, points[i]);
+<a name="line650">650: </a>        }
+<a name="line651">651: </a>      }
+<a name="line652">652: </a>      sendOverlap-&gt;assemblePoints();
+<a name="line653">653: </a>      <font color="#4169E1">if</font> (sendOverlap-&gt;debug()) {sendOverlap-&gt;view(<font color="#666666">"Send mesh overlap"</font>);}
+<a name="line654">654: </a>      const typename RecvPartOverlap::capSequence::iterator rBegin = recvPartOverlap-&gt;capBegin();
+<a name="line655">655: </a>      const typename RecvPartOverlap::capSequence::iterator rEnd   = recvPartOverlap-&gt;capEnd();
+
+<a name="line657">657: </a>      recvOverlap-&gt;setCapSize(recvPartOverlap-&gt;getCapSize()); // setNumRanks
+<a name="line658">658: </a>      <font color="#4169E1">for</font>(typename RecvPartOverlap::capSequence::iterator r_iter = rBegin; r_iter != rEnd; ++r_iter) {
+<a name="line659">659: </a>        const int                                                 rank   = *r_iter;
+<a name="line660">660: </a>        const typename RecvPartOverlap::supportSequence::iterator pBegin = recvPartOverlap-&gt;supportBegin(*r_iter);
+<a name="line661">661: </a>        const typename RecvPartOverlap::supportSequence::iterator pEnd   = recvPartOverlap-&gt;supportEnd(*r_iter);
+
+<a name="line663">663: </a>        <font color="#4169E1">for</font>(typename RecvPartOverlap::supportSequence::iterator p_iter = pBegin; p_iter != pEnd; ++p_iter) {
+<a name="line664">664: </a>          const typename Section::point_type&amp; remotePartPoint = p_iter.color();
+<a name="line665">665: </a>          const int                           numPoints       = overlapPartition-&gt;getFiberDimension(remotePartPoint);
+
+<a name="line667">667: </a>          recvOverlap-&gt;setSupportSize(rank, numPoints); // setNumPoints
+<a name="line668">668: </a>        }
+<a name="line669">669: </a>      }
+<a name="line670">670: </a>      recvOverlap-&gt;assemble();
+
+<a name="line672">672: </a>      <font color="#4169E1">for</font>(typename RecvPartOverlap::capSequence::iterator r_iter = rBegin; r_iter != rEnd; ++r_iter) {
+<a name="line673">673: </a>        const int                                                 rank   = *r_iter;
+<a name="line674">674: </a>        const typename RecvPartOverlap::supportSequence::iterator pBegin = recvPartOverlap-&gt;supportBegin(*r_iter);
+<a name="line675">675: </a>        const typename RecvPartOverlap::supportSequence::iterator pEnd   = recvPartOverlap-&gt;supportEnd(*r_iter);
+
+<a name="line677">677: </a>        <font color="#4169E1">for</font>(typename RecvPartOverlap::supportSequence::iterator p_iter = pBegin; p_iter != pEnd; ++p_iter) {
+<a name="line678">678: </a>          const typename Section::point_type&amp; remotePartPoint = p_iter.color();
+<a name="line679">679: </a>          const typename Section::value_type *points          = overlapPartition-&gt;restrictPoint(remotePartPoint);
+<a name="line680">680: </a>          const int                           numPoints       = overlapPartition-&gt;getFiberDimension(remotePartPoint);
+
+<a name="line682">682: </a>          <font color="#4169E1">for</font>(int i = 0; i &lt; numPoints; ++i) {
+<a name="line683">683: </a>            recvOverlap-&gt;addArrow(rank, renumbering[points[i]], points[i]);
+<a name="line684">684: </a>          }
+<a name="line685">685: </a>        }
+<a name="line686">686: </a>      }
+<a name="line687">687: </a>      recvOverlap-&gt;assemblePoints();
+<a name="line688">688: </a>      <font color="#4169E1">if</font> (recvOverlap-&gt;debug()) {recvOverlap-&gt;view(<font color="#666666">"Receive mesh overlap"</font>);}
+<a name="line689">689: </a>    }
+<a name="line690">690: </a>    // Create a partition point overlap from a partition
+<a name="line691">691: </a>    //   The intention is to create an overlap which enables exchange of redistribution information
+<a name="line692">692: </a>    template&lt;typename Section, typename SendOverlap, typename RecvOverlap&gt;
+<a name="line693">693: </a>    static void createPartitionPartOverlap(const Obj&lt;Section&gt;&amp; partition, const Obj&lt;SendOverlap&gt;&amp; sendOverlap, const Obj&lt;RecvOverlap&gt;&amp; recvOverlap) {
+<a name="line694">694: </a>      const typename Section::chart_type&amp; chart      = partition-&gt;getChart();
+<a name="line695">695: </a>      const int                           rank       = partition-&gt;commRank();
+<a name="line696">696: </a>      const int                           size       = partition-&gt;commSize();
+<a name="line697">697: </a>      int                                *adj        = new int[size];
+<a name="line698">698: </a>      int                                *recvCounts = new int[size];
+<a name="line699">699: </a>      int                                 numNeighbors;
+
+<a name="line701">701: </a>      <font color="#4169E1">for</font>(int p = 0; p &lt; size; ++p) {
+<a name="line702">702: </a>        adj[p]        = 0;
+<a name="line703">703: </a>        recvCounts[p] = 1;
+<a name="line704">704: </a>      }
+<a name="line705">705: </a>      <font color="#4169E1">for</font>(typename Section::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart-&gt;end(); ++p_iter) {
+<a name="line706">706: </a>        const typename Section::value_type&amp; p = partition-&gt;restrictPoint(*p_iter)[0];
+<a name="line707">707: </a>        // The arrow is from local partition point p (source) to remote partition point p (color) on rank p (target)
+<a name="line708">708: </a>        sendOverlap-&gt;addCone(p, p, p);
+<a name="line709">709: </a>        adj[p] = 1;
+<a name="line710">710: </a>      }
+<a name="line711">711: </a>      MPI_Reduce_Scatter(adj, &amp;numNeighbors, recvCounts, size, MPI_INT, MPI_SUM, partition-&gt;comm());
+<a name="line712">712: </a>      MPI_Request *recvRequests = new MPI_Request[numNeighbors];
+<a name="line713">713: </a>      int          dummy        = 0;
+
+<a name="line715">715: </a>      // TODO: Get a unique tag
+<a name="line716">716: </a>      <font color="#4169E1">for</font>(int n = 0; n &lt; numNeighbors; ++n) {
+<a name="line717">717: </a>        <A href="http://www.mcs.anl.gov/mpi/www/www3/MPI_Irecv.html#MPI_Irecv">MPI_Irecv</A>(&amp;dummy, 1, MPI_INT, MPI_ANY_SOURCE, 1, partition-&gt;comm(), &amp;recvRequests[n]);
+<a name="line718">718: </a>      }
+<a name="line719">719: </a>      const Obj&lt;typename SendOverlap::traits::baseSequence&gt;      ranks        = sendOverlap-&gt;base();
+<a name="line720">720: </a>      const typename SendOverlap::traits::baseSequence::iterator rEnd         = ranks-&gt;end();
+<a name="line721">721: </a>      MPI_Request                                               *sendRequests = new MPI_Request[ranks-&gt;size()];
+<a name="line722">722: </a>      int                                                        s            = 0;
+
+<a name="line724">724: </a>      <font color="#4169E1">for</font>(typename SendOverlap::traits::baseSequence::iterator r_iter = ranks-&gt;begin(); r_iter != rEnd; ++r_iter, ++s) {
+<a name="line725">725: </a>        <A href="http://www.mcs.anl.gov/mpi/www/www3/MPI_Isend.html#MPI_Isend">MPI_Isend</A>(&amp;dummy, 1, MPI_INT, *r_iter, 1, partition-&gt;comm(), &amp;sendRequests[s]);
+<a name="line726">726: </a>      }
+<a name="line727">727: </a>      <font color="#4169E1">for</font>(int n = 0; n &lt; numNeighbors; ++n) {
+<a name="line728">728: </a>        MPI_Status status;
+<a name="line729">729: </a>        int        idx;
+
+<a name="line731">731: </a>        <A href="http://www.mcs.anl.gov/mpi/www/www3/MPI_Waitany.html#MPI_Waitany">MPI_Waitany</A>(numNeighbors, recvRequests, &amp;idx, &amp;status);
+<a name="line732">732: </a>        // The arrow is from remote partition point rank (color) on rank p (source) to local partition point rank (target)
+<a name="line733">733: </a>        recvOverlap-&gt;addCone(status.MPI_SOURCE, rank, rank);
+<a name="line734">734: </a>      }
+<a name="line735">735: </a>      <A href="http://www.mcs.anl.gov/mpi/www/www3/MPI_Waitall.html#MPI_Waitall">MPI_Waitall</A>(ranks-&gt;size(), sendRequests, MPI_STATUSES_IGNORE);
+<a name="line736">736: </a>      delete [] sendRequests;
+<a name="line737">737: </a>      delete [] recvRequests;
+<a name="line738">738: </a>      delete [] adj;
+<a name="line739">739: </a>      delete [] recvCounts;
+<a name="line740">740: </a>    }
+<a name="line741">741: </a><strong><font color="#FF0000">  public:</font></strong> // Building CSR meshes
+<a name="line742">742: </a>    // This produces the dual graph (each cell is a vertex and each face is an edge)
+<a name="line743">743: </a>    //   numbering:   A contiguous numbering of the cells (not yet included)
+<a name="line744">744: </a>    //   numVertices: The number of vertices in the graph (cells in the mesh)
+<a name="line745">745: </a>    //   adjacency:   The vertices adjacent to each vertex (cells adjacent to each mesh cell)
+<a name="line746">746: </a>    // - We allow an exception to contiguous numbering.
+<a name="line747">747: </a>    //   If the cell id &gt; numElements, we assign a new number starting at
+<a name="line748">748: </a>    //     the top and going downward. I know these might not match up with
+<a name="line749">749: </a>    //     the iterator order, but we can fix it later.
+<a name="line750">750: </a>    template&lt;typename Mesh&gt;
+<a name="line751">751: </a>    static void buildDualCSR(const Obj&lt;Mesh&gt;&amp; mesh, int *numVertices, int **offsets, int **adjacency, const bool zeroBase = true) {
+<a name="line752">752: </a>      const Obj&lt;typename Mesh::sieve_type&gt;&amp;         sieve        = mesh-&gt;getSieve();
+<a name="line753">753: </a>      const Obj&lt;typename Mesh::label_sequence&gt;&amp;     cells        = mesh-&gt;heightStratum(0);
+<a name="line754">754: </a>      const typename Mesh::label_sequence::iterator cEnd         = cells-&gt;end();
+<a name="line755">755: </a>      const int                                     numCells     = cells-&gt;size();
+<a name="line756">756: </a>      int                                           newCell      = numCells;
+<a name="line757">757: </a>      Obj&lt;typename Mesh::sieve_type&gt;                overlapSieve = new typename Mesh::sieve_type(mesh-&gt;comm(), mesh-&gt;debug());
+<a name="line758">758: </a>      int                                           offset       = 0;
+<a name="line759">759: </a>      const int                                     cellOffset   = zeroBase ? 0 : 1;
+<a name="line760">760: </a>      const int                                     dim          = mesh-&gt;getDimension();
+<a name="line761">761: </a><strong><font color="#FF0000">      std:</font></strong>:map&lt;typename Mesh::point_type, typename Mesh::point_type&gt; newCells;
+
+<a name="line763">763: </a>      // TODO: This is necessary <font color="#4169E1">for</font> parallel partitioning
+<a name="line764">764: </a>      //completion::scatterSupports(sieve, overlapSieve, mesh-&gt;getSendOverlap(), mesh-&gt;getRecvOverlap(), mesh);
+<a name="line765">765: </a>      <font color="#4169E1">if</font> (numCells == 0) {
+<a name="line766">766: </a>        *numVertices = 0;
+<a name="line767">767: </a>        *offsets     = NULL;
+<a name="line768">768: </a>        *adjacency   = NULL;
+<a name="line769">769: </a>        <font color="#4169E1">return</font>;
+<a name="line770">770: </a>      }
+<a name="line771">771: </a>      int *off = alloc_type().allocate(numCells+1);
+<a name="line772">772: </a>      int *adj;
+<a name="line773">773: </a>      <font color="#4169E1">for</font>(int i = 0; i &lt; numCells+1; ++i) {alloc_type().construct(off+i, 0);}
+<a name="line774">774: </a>      <font color="#4169E1">if</font> (mesh-&gt;depth() == dim) {
+<a name="line775">775: </a>        int c = 1;
+
+<a name="line777">777: </a>        <font color="#4169E1">for</font>(typename Mesh::label_sequence::iterator c_iter = cells-&gt;begin(); c_iter != cEnd; ++c_iter, ++c) {
+<a name="line778">778: </a>          const Obj&lt;typename Mesh::sieve_type::traits::coneSequence&gt;&amp;     faces = sieve-&gt;cone(*c_iter);
+<a name="line779">779: </a>          const typename Mesh::sieve_type::traits::coneSequence::iterator fEnd  = faces-&gt;end();
+
+<a name="line781">781: </a>          off[c] = off[c-1];
+<a name="line782">782: </a>          <font color="#4169E1">for</font>(typename Mesh::sieve_type::traits::coneSequence::iterator f_iter = faces-&gt;begin(); f_iter != fEnd; ++f_iter) {
+<a name="line783">783: </a>            <font color="#4169E1">if</font> (sieve-&gt;support(*f_iter)-&gt;size() == 2) {
+<a name="line784">784: </a>              off[c]++;
+<a name="line785">785: </a>            } <font color="#4169E1">else</font> <font color="#4169E1">if</font> ((sieve-&gt;support(*f_iter)-&gt;size() == 1) &amp;&amp; (overlapSieve-&gt;support(*f_iter)-&gt;size() == 1)) {
+<a name="line786">786: </a>              off[c]++;
+<a name="line787">787: </a>            }
+<a name="line788">788: </a>          }
+<a name="line789">789: </a>        }
+<a name="line790">790: </a>        adj = alloc_type().allocate(off[numCells]);
+<a name="line791">791: </a>        <font color="#4169E1">for</font>(int i = 0; i &lt; off[numCells]; ++i) {alloc_type().construct(adj+i, 0);}
+<a name="line792">792: </a>        <font color="#4169E1">for</font>(typename Mesh::label_sequence::iterator c_iter = cells-&gt;begin(); c_iter != cEnd; ++c_iter) {
+<a name="line793">793: </a>          const Obj&lt;typename Mesh::sieve_type::traits::coneSequence&gt;&amp;     faces = sieve-&gt;cone(*c_iter);
+<a name="line794">794: </a>          const typename Mesh::sieve_type::traits::coneSequence::iterator fEnd  = faces-&gt;end();
+
+<a name="line796">796: </a>          <font color="#4169E1">for</font>(typename Mesh::sieve_type::traits::coneSequence::iterator f_iter = faces-&gt;begin(); f_iter != fEnd; ++f_iter) {
+<a name="line797">797: </a>            const Obj&lt;typename Mesh::sieve_type::traits::supportSequence&gt;&amp;     neighbors = sieve-&gt;support(*f_iter);
+<a name="line798">798: </a>            const typename Mesh::sieve_type::traits::supportSequence::iterator nEnd      = neighbors-&gt;end();
+
+<a name="line800">800: </a>            <font color="#4169E1">for</font>(typename Mesh::sieve_type::traits::supportSequence::iterator n_iter = neighbors-&gt;begin(); n_iter != nEnd; ++n_iter) {
+<a name="line801">801: </a>              <font color="#4169E1">if</font> (*n_iter != *c_iter) adj[offset++] = *n_iter + cellOffset;
+<a name="line802">802: </a>            }
+<a name="line803">803: </a>            const Obj&lt;typename Mesh::sieve_type::traits::supportSequence&gt;&amp;     oNeighbors = overlapSieve-&gt;support(*f_iter);
+<a name="line804">804: </a>            const typename Mesh::sieve_type::traits::supportSequence::iterator onEnd      = oNeighbors-&gt;end();
+
+<a name="line806">806: </a>            <font color="#4169E1">for</font>(typename Mesh::sieve_type::traits::supportSequence::iterator n_iter = oNeighbors-&gt;begin(); n_iter != onEnd; ++n_iter) {
+<a name="line807">807: </a>              adj[offset++] = *n_iter + cellOffset;
+<a name="line808">808: </a>            }
+<a name="line809">809: </a>          }
+<a name="line810">810: </a>        }
+<a name="line811">811: </a>      } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (mesh-&gt;depth() == 1) {
+<a name="line812">812: </a><strong><font color="#FF0000">        std:</font></strong>:set&lt;typename Mesh::point_type&gt; *neighborCells = new std::set&lt;typename Mesh::point_type&gt;[numCells];
+<a name="line813">813: </a>        const int                            corners       = sieve-&gt;cone(*cells-&gt;begin())-&gt;size();
+<a name="line814">814: </a>        int                                  faceVertices;
+
+<a name="line816">816: </a>        <font color="#4169E1">if</font> (corners == dim+1) {
+<a name="line817">817: </a>          faceVertices = dim;
+<a name="line818">818: </a>        } <font color="#4169E1">else</font> <font color="#4169E1">if</font> ((dim == 2) &amp;&amp; (corners == 4)) {
+<a name="line819">819: </a>          faceVertices = 2;
+<a name="line820">820: </a>        } <font color="#4169E1">else</font> <font color="#4169E1">if</font> ((dim == 3) &amp;&amp; (corners == 8)) {
+<a name="line821">821: </a>          faceVertices = 4;
+<a name="line822">822: </a>        } <font color="#4169E1">else</font> <font color="#4169E1">if</font> ((dim == 2) &amp;&amp; (corners == 6)) {
+<a name="line823">823: </a>          faceVertices = 3;
+<a name="line824">824: </a>        } <font color="#4169E1">else</font> <font color="#4169E1">if</font> ((dim == 2) &amp;&amp; (corners == 9)) {
+<a name="line825">825: </a>          faceVertices = 3;
+<a name="line826">826: </a>        } <font color="#4169E1">else</font> <font color="#4169E1">if</font> ((dim == 3) &amp;&amp; (corners == 10)) {
+<a name="line827">827: </a>          faceVertices = 6;
+<a name="line828">828: </a>        } <font color="#4169E1">else</font> <font color="#4169E1">if</font> ((dim == 3) &amp;&amp; (corners == 27)) {
+<a name="line829">829: </a>          faceVertices = 9;
+<a name="line830">830: </a>        } <font color="#4169E1">else</font> {
+<a name="line831">831: </a>          throw ALE::Exception(<font color="#666666">"Could not determine number of face vertices"</font>);
+<a name="line832">832: </a>        }
+<a name="line833">833: </a>        <font color="#4169E1">for</font>(typename Mesh::label_sequence::iterator c_iter = cells-&gt;begin(); c_iter != cells-&gt;end(); ++c_iter) {
+<a name="line834">834: </a>            const Obj&lt;typename Mesh::sieve_type::traits::coneSequence&gt;&amp;     vertices = sieve-&gt;cone(*c_iter);
+<a name="line835">835: </a>            const typename Mesh::sieve_type::traits::coneSequence::iterator vEnd     = vertices-&gt;end();
+
+<a name="line837">837: </a>            <font color="#4169E1">for</font>(typename Mesh::sieve_type::traits::coneSequence::iterator v_iter = vertices-&gt;begin(); v_iter != vEnd; ++v_iter) {
+<a name="line838">838: </a>              const Obj&lt;typename Mesh::sieve_type::traits::supportSequence&gt;&amp;     neighbors = sieve-&gt;support(*v_iter);
+<a name="line839">839: </a>              const typename Mesh::sieve_type::traits::supportSequence::iterator nEnd      = neighbors-&gt;end();
+
+<a name="line841">841: </a>              <font color="#4169E1">for</font>(typename Mesh::sieve_type::traits::supportSequence::iterator n_iter = neighbors-&gt;begin(); n_iter != nEnd; ++n_iter) {
+<a name="line842">842: </a>                <font color="#4169E1">if</font> (*c_iter == *n_iter) <font color="#4169E1">continue</font>;
+<a name="line843">843: </a>                <font color="#4169E1">if</font> ((int) sieve-&gt;nMeet(*c_iter, *n_iter, 1)-&gt;size() == faceVertices) {
+<a name="line844">844: </a>                  <font color="#4169E1">if</font> ((*c_iter &lt; numCells) &amp;&amp; (*n_iter &lt; numCells)) {
+<a name="line845">845: </a>                    neighborCells[*c_iter].insert(*n_iter);
+<a name="line846">846: </a>                  } <font color="#4169E1">else</font> {
+<a name="line847">847: </a>                    typename Mesh::point_type e = *c_iter, n = *n_iter;
+
+<a name="line849">849: </a>                    <font color="#4169E1">if</font> (*c_iter &gt;= numCells) {
+<a name="line850">850: </a>                      <font color="#4169E1">if</font> (newCells.find(*c_iter) == newCells.end()) newCells[*c_iter] = --newCell;
+<a name="line851">851: </a>                      e = newCells[*c_iter];
+<a name="line852">852: </a>                    }
+<a name="line853">853: </a>                    <font color="#4169E1">if</font> (*n_iter &gt;= numCells) {
+<a name="line854">854: </a>                      <font color="#4169E1">if</font> (newCells.find(*n_iter) == newCells.end()) newCells[*n_iter] = --newCell;
+<a name="line855">855: </a>                      n = newCells[*n_iter];
+<a name="line856">856: </a>                    }
+<a name="line857">857: </a>                    neighborCells[e].insert(n);
+<a name="line858">858: </a>                  }
+<a name="line859">859: </a>                }
+<a name="line860">860: </a>              }
+<a name="line861">861: </a>            }
+<a name="line862">862: </a>          }
+<a name="line863">863: </a>          off[0] = 0;
+<a name="line864">864: </a>          <font color="#4169E1">for</font>(int c = 1; c &lt;= numCells; c++) {
+<a name="line865">865: </a>            off[c] = neighborCells[c-1].size() + off[c-1];
+<a name="line866">866: </a>          }
+<a name="line867">867: </a>          adj = alloc_type().allocate(off[numCells]);
+<a name="line868">868: </a>          <font color="#4169E1">for</font>(int i = 0; i &lt; off[numCells]; ++i) {alloc_type().construct(adj+i, 0);}
+<a name="line869">869: </a>          <font color="#4169E1">for</font>(int c = 0; c &lt; numCells; c++) {
+<a name="line870">870: </a>            <font color="#4169E1">for</font>(typename std::set&lt;typename Mesh::point_type&gt;::iterator n_iter = neighborCells[c].begin(); n_iter != neighborCells[c].end(); ++n_iter) {
+<a name="line871">871: </a>              adj[offset++] = *n_iter + cellOffset;
+<a name="line872">872: </a>            }
+<a name="line873">873: </a>          }
+<a name="line874">874: </a>          delete [] neighborCells;
+<a name="line875">875: </a>      } <font color="#4169E1">else</font> {
+<a name="line876">876: </a>        throw ALE::Exception(<font color="#666666">"Dual creation not defined for partially interpolated meshes"</font>);
+<a name="line877">877: </a>      }
+<a name="line878">878: </a>      <font color="#4169E1">if</font> (offset != off[numCells]) {
+<a name="line879">879: </a>        ostringstream msg;
+<a name="line880">880: </a>        msg &lt;&lt; <font color="#666666">"ERROR: Total number of neighbors "</font> &lt;&lt; offset &lt;&lt; <font color="#666666">" does not match the offset array "</font> &lt;&lt; off[numCells];
+<a name="line881">881: </a>        throw ALE::Exception(msg.str().c_str());
+<a name="line882">882: </a>      }
+<a name="line883">883: </a>      *numVertices = numCells;
+<a name="line884">884: </a>      *offsets     = off;
+<a name="line885">885: </a>      *adjacency   = adj;
+<a name="line886">886: </a>    }
+<a name="line887">887: </a>    template&lt;typename Mesh&gt;
+<a name="line888">888: </a>    static void buildDualCSRV(const Obj&lt;Mesh&gt;&amp; mesh, MeshManager&lt;Mesh&gt;&amp; manager, int *numVertices, int **offsets, int **adjacency, const bool zeroBase = true) {
+<a name="line889">889: </a>      const Obj&lt;typename Mesh::sieve_type&gt;&amp;         sieve        = mesh-&gt;getSieve();
+<a name="line890">890: </a>      const Obj&lt;typename Mesh::label_sequence&gt;&amp;     cells        = mesh-&gt;heightStratum(0);
+<a name="line891">891: </a>      const typename Mesh::label_sequence::iterator cEnd         = cells-&gt;end();
+<a name="line892">892: </a>      const int                                     numCells     = cells-&gt;size();
+<a name="line893">893: </a>      Obj&lt;typename Mesh::sieve_type&gt;                overlapSieve = new typename Mesh::sieve_type(mesh-&gt;comm(), mesh-&gt;debug());
+<a name="line894">894: </a>      int                                           offset       = 0;
+<a name="line895">895: </a>      const int                                     cellOffset   = zeroBase ? 0 : 1;
+<a name="line896">896: </a>      const int                                     dim          = mesh-&gt;getDimension();
+<a name="line897">897: </a><strong><font color="#FF0000">      std:</font></strong>:map&lt;typename Mesh::point_type, typename Mesh::point_type&gt; newCells;
+
+<a name="line899">899: </a>      // TODO: This is necessary <font color="#4169E1">for</font> parallel partitioning
+<a name="line900">900: </a>      //completion::scatterSupports(sieve, overlapSieve, mesh-&gt;getSendOverlap(), mesh-&gt;getRecvOverlap(), mesh);
+<a name="line901">901: </a>      overlapSieve-&gt;setChart(sieve-&gt;getChart());
+<a name="line902">902: </a>      overlapSieve-&gt;allocate();
+<a name="line903">903: </a>      <font color="#4169E1">if</font> (numCells == 0) {
+<a name="line904">904: </a>        *numVertices = 0;
+<a name="line905">905: </a>        *offsets     = NULL;
+<a name="line906">906: </a>        *adjacency   = NULL;
+<a name="line907">907: </a>        <font color="#4169E1">return</font>;
+<a name="line908">908: </a>      }
+<a name="line909">909: </a>      int *off = alloc_type().allocate(numCells+1);
+<a name="line910">910: </a>      int *adj;
+<a name="line911">911: </a>      <font color="#4169E1">for</font>(int i = 0; i &lt; numCells+1; ++i) {alloc_type().construct(off+i, 0);}
+<a name="line912">912: </a>      <font color="#4169E1">if</font> (mesh-&gt;depth() == dim) {
+<a name="line913">913: </a>        OffsetVisitor&lt;typename Mesh::sieve_type&gt; oV(*sieve, *overlapSieve, off);
+
+<a name="line915">915: </a>        <font color="#4169E1">for</font>(typename Mesh::label_sequence::iterator c_iter = cells-&gt;begin(); c_iter != cEnd; ++c_iter) {
+<a name="line916">916: </a>          sieve-&gt;cone(*c_iter, oV);
+<a name="line917">917: </a>        }
+<a name="line918">918: </a>        <font color="#4169E1">for</font>(int p = 1; p &lt;= numCells; ++p) {
+<a name="line919">919: </a>          off[p] = off[p] + off[p-1];
+<a name="line920">920: </a>        }
+<a name="line921">921: </a>        adj = alloc_type().allocate(off[numCells]);
+<a name="line922">922: </a>        <font color="#4169E1">for</font>(int i = 0; i &lt; off[numCells]; ++i) {alloc_type().construct(adj+i, 0);}
+<a name="line923">923: </a>        AdjVisitor&lt;typename Mesh::sieve_type&gt; aV(adj, zeroBase);
+<a name="line924">924: </a><strong><font color="#FF0000">        ISieveVisitor:</font></strong>:SupportVisitor&lt;typename Mesh::sieve_type, AdjVisitor&lt;typename Mesh::sieve_type&gt; &gt; sV(*sieve, aV);
+<a name="line925">925: </a><strong><font color="#FF0000">        ISieveVisitor:</font></strong>:SupportVisitor&lt;typename Mesh::sieve_type, AdjVisitor&lt;typename Mesh::sieve_type&gt; &gt; ovSV(*overlapSieve, aV);
+
+<a name="line927">927: </a>        <font color="#4169E1">for</font>(typename Mesh::label_sequence::iterator c_iter = cells-&gt;begin(); c_iter != cEnd; ++c_iter) {
+<a name="line928">928: </a>          aV.setCell(*c_iter);
+<a name="line929">929: </a>          sieve-&gt;cone(*c_iter, sV);
+<a name="line930">930: </a>          sieve-&gt;cone(*c_iter, ovSV);
+<a name="line931">931: </a>        }
+<a name="line932">932: </a>        offset = aV.getOffset();
+<a name="line933">933: </a>      } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (mesh-&gt;depth() == 1) {
+<a name="line934">934: </a>        <font color="#4169E1">typedef</font> MeetVisitor&lt;typename Mesh::sieve_type, MeshManager&lt;Mesh&gt;, SimpleFaceRecognizer&lt;Mesh&gt; &gt; mv_type;
+<a name="line935">935: </a>        <font color="#4169E1">typedef</font> typename ISieveVisitor::SupportVisitor&lt;typename Mesh::sieve_type, mv_type&gt;       sv_type;
+<a name="line936">936: </a>        SimpleFaceRecognizer&lt;Mesh&gt; faceRecognizer(*mesh);
+
+<a name="line938">938: </a>        mv_type mV(*sieve, manager, faceRecognizer, numCells);
+<a name="line939">939: </a>        sv_type sV(*sieve, mV);
+
+<a name="line941">941: </a>        <font color="#4169E1">for</font>(typename Mesh::label_sequence::iterator c_iter = cells-&gt;begin(); c_iter != cells-&gt;end(); ++c_iter) {
+<a name="line942">942: </a>          mV.setCell(*c_iter);
+<a name="line943">943: </a>          sieve-&gt;cone(*c_iter, sV);
+<a name="line944">944: </a>        }
+<a name="line945">945: </a>        const typename mv_type::neighbors_type *neighborCells = mV.getNeighbors();
+
+<a name="line947">947: </a>        off[0] = 0;
+<a name="line948">948: </a>        <font color="#4169E1">for</font>(int c = 1; c &lt;= numCells; c++) {
+<a name="line949">949: </a>          off[c] = neighborCells[c-1].size() + off[c-1];
+<a name="line950">950: </a>        }
+<a name="line951">951: </a>        adj = alloc_type().allocate(off[numCells]);
+<a name="line952">952: </a>        <font color="#4169E1">for</font>(int i = 0; i &lt; off[numCells]; ++i) {alloc_type().construct(adj+i, 0);}
+<a name="line953">953: </a>        <font color="#4169E1">for</font>(int c = 0; c &lt; numCells; c++) {
+<a name="line954">954: </a>          <font color="#4169E1">for</font>(typename mv_type::neighbors_type::const_iterator n_iter = neighborCells[c].begin(); n_iter != neighborCells[c].end(); ++n_iter) {
+<a name="line955">955: </a>            //std::cout &lt;&lt; <font color="#666666">"Adding dual edge from "</font> &lt;&lt; c &lt;&lt; <font color="#666666">" to "</font> &lt;&lt; *n_iter &lt;&lt; std::endl;
+<a name="line956">956: </a>            adj[offset++] = *n_iter + cellOffset;
+<a name="line957">957: </a>          }
+<a name="line958">958: </a>        }
+<a name="line959">959: </a>      } <font color="#4169E1">else</font> {
+<a name="line960">960: </a>        throw ALE::Exception(<font color="#666666">"Dual creation not defined for partially interpolated meshes"</font>);
+<a name="line961">961: </a>      }
+<a name="line962">962: </a>      <font color="#4169E1">if</font> (offset != off[numCells]) {
+<a name="line963">963: </a>        ostringstream msg;
+<a name="line964">964: </a>        msg &lt;&lt; <font color="#666666">"ERROR: Total number of neighbors "</font> &lt;&lt; offset &lt;&lt; <font color="#666666">" does not match the offset array "</font> &lt;&lt; off[numCells];
+<a name="line965">965: </a>        throw ALE::Exception(msg.str().c_str());
+<a name="line966">966: </a>      }
+<a name="line967">967: </a>      *numVertices = numCells;
+<a name="line968">968: </a>      *offsets     = off;
+<a name="line969">969: </a>      *adjacency   = adj;
+<a name="line970">970: </a>    }
+<a name="line971">971: </a>    // This produces a hypergraph (each face is a vertex and each cell is a hyperedge)
+<a name="line972">972: </a>    //   numbering: A contiguous numbering of the faces
+<a name="line973">973: </a>    //   numEdges:  The number of edges in the hypergraph
+<a name="line974">974: </a>    //   adjacency: The vertices in each edge
+<a name="line975">975: </a>    template&lt;typename Mesh&gt;
+<a name="line976">976: </a>    static void buildFaceDualCSR(const Obj&lt;Mesh&gt;&amp; mesh, const Obj&lt;typename Mesh::numbering_type&gt;&amp; numbering, int *numEdges, int **offsets, int **adjacency, const bool zeroBase = true) {
+<a name="line977">977: </a>      const Obj&lt;typename Mesh::sieve_type&gt;&amp;         sieve = mesh-&gt;getSieve();
+<a name="line978">978: </a>      const Obj&lt;typename Mesh::label_sequence&gt;&amp;     cells = mesh-&gt;heightStratum(0);
+<a name="line979">979: </a>      const typename Mesh::label_sequence::iterator cEnd  = cells-&gt;end();
+<a name="line980">980: </a>      const int faceOffset = zeroBase ? 0 : 1;
+<a name="line981">981: </a>      int       numCells = cells-&gt;size();
+<a name="line982">982: </a>      int       c        = 1;
+
+<a name="line984">984: </a>      <font color="#4169E1">if</font> (mesh-&gt;depth() != mesh-&gt;getDimension()) {throw ALE::Exception(<font color="#666666">"Not yet implemented for non-interpolated meshes"</font>);}
+<a name="line985">985: </a>      int *off = alloc_type().allocate(numCells+1);
+<a name="line986">986: </a>      <font color="#4169E1">for</font>(int i = 0; i &lt; numCells+1; ++i) {alloc_type().construct(off+i, 0);}
+<a name="line987">987: </a>      <font color="#4169E1">for</font>(typename Mesh::label_sequence::iterator c_iter = cells-&gt;begin(); c_iter != cEnd; ++c_iter, ++c) {
+<a name="line988">988: </a>        off[c] = sieve-&gt;cone(*c_iter)-&gt;size() + off[c-1];
+<a name="line989">989: </a>      }
+<a name="line990">990: </a>      int *adj = alloc_type().allocate(off[numCells]);
+<a name="line991">991: </a>      <font color="#4169E1">for</font>(int i = 0; i &lt; off[numCells]; ++i) {alloc_type().construct(adj+i, 0);}
+<a name="line992">992: </a>      int  offset = 0;
+<a name="line993">993: </a>      <font color="#4169E1">for</font>(typename Mesh::label_sequence::iterator c_iter = cells-&gt;begin(); c_iter != cEnd; ++c_iter) {
+<a name="line994">994: </a>        const Obj&lt;typename Mesh::sieve_type::traits::coneSequence&gt;&amp;     faces = sieve-&gt;cone(*c_iter);
+<a name="line995">995: </a>        const typename Mesh::sieve_type::traits::coneSequence::iterator fEnd  = faces-&gt;end();
+
+<a name="line997">997: </a>        <font color="#4169E1">for</font>(typename Mesh::sieve_type::traits::coneSequence::iterator f_iter = faces-&gt;begin(); f_iter != fEnd; ++f_iter, ++offset) {
+<a name="line998">998: </a>          adj[offset] = numbering-&gt;getIndex(*f_iter) + faceOffset;
+<a name="line999">999: </a>        }
+<a name="line1000">1000: </a>      }
+<a name="line1001">1001: </a>      <font color="#4169E1">if</font> (offset != off[numCells]) {
+<a name="line1002">1002: </a>        ostringstream msg;
+<a name="line1003">1003: </a>        msg &lt;&lt; <font color="#666666">"ERROR: Total number of neighbors "</font> &lt;&lt; offset &lt;&lt; <font color="#666666">" does not match the offset array "</font> &lt;&lt; off[numCells];
+<a name="line1004">1004: </a>        throw ALE::Exception(msg.str().c_str());
+<a name="line1005">1005: </a>      }
+<a name="line1006">1006: </a>      *numEdges  = numCells;
+<a name="line1007">1007: </a>      *offsets   = off;
+<a name="line1008">1008: </a>      *adjacency = adj;
+<a name="line1009">1009: </a>    }
+<a name="line1010">1010: </a>    template&lt;typename Mesh&gt;
+<a name="line1011">1011: </a>    static void buildFaceDualCSRV(const Obj&lt;Mesh&gt;&amp; mesh, const Obj&lt;typename Mesh::numbering_type&gt;&amp; numbering, int *numEdges, int **offsets, int **adjacency, const bool zeroBase = true) {
+<a name="line1012">1012: </a>      throw ALE::Exception(<font color="#666666">"Not implemented"</font>);
+<a name="line1013">1013: </a>    }
+<a name="line1014">1014: </a>    static void destroyCSR(int numPoints, int *offsets, int *adjacency) {
+<a name="line1015">1015: </a>      <font color="#4169E1">if</font> (adjacency) {
+<a name="line1016">1016: </a>        <font color="#4169E1">for</font>(int i = 0; i &lt; offsets[numPoints]; ++i) {alloc_type().destroy(adjacency+i);}
+<a name="line1017">1017: </a>        alloc_type().deallocate(adjacency, offsets[numPoints]);
+<a name="line1018">1018: </a>      }
+<a name="line1019">1019: </a>      <font color="#4169E1">if</font> (offsets) {
+<a name="line1020">1020: </a>        <font color="#4169E1">for</font>(int i = 0; i &lt; numPoints+1; ++i) {alloc_type().destroy(offsets+i);}
+<a name="line1021">1021: </a>        alloc_type().deallocate(offsets, numPoints+1);
+<a name="line1022">1022: </a>      }
+<a name="line1023">1023: </a>    }
+<a name="line1024">1024: </a>    template&lt;typename OldSection, typename Partition, typename Renumbering, typename NewSection&gt;
+<a name="line1025">1025: </a>    static void createLocalSection(const Obj&lt;OldSection&gt;&amp; oldSection, const Obj&lt;Partition&gt;&amp; partition, Renumbering&amp; renumbering, const Obj&lt;NewSection&gt;&amp; newSection) {
+<a name="line1026">1026: </a>      const typename Partition::value_type *points    = partition-&gt;restrictPoint(oldSection-&gt;commRank());
+<a name="line1027">1027: </a>      const int                             numPoints = partition-&gt;getFiberDimension(oldSection-&gt;commRank());
+
+<a name="line1029">1029: </a>      <font color="#4169E1">for</font>(int p = 0; p &lt; numPoints; ++p) {
+<a name="line1030">1030: </a>        <font color="#4169E1">if</font> (oldSection-&gt;hasPoint(points[p])) {
+<a name="line1031">1031: </a>          newSection-&gt;setFiberDimension(renumbering[points[p]], oldSection-&gt;getFiberDimension(points[p]));
+<a name="line1032">1032: </a>        }
+<a name="line1033">1033: </a>      }
+<a name="line1034">1034: </a>      <font color="#4169E1">if</font> (numPoints) {newSection-&gt;allocatePoint();}
+<a name="line1035">1035: </a>      <font color="#4169E1">for</font>(int p = 0; p &lt; numPoints; ++p) {
+<a name="line1036">1036: </a>        <font color="#4169E1">if</font> (oldSection-&gt;hasPoint(points[p])) {
+<a name="line1037">1037: </a>          newSection-&gt;updatePointAll(renumbering[points[p]], oldSection-&gt;restrictPoint(points[p]));
+<a name="line1038">1038: </a>        }
+<a name="line1039">1039: </a>      }
+<a name="line1040">1040: </a>    }
+<a name="line1041">1041: </a>    // Specialize to ArrowSection
+<a name="line1042">1042: </a>    template&lt;typename OldSection, typename Partition, typename Renumbering&gt;
+<a name="line1043">1043: </a>    static void createLocalSection(const Obj&lt;OldSection&gt;&amp; oldSection, const Obj&lt;Partition&gt;&amp; partition, Renumbering&amp; renumbering, const Obj&lt;UniformSection&lt;MinimalArrow&lt;int,int&gt;,int&gt; &gt;&amp; newSection) {
+<a name="line1044">1044: </a>      <font color="#4169E1">typedef</font> UniformSection&lt;MinimalArrow&lt;int,int&gt;,int&gt; NewSection;
+<a name="line1045">1045: </a>      const typename Partition::value_type    *points    = partition-&gt;restrictPoint(oldSection-&gt;commRank());
+<a name="line1046">1046: </a>      const int                                numPoints = partition-&gt;getFiberDimension(oldSection-&gt;commRank());
+<a name="line1047">1047: </a>      const typename OldSection::chart_type&amp;   oldChart  = oldSection-&gt;getChart();
+<a name="line1048">1048: </a><strong><font color="#FF0000">      std:</font></strong>:set&lt;typename Partition::value_type&gt; myPoints;
+
+<a name="line1050">1050: </a>      <font color="#4169E1">for</font>(int p = 0; p &lt; numPoints; ++p) {
+<a name="line1051">1051: </a>        myPoints.insert(points[p]);
+<a name="line1052">1052: </a>      }
+<a name="line1053">1053: </a>      <font color="#4169E1">for</font>(typename OldSection::chart_type::const_iterator c_iter = oldChart.begin(); c_iter != oldChart.end(); ++c_iter) {
+<a name="line1054">1054: </a>        <font color="#4169E1">if</font> (myPoints.count(c_iter-&gt;source) &amp;&amp; myPoints.count(c_iter-&gt;target)) {
+<a name="line1055">1055: </a>          newSection-&gt;setFiberDimension(typename OldSection::point_type(renumbering[c_iter-&gt;source], renumbering[c_iter-&gt;target]), oldSection-&gt;getFiberDimension(*c_iter));
+<a name="line1056">1056: </a>        }
+<a name="line1057">1057: </a>      }
+<a name="line1058">1058: </a>      <font color="#4169E1">if</font> (oldChart.size()) {newSection-&gt;allocatePoint();}
+<a name="line1059">1059: </a>      <font color="#4169E1">for</font>(typename OldSection::chart_type::const_iterator c_iter = oldChart.begin(); c_iter != oldChart.end(); ++c_iter) {
+<a name="line1060">1060: </a>        <font color="#4169E1">if</font> (myPoints.count(c_iter-&gt;source) &amp;&amp; myPoints.count(c_iter-&gt;target)) {
+<a name="line1061">1061: </a>          const typename OldSection::value_type *values = oldSection-&gt;restrictPoint(*c_iter);
+
+<a name="line1063">1063: </a>          newSection-&gt;updatePointAll(typename OldSection::point_type(renumbering[c_iter-&gt;source], renumbering[c_iter-&gt;target]), values);
+<a name="line1064">1064: </a>        }
+<a name="line1065">1065: </a>      }
+<a name="line1066">1066: </a>    }
+<a name="line1067">1067: </a>    template&lt;typename Sifter, typename Section, typename Renumbering&gt;
+<a name="line1068">1068: </a>    static void createLocalSifter(const Obj&lt;Sifter&gt;&amp; sifter, const Obj&lt;Section&gt;&amp; partition, Renumbering&amp; renumbering, const Obj&lt;Sifter&gt;&amp; localSifter) {
+<a name="line1069">1069: </a>      const typename Section::value_type *points    = partition-&gt;restrictPoint(sifter-&gt;commRank());
+<a name="line1070">1070: </a>      const int                           numPoints = partition-&gt;getFiberDimension(sifter-&gt;commRank());
+
+<a name="line1072">1072: </a>      <font color="#4169E1">for</font>(int p = 0; p &lt; numPoints; ++p) {
+<a name="line1073">1073: </a>        const Obj&lt;typename Sifter::traits::coneSequence&gt;&amp;     cone = sifter-&gt;cone(points[p]);
+<a name="line1074">1074: </a>        const typename Sifter::traits::coneSequence::iterator cEnd = cone-&gt;end();
+
+<a name="line1076">1076: </a>        <font color="#4169E1">for</font>(typename Sifter::traits::coneSequence::iterator c_iter = cone-&gt;begin(); c_iter != cEnd; ++c_iter) {
+<a name="line1077">1077: </a>          localSifter-&gt;addArrow(*c_iter, renumbering[points[p]]);
+<a name="line1078">1078: </a>        }
+<a name="line1079">1079: </a>      }
+<a name="line1080">1080: </a>    }
+<a name="line1081">1081: </a>    template&lt;typename Sieve, typename Section, typename Renumbering&gt;
+<a name="line1082">1082: </a>    static void createLocalSieve(const Obj&lt;Sieve&gt;&amp; sieve, const Obj&lt;Section&gt;&amp; partition, Renumbering&amp; renumbering, const Obj&lt;Sieve&gt;&amp; localSieve, const int height = 0) {
+<a name="line1083">1083: </a>      const typename Section::value_type *points    = partition-&gt;restrictPoint(sieve-&gt;commRank());
+<a name="line1084">1084: </a>      const int                           numPoints = partition-&gt;getFiberDimension(sieve-&gt;commRank());
+
+<a name="line1086">1086: </a>      <font color="#4169E1">for</font>(int p = 0; p &lt; numPoints; ++p) {
+<a name="line1087">1087: </a>        Obj&lt;typename Sieve::coneSet&gt; current = new typename Sieve::coneSet();
+<a name="line1088">1088: </a>        Obj&lt;typename Sieve::coneSet&gt; next    = new typename Sieve::coneSet();
+<a name="line1089">1089: </a>        Obj&lt;typename Sieve::coneSet&gt; tmp;
+
+<a name="line1091">1091: </a>        current-&gt;insert(points[p]);
+<a name="line1092">1092: </a>        <font color="#4169E1">while</font>(current-&gt;size()) {
+<a name="line1093">1093: </a>          <font color="#4169E1">for</font>(typename Sieve::coneSet::const_iterator p_iter = current-&gt;begin(); p_iter != current-&gt;end(); ++p_iter) {
+<a name="line1094">1094: </a>            const Obj&lt;typename Sieve::traits::coneSequence&gt;&amp; cone = sieve-&gt;cone(*p_iter);
+
+<a name="line1096">1096: </a>            <font color="#4169E1">for</font>(typename Sieve::traits::coneSequence::iterator c_iter = cone-&gt;begin(); c_iter != cone-&gt;end(); ++c_iter) {
+<a name="line1097">1097: </a>              localSieve-&gt;addArrow(renumbering[*c_iter], renumbering[*p_iter], c_iter.color());
+<a name="line1098">1098: </a>              next-&gt;insert(*c_iter);
+<a name="line1099">1099: </a>            }
+<a name="line1100">1100: </a>          }
+<a name="line1101">1101: </a>          tmp = current; current = next; next = tmp;
+<a name="line1102">1102: </a>          next-&gt;clear();
+<a name="line1103">1103: </a>        }
+<a name="line1104">1104: </a>        <font color="#4169E1">if</font> (height) {
+<a name="line1105">1105: </a>          current-&gt;insert(points[p]);
+<a name="line1106">1106: </a>          <font color="#4169E1">while</font>(current-&gt;size()) {
+<a name="line1107">1107: </a>            <font color="#4169E1">for</font>(typename Sieve::coneSet::const_iterator p_iter = current-&gt;begin(); p_iter != current-&gt;end(); ++p_iter) {
+<a name="line1108">1108: </a>              const Obj&lt;typename Sieve::traits::supportSequence&gt;&amp; support = sieve-&gt;support(*p_iter);
+
+<a name="line1110">1110: </a>              <font color="#4169E1">for</font>(typename Sieve::traits::supportSequence::iterator s_iter = support-&gt;begin(); s_iter != support-&gt;end(); ++s_iter) {
+<a name="line1111">1111: </a>                localSieve-&gt;addArrow(renumbering[*p_iter], renumbering[*s_iter], s_iter.color());
+<a name="line1112">1112: </a>                next-&gt;insert(*s_iter);
+<a name="line1113">1113: </a>              }
+<a name="line1114">1114: </a>            }
+<a name="line1115">1115: </a>            tmp = current; current = next; next = tmp;
+<a name="line1116">1116: </a>            next-&gt;clear();
+<a name="line1117">1117: </a>          }
+<a name="line1118">1118: </a>        }
+<a name="line1119">1119: </a>      }
+<a name="line1120">1120: </a>    }
+<a name="line1121">1121: </a>    template&lt;typename Mesh, typename Section, typename Renumbering&gt;
+<a name="line1122">1122: </a>    static void createLocalMesh(const Obj&lt;Mesh&gt;&amp; mesh, const Obj&lt;Section&gt;&amp; partition, Renumbering&amp; renumbering, const Obj&lt;Mesh&gt;&amp; localMesh, const int height = 0) {
+<a name="line1123">1123: </a>      const Obj&lt;typename Mesh::sieve_type&gt;&amp; sieve      = mesh-&gt;getSieve();
+<a name="line1124">1124: </a>      const Obj&lt;typename Mesh::sieve_type&gt;&amp; localSieve = localMesh-&gt;getSieve();
+
+<a name="line1126">1126: </a>      createLocalSieve(sieve, partition, renumbering, localSieve, height);
+<a name="line1127">1127: </a>    }
+<a name="line1128">1128: </a>    template&lt;typename Sieve, typename Section, typename Renumbering&gt;
+<a name="line1129">1129: </a>    static void sizeLocalSieveV(const Obj&lt;Sieve&gt;&amp; sieve, const Obj&lt;Section&gt;&amp; partition, Renumbering&amp; renumbering, const Obj&lt;Sieve&gt;&amp; localSieve, const int height = 0) {
+<a name="line1130">1130: </a>      <font color="#4169E1">typedef</font> std::set&lt;typename Sieve::point_type&gt; pointSet;
+<a name="line1131">1131: </a>      const typename Section::value_type *points    = partition-&gt;restrictPoint(sieve-&gt;commRank());
+<a name="line1132">1132: </a>      const int                           numPoints = partition-&gt;getFiberDimension(sieve-&gt;commRank());
+<a name="line1133">1133: </a>      int                                 maxSize   = std::max(0, std::max(sieve-&gt;getMaxConeSize(), sieve-&gt;getMaxSupportSize()));
+<a name="line1134">1134: </a>      const pointSet                      pSet(points, &amp;points[numPoints]);
+<a name="line1135">1135: </a><strong><font color="#FF0000">      ISieveVisitor:</font></strong>:FilteredPointRetriever&lt;Sieve,pointSet,Renumbering&gt; fV(pSet, renumbering, maxSize);
+
+<a name="line1137">1137: </a>      <font color="#4169E1">for</font>(int p = 0; p &lt; numPoints; ++p) {
+<a name="line1138">1138: </a>        sieve-&gt;cone(points[p], fV);
+<a name="line1139">1139: </a>        localSieve-&gt;setConeSize(renumbering[points[p]], fV.getSize());
+<a name="line1140">1140: </a>        fV.clear();
+<a name="line1141">1141: </a>        sieve-&gt;support(points[p], fV);
+<a name="line1142">1142: </a>        localSieve-&gt;setSupportSize(renumbering[points[p]], fV.getSize());
+<a name="line1143">1143: </a>        fV.clear();
+<a name="line1144">1144: </a>      }
+<a name="line1145">1145: </a>    }
+<a name="line1146">1146: </a>    template&lt;typename Mesh, typename Section, typename Renumbering&gt;
+<a name="line1147">1147: </a>    static void sizeLocalMeshV(const Obj&lt;Mesh&gt;&amp; mesh, const Obj&lt;Section&gt;&amp; partition, Renumbering&amp; renumbering, const Obj&lt;Mesh&gt;&amp; localMesh, const int height = 0) {
+<a name="line1148">1148: </a>      const Obj&lt;typename Mesh::sieve_type&gt;&amp; sieve      = mesh-&gt;getSieve();
+<a name="line1149">1149: </a>      const Obj&lt;typename Mesh::sieve_type&gt;&amp; localSieve = localMesh-&gt;getSieve();
+
+<a name="line1151">1151: </a>      sizeLocalSieveV(sieve, partition, renumbering, localSieve, height);
+<a name="line1152">1152: </a>    }
+<a name="line1153">1153: </a>    template&lt;typename Sieve, typename Section, typename Renumbering&gt;
+<a name="line1154">1154: </a>    static void createLocalLabelV(const Obj&lt;Sieve&gt;&amp; sieve, const Obj&lt;Section&gt;&amp; partition, Renumbering&amp; renumbering, const Obj&lt;Sieve&gt;&amp; localSieve, const int height = 0) {
+<a name="line1155">1155: </a>      <font color="#4169E1">typedef</font> std::set&lt;typename Sieve::point_type&gt; pointSet;
+<a name="line1156">1156: </a>      <font color="#4169E1">typedef</font> ISieveVisitor::FilteredPointRetriever&lt;Sieve,pointSet,Renumbering&gt; visitor_type;
+<a name="line1157">1157: </a>      const typename Section::value_type *points    = partition-&gt;restrictPoint(sieve-&gt;commRank());
+<a name="line1158">1158: </a>      const int                           numPoints = partition-&gt;getFiberDimension(sieve-&gt;commRank());
+<a name="line1159">1159: </a>      int                                 maxSize   = std::max(0, std::max(sieve-&gt;getMaxConeSize(), sieve-&gt;getMaxSupportSize()));
+<a name="line1160">1160: </a>      typename Sieve::point_type         *oPoints   = new typename Sieve::point_type[std::max(1, sieve-&gt;getMaxConeSize())];
+<a name="line1161">1161: </a>      int                                *oOrients  = new int[std::max(1, sieve-&gt;getMaxConeSize())];
+<a name="line1162">1162: </a>      const pointSet                      pSet(points, &amp;points[numPoints]);
+<a name="line1163">1163: </a>      visitor_type fV(pSet, renumbering, maxSize);
+
+<a name="line1165">1165: </a>      <font color="#4169E1">for</font>(int p = 0; p &lt; numPoints; ++p) {
+<a name="line1166">1166: </a>        fV.useRenumbering(false);
+<a name="line1167">1167: </a>        sieve-&gt;orientedCone(points[p], fV);
+<a name="line1168">1168: </a>        const typename visitor_type::oriented_point_type *q = fV.getOrientedPoints();
+<a name="line1169">1169: </a>        const int                                         n = fV.getOrientedSize();
+<a name="line1170">1170: </a>        <font color="#4169E1">for</font>(int i = 0; i &lt; n; ++i) {
+<a name="line1171">1171: </a>          oPoints[i]  = q[i].first;
+<a name="line1172">1172: </a>          oOrients[i] = q[i].second;
+<a name="line1173">1173: </a>        }
+<a name="line1174">1174: </a>        localSieve-&gt;setCone(oPoints, renumbering[points[p]]);
+<a name="line1175">1175: </a>        localSieve-&gt;setConeOrientation(oOrients, renumbering[points[p]]);
+<a name="line1176">1176: </a>        fV.clear();
+<a name="line1177">1177: </a>        fV.useRenumbering(true);
+<a name="line1178">1178: </a>        sieve-&gt;support(points[p], fV);
+<a name="line1179">1179: </a>        <font color="#4169E1">if</font> (fV.getSize()) {localSieve-&gt;setSupport(points[p], fV.getPoints());}
+<a name="line1180">1180: </a>        fV.clear();
+<a name="line1181">1181: </a>      }
+<a name="line1182">1182: </a>      delete [] oPoints;
+<a name="line1183">1183: </a>      delete [] oOrients;
+<a name="line1184">1184: </a>    }
+<a name="line1185">1185: </a>    template&lt;typename Sieve, typename Section, typename Renumbering&gt;
+<a name="line1186">1186: </a>    static void createLocalSieveV(const Obj&lt;Sieve&gt;&amp; sieve, const Obj&lt;Section&gt;&amp; partition, Renumbering&amp; renumbering, const Obj&lt;Sieve&gt;&amp; localSieve, const int height = 0) {
+<a name="line1187">1187: </a>      <font color="#4169E1">typedef</font> std::set&lt;typename Sieve::point_type&gt; pointSet;
+<a name="line1188">1188: </a>      <font color="#4169E1">typedef</font> ISieveVisitor::FilteredPointRetriever&lt;Sieve,pointSet,Renumbering&gt; visitor_type;
+<a name="line1189">1189: </a>      const typename Section::value_type *points    = partition-&gt;restrictPoint(sieve-&gt;commRank());
+<a name="line1190">1190: </a>      const int                           numPoints = partition-&gt;getFiberDimension(sieve-&gt;commRank());
+<a name="line1191">1191: </a>      int                                 maxSize   = std::max(0, std::max(sieve-&gt;getMaxConeSize(), sieve-&gt;getMaxSupportSize()));
+<a name="line1192">1192: </a>      typename Sieve::point_type         *oPoints   = new typename Sieve::point_type[std::max(1, sieve-&gt;getMaxConeSize())];
+<a name="line1193">1193: </a>      int                                *oOrients  = new int[std::max(1, sieve-&gt;getMaxConeSize())];
+<a name="line1194">1194: </a>      const pointSet                      pSet(points, &amp;points[numPoints]);
+<a name="line1195">1195: </a>      visitor_type fV(pSet, renumbering, maxSize);
+
+<a name="line1197">1197: </a>      <font color="#4169E1">for</font>(int p = 0; p &lt; numPoints; ++p) {
+<a name="line1198">1198: </a>        ///sieve-&gt;cone(points[p], fV);
+<a name="line1199">1199: </a>        ///localSiaeve-&gt;setCone(fV.getPoints(), renumbering[points[p]]);
+<a name="line1200">1200: </a>        sieve-&gt;orientedCone(points[p], fV);
+<a name="line1201">1201: </a>        const typename visitor_type::oriented_point_type *q = fV.getOrientedPoints();
+<a name="line1202">1202: </a>        const int                                         n = fV.getOrientedSize();
+<a name="line1203">1203: </a>        <font color="#4169E1">for</font>(int i = 0; i &lt; n; ++i) {
+<a name="line1204">1204: </a>          oPoints[i]  = q[i].first;
+<a name="line1205">1205: </a>          oOrients[i] = q[i].second;
+<a name="line1206">1206: </a>        }
+<a name="line1207">1207: </a>        localSieve-&gt;setCone(oPoints, renumbering[points[p]]);
+<a name="line1208">1208: </a>        localSieve-&gt;setConeOrientation(oOrients, renumbering[points[p]]);
+<a name="line1209">1209: </a>        fV.clear();
+<a name="line1210">1210: </a>        sieve-&gt;support(points[p], fV);
+<a name="line1211">1211: </a>        localSieve-&gt;setSupport(renumbering[points[p]], fV.getPoints());
+<a name="line1212">1212: </a>        fV.clear();
+<a name="line1213">1213: </a>      }
+<a name="line1214">1214: </a>      delete [] oPoints;
+<a name="line1215">1215: </a>      delete [] oOrients;
+<a name="line1216">1216: </a>    }
+<a name="line1217">1217: </a>    template&lt;typename Mesh, typename Section, typename Renumbering&gt;
+<a name="line1218">1218: </a>    static void createLocalMeshV(const Obj&lt;Mesh&gt;&amp; mesh, const Obj&lt;Section&gt;&amp; partition, Renumbering&amp; renumbering, const Obj&lt;Mesh&gt;&amp; localMesh, const int height = 0) {
+<a name="line1219">1219: </a>      const Obj&lt;typename Mesh::sieve_type&gt;&amp; sieve      = mesh-&gt;getSieve();
+<a name="line1220">1220: </a>      const Obj&lt;typename Mesh::sieve_type&gt;&amp; localSieve = localMesh-&gt;getSieve();
+
+<a name="line1222">1222: </a>      createLocalSieveV(sieve, partition, renumbering, localSieve, height);
+<a name="line1223">1223: </a>    }
+<a name="line1224">1224: </a><strong><font color="#FF0000">  public:</font></strong> // Partitioning
+<a name="line1225">1225: </a>    //   partition:    Should be properly allocated on input
+<a name="line1226">1226: </a>    //   height:       Height of the point set to uniquely partition
+<a name="line1227">1227: </a>    // TODO: Could rebind assignment section to the type of the output
+<a name="line1228">1228: </a>    template&lt;typename Mesh, typename Section&gt;
+<a name="line1229">1229: </a>    static void createPartition(const Obj&lt;Mesh&gt;&amp; mesh, const Obj&lt;Section&gt;&amp; partition, const int height = 0) {
+<a name="line1230">1230: </a>      MeshManager&lt;Mesh&gt; manager(mesh, height);
+<a name="line1231">1231: </a>      int              *start     = NULL;
+<a name="line1232">1232: </a>      int              *adjacency = NULL;
+
+<a name="line1234">1234: </a>      <font color="#4169E1">if</font> (height == 0) {
+<a name="line1235">1235: </a>        int numVertices;
+
+<a name="line1237">1237: </a>        buildDualCSR(mesh, &amp;numVertices, &amp;start, &amp;adjacency, GraphPartitioner::zeroBase());
+<a name="line1238">1238: </a>        GraphPartitioner().partition(numVertices, start, adjacency, partition, manager);
+<a name="line1239">1239: </a>        destroyCSR(numVertices, start, adjacency);
+<a name="line1240">1240: </a>      } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (height == 1) {
+<a name="line1241">1241: </a>        int numEdges;
+
+<a name="line1243">1243: </a>        buildFaceDualCSR(mesh, mesh-&gt;getFactory()-&gt;getNumbering(mesh, mesh-&gt;depth()-1), &amp;numEdges, &amp;start, &amp;adjacency, GraphPartitioner::zeroBase());
+<a name="line1244">1244: </a>        GraphPartitioner().partition(numEdges, start, adjacency, partition, manager);
+<a name="line1245">1245: </a>        destroyCSR(numEdges, start, adjacency);
+<a name="line1246">1246: </a>      } <font color="#4169E1">else</font> {
+<a name="line1247">1247: </a>        throw ALE::Exception(<font color="#666666">"Invalid partition height"</font>);
+<a name="line1248">1248: </a>      }
+<a name="line1249">1249: </a>    }
+<a name="line1250">1250: </a>    template&lt;typename Mesh, typename Section&gt;
+<a name="line1251">1251: </a>    static void createPartitionV(const Obj&lt;Mesh&gt;&amp; mesh, const Obj&lt;Section&gt;&amp; partition, const int height = 0) {
+<a name="line1252">1252: </a>      MeshManager&lt;Mesh&gt; manager(mesh, height);
+<a name="line1253">1253: </a>      int              *start     = NULL;
+<a name="line1254">1254: </a>      int              *adjacency = NULL;
+
+<a name="line1256">1256: </a><strong><font color="#FF0000">      PETSc:</font></strong>:Log::Event(<font color="#666666">"PartitionCreate"</font>).begin();
+<a name="line1257">1257: </a>      <font color="#4169E1">if</font> (height == 0) {
+<a name="line1258">1258: </a>        int numVertices;
+
+<a name="line1260">1260: </a>        buildDualCSRV(mesh, manager, &amp;numVertices, &amp;start, &amp;adjacency, GraphPartitioner::zeroBase());
+<a name="line1261">1261: </a>        GraphPartitioner().partition(numVertices, start, adjacency, partition, manager);
+<a name="line1262">1262: </a>        destroyCSR(numVertices, start, adjacency);
+<a name="line1263">1263: </a>      } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (height == 1) {
+<a name="line1264">1264: </a>        int numEdges;
+
+<a name="line1266">1266: </a>        throw ALE::Exception(<font color="#666666">"Not yet implemented"</font>);
+<a name="line1267">1267: </a><font color="#A020F0">#if 0</font>
+<a name="line1268">1268: </a>        buildFaceDualCSRV(mesh, mesh-&gt;getFactory()-&gt;getNumbering(mesh, mesh-&gt;depth()-1), &amp;numEdges, &amp;start, &amp;adjacency, GraphPartitioner::zeroBase());
+<a name="line1269">1269: </a><font color="#A020F0">#endif</font>
+<a name="line1270">1270: </a>        GraphPartitioner().partition(numEdges, start, adjacency, partition, manager);
+<a name="line1271">1271: </a>        destroyCSR(numEdges, start, adjacency);
+<a name="line1272">1272: </a>      } <font color="#4169E1">else</font> {
+<a name="line1273">1273: </a>        throw ALE::Exception(<font color="#666666">"Invalid partition height"</font>);
+<a name="line1274">1274: </a>      }
+<a name="line1275">1275: </a><strong><font color="#FF0000">      PETSc:</font></strong>:Log::Event(<font color="#666666">"PartitionCreate"</font>).end();
+<a name="line1276">1276: </a>    }
+<a name="line1277">1277: </a>    // Add in the points in the closure (and star) of the partitioned points
+<a name="line1278">1278: </a>    template&lt;typename Mesh, typename Section&gt;
+<a name="line1279">1279: </a>    static void createPartitionClosure(const Obj&lt;Mesh&gt;&amp; mesh, const Obj&lt;Section&gt;&amp; pointPartition, const Obj&lt;Section&gt;&amp; partition, const int height = 0) {
+<a name="line1280">1280: </a>      const Obj&lt;typename Mesh::sieve_type&gt;&amp; sieve = mesh-&gt;getSieve();
+<a name="line1281">1281: </a>      const typename Section::chart_type&amp;   chart = pointPartition-&gt;getChart();
+<a name="line1282">1282: </a>      size_t                                size  = 0;
+
+<a name="line1284">1284: </a>      <font color="#4169E1">for</font>(typename Section::chart_type::const_iterator r_iter = chart.begin(); r_iter != chart.end(); ++r_iter) {
+<a name="line1285">1285: </a>        const typename Section::value_type    *points    = pointPartition-&gt;restrictPoint(*r_iter);
+<a name="line1286">1286: </a>        const int                              numPoints = pointPartition-&gt;getFiberDimension(*r_iter);
+<a name="line1287">1287: </a><strong><font color="#FF0000">        std:</font></strong>:set&lt;typename Section::value_type&gt; closure;
+
+<a name="line1289">1289: </a>        // TODO: Use Quiver's closure() here instead
+<a name="line1290">1290: </a>        <font color="#4169E1">for</font>(int p = 0; p &lt; numPoints; ++p) {
+<a name="line1291">1291: </a>          Obj&lt;typename Mesh::sieve_type::coneSet&gt; current = new typename Mesh::sieve_type::coneSet();
+<a name="line1292">1292: </a>          Obj&lt;typename Mesh::sieve_type::coneSet&gt; next    = new typename Mesh::sieve_type::coneSet();
+<a name="line1293">1293: </a>          Obj&lt;typename Mesh::sieve_type::coneSet&gt; tmp;
+
+<a name="line1295">1295: </a>          current-&gt;insert(points[p]);
+<a name="line1296">1296: </a>          closure.insert(points[p]);
+<a name="line1297">1297: </a>          <font color="#4169E1">while</font>(current-&gt;size()) {
+<a name="line1298">1298: </a>            <font color="#4169E1">for</font>(typename Mesh::sieve_type::coneSet::const_iterator p_iter = current-&gt;begin(); p_iter != current-&gt;end(); ++p_iter) {
+<a name="line1299">1299: </a>              const Obj&lt;typename Mesh::sieve_type::traits::coneSequence&gt;&amp; cone = sieve-&gt;cone(*p_iter);
+
+<a name="line1301">1301: </a>              <font color="#4169E1">for</font>(typename Mesh::sieve_type::traits::coneSequence::iterator c_iter = cone-&gt;begin(); c_iter != cone-&gt;end(); ++c_iter) {
+<a name="line1302">1302: </a>                closure.insert(*c_iter);
+<a name="line1303">1303: </a>                next-&gt;insert(*c_iter);
+<a name="line1304">1304: </a>              }
+<a name="line1305">1305: </a>            }
+<a name="line1306">1306: </a>            tmp = current; current = next; next = tmp;
+<a name="line1307">1307: </a>            next-&gt;clear();
+<a name="line1308">1308: </a>          }
+<a name="line1309">1309: </a>          <font color="#4169E1">if</font> (height) {
+<a name="line1310">1310: </a>            current-&gt;insert(points[p]);
+<a name="line1311">1311: </a>            <font color="#4169E1">while</font>(current-&gt;size()) {
+<a name="line1312">1312: </a>              <font color="#4169E1">for</font>(typename Mesh::sieve_type::coneSet::const_iterator p_iter = current-&gt;begin(); p_iter != current-&gt;end(); ++p_iter) {
+<a name="line1313">1313: </a>                const Obj&lt;typename Mesh::sieve_type::traits::supportSequence&gt;&amp; support = sieve-&gt;support(*p_iter);
+
+<a name="line1315">1315: </a>                <font color="#4169E1">for</font>(typename Mesh::sieve_type::traits::supportSequence::iterator s_iter = support-&gt;begin(); s_iter != support-&gt;end(); ++s_iter) {
+<a name="line1316">1316: </a>                  closure.insert(*s_iter);
+<a name="line1317">1317: </a>                  next-&gt;insert(*s_iter);
+<a name="line1318">1318: </a>                }
+<a name="line1319">1319: </a>              }
+<a name="line1320">1320: </a>              tmp = current; current = next; next = tmp;
+<a name="line1321">1321: </a>              next-&gt;clear();
+<a name="line1322">1322: </a>            }
+<a name="line1323">1323: </a>          }
+<a name="line1324">1324: </a>        }
+<a name="line1325">1325: </a>        partition-&gt;setFiberDimension(*r_iter, closure.size());
+<a name="line1326">1326: </a>        size = std::max(size, closure.size());
+<a name="line1327">1327: </a>      }
+<a name="line1328">1328: </a>      partition-&gt;allocatePoint();
+<a name="line1329">1329: </a>      typename Section::value_type *values = new typename Section::value_type[size];
+
+<a name="line1331">1331: </a>      <font color="#4169E1">for</font>(typename Section::chart_type::const_iterator r_iter = chart.begin(); r_iter != chart.end(); ++r_iter) {
+<a name="line1332">1332: </a>        const typename Section::value_type    *points    = pointPartition-&gt;restrictPoint(*r_iter);
+<a name="line1333">1333: </a>        const int                              numPoints = pointPartition-&gt;getFiberDimension(*r_iter);
+<a name="line1334">1334: </a><strong><font color="#FF0000">        std:</font></strong>:set&lt;typename Section::value_type&gt; closure;
+
+<a name="line1336">1336: </a>        // TODO: Use Quiver's closure() here instead
+<a name="line1337">1337: </a>        <font color="#4169E1">for</font>(int p = 0; p &lt; numPoints; ++p) {
+<a name="line1338">1338: </a>          Obj&lt;typename Mesh::sieve_type::coneSet&gt; current = new typename Mesh::sieve_type::coneSet();
+<a name="line1339">1339: </a>          Obj&lt;typename Mesh::sieve_type::coneSet&gt; next    = new typename Mesh::sieve_type::coneSet();
+<a name="line1340">1340: </a>          Obj&lt;typename Mesh::sieve_type::coneSet&gt; tmp;
+
+<a name="line1342">1342: </a>          current-&gt;insert(points[p]);
+<a name="line1343">1343: </a>          closure.insert(points[p]);
+<a name="line1344">1344: </a>          <font color="#4169E1">while</font>(current-&gt;size()) {
+<a name="line1345">1345: </a>            <font color="#4169E1">for</font>(typename Mesh::sieve_type::coneSet::const_iterator p_iter = current-&gt;begin(); p_iter != current-&gt;end(); ++p_iter) {
+<a name="line1346">1346: </a>              const Obj&lt;typename Mesh::sieve_type::traits::coneSequence&gt;&amp; cone = sieve-&gt;cone(*p_iter);
+
+<a name="line1348">1348: </a>              <font color="#4169E1">for</font>(typename Mesh::sieve_type::traits::coneSequence::iterator c_iter = cone-&gt;begin(); c_iter != cone-&gt;end(); ++c_iter) {
+<a name="line1349">1349: </a>                closure.insert(*c_iter);
+<a name="line1350">1350: </a>                next-&gt;insert(*c_iter);
+<a name="line1351">1351: </a>              }
+<a name="line1352">1352: </a>            }
+<a name="line1353">1353: </a>            tmp = current; current = next; next = tmp;
+<a name="line1354">1354: </a>            next-&gt;clear();
+<a name="line1355">1355: </a>          }
+<a name="line1356">1356: </a>          <font color="#4169E1">if</font> (height) {
+<a name="line1357">1357: </a>            current-&gt;insert(points[p]);
+<a name="line1358">1358: </a>            <font color="#4169E1">while</font>(current-&gt;size()) {
+<a name="line1359">1359: </a>              <font color="#4169E1">for</font>(typename Mesh::sieve_type::coneSet::const_iterator p_iter = current-&gt;begin(); p_iter != current-&gt;end(); ++p_iter) {
+<a name="line1360">1360: </a>                const Obj&lt;typename Mesh::sieve_type::traits::supportSequence&gt;&amp; support = sieve-&gt;support(*p_iter);
+
+<a name="line1362">1362: </a>                <font color="#4169E1">for</font>(typename Mesh::sieve_type::traits::supportSequence::iterator s_iter = support-&gt;begin(); s_iter != support-&gt;end(); ++s_iter) {
+<a name="line1363">1363: </a>                  closure.insert(*s_iter);
+<a name="line1364">1364: </a>                  next-&gt;insert(*s_iter);
+<a name="line1365">1365: </a>                }
+<a name="line1366">1366: </a>              }
+<a name="line1367">1367: </a>              tmp = current; current = next; next = tmp;
+<a name="line1368">1368: </a>              next-&gt;clear();
+<a name="line1369">1369: </a>            }
+<a name="line1370">1370: </a>          }
+<a name="line1371">1371: </a>        }
+<a name="line1372">1372: </a>        int i = 0;
+
+<a name="line1374">1374: </a>        <font color="#4169E1">for</font>(typename std::set&lt;typename Section::value_type&gt;::const_iterator p_iter = closure.begin(); p_iter != closure.end(); ++p_iter, ++i) {
+<a name="line1375">1375: </a>          values[i] = *p_iter;
+<a name="line1376">1376: </a>        }
+<a name="line1377">1377: </a>        partition-&gt;updatePoint(*r_iter, values);
+<a name="line1378">1378: </a>      }
+<a name="line1379">1379: </a>      delete [] values;
+<a name="line1380">1380: </a>    }
+<a name="line1381">1381: </a>    template&lt;typename Mesh, typename Section&gt;
+<a name="line1382">1382: </a>    static void createPartitionClosureV(const Obj&lt;Mesh&gt;&amp; mesh, const Obj&lt;Section&gt;&amp; pointPartition, const Obj&lt;Section&gt;&amp; partition, const int height = 0) {
+<a name="line1383">1383: </a>      <font color="#4169E1">typedef</font> ISieveVisitor::TransitiveClosureVisitor&lt;typename Mesh::sieve_type&gt; visitor_type;
+<a name="line1384">1384: </a>      const Obj&lt;typename Mesh::sieve_type&gt;&amp; sieve = mesh-&gt;getSieve();
+<a name="line1385">1385: </a>      const typename Section::chart_type&amp;   chart = pointPartition-&gt;getChart();
+<a name="line1386">1386: </a>      size_t                                size  = 0;
+
+<a name="line1388">1388: </a><strong><font color="#FF0000">      PETSc:</font></strong>:Log::Event(<font color="#666666">"PartitionClosure"</font>).begin();
+<a name="line1389">1389: </a>      <font color="#4169E1">for</font>(typename Section::chart_type::const_iterator r_iter = chart.begin(); r_iter != chart.end(); ++r_iter) {
+<a name="line1390">1390: </a>        const typename Section::value_type *points    = pointPartition-&gt;restrictPoint(*r_iter);
+<a name="line1391">1391: </a>        const int                           numPoints = pointPartition-&gt;getFiberDimension(*r_iter);
+<a name="line1392">1392: </a>        typename visitor_type::visitor_type nV;
+<a name="line1393">1393: </a>        visitor_type                        cV(*sieve, nV);
+
+<a name="line1395">1395: </a>        <font color="#4169E1">for</font>(int p = 0; p &lt; numPoints; ++p) {
+<a name="line1396">1396: </a>          sieve-&gt;cone(points[p], cV);
+<a name="line1397">1397: </a>          <font color="#4169E1">if</font> (height) {
+<a name="line1398">1398: </a>            cV.setIsCone(false);
+<a name="line1399">1399: </a>            sieve-&gt;support(points[p], cV);
+<a name="line1400">1400: </a>          }
+<a name="line1401">1401: </a>        }
+<a name="line1402">1402: </a>        partition-&gt;setFiberDimension(*r_iter, cV.getPoints().size());
+<a name="line1403">1403: </a>        size = std::max(size, cV.getPoints().size());
+<a name="line1404">1404: </a>      }
+<a name="line1405">1405: </a>      partition-&gt;allocatePoint();
+<a name="line1406">1406: </a>      typename Section::value_type *values = new typename Section::value_type[size];
+
+<a name="line1408">1408: </a>      <font color="#4169E1">for</font>(typename Section::chart_type::const_iterator r_iter = chart.begin(); r_iter != chart.end(); ++r_iter) {
+<a name="line1409">1409: </a>        const typename Section::value_type *points    = pointPartition-&gt;restrictPoint(*r_iter);
+<a name="line1410">1410: </a>        const int                           numPoints = pointPartition-&gt;getFiberDimension(*r_iter);
+<a name="line1411">1411: </a>        typename visitor_type::visitor_type nV;
+<a name="line1412">1412: </a>        visitor_type                        cV(*sieve, nV);
+
+<a name="line1414">1414: </a>        <font color="#4169E1">for</font>(int p = 0; p &lt; numPoints; ++p) {
+<a name="line1415">1415: </a>          sieve-&gt;cone(points[p], cV);
+<a name="line1416">1416: </a>          <font color="#4169E1">if</font> (height) {
+<a name="line1417">1417: </a>            cV.setIsCone(false);
+<a name="line1418">1418: </a>            sieve-&gt;support(points[p], cV);
+<a name="line1419">1419: </a>          }
+<a name="line1420">1420: </a>        }
+<a name="line1421">1421: </a>        int i = 0;
+
+<a name="line1423">1423: </a>        <font color="#4169E1">for</font>(typename std::set&lt;typename Mesh::point_type&gt;::const_iterator p_iter = cV.getPoints().begin(); p_iter != cV.getPoints().end(); ++p_iter, ++i) {
+<a name="line1424">1424: </a>          values[i] = *p_iter;
+<a name="line1425">1425: </a>        }
+<a name="line1426">1426: </a>        partition-&gt;updatePoint(*r_iter, values);
+<a name="line1427">1427: </a>      }
+<a name="line1428">1428: </a>      delete [] values;
+<a name="line1429">1429: </a><strong><font color="#FF0000">      PETSc:</font></strong>:Log::Event(<font color="#666666">"PartitionClosure"</font>).end();
+<a name="line1430">1430: </a>    }
+<a name="line1433">1433: </a>    template&lt;typename Mesh&gt;
+<a name="line1434">1434: </a>    static <A href="../../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A> createPartitionClosureV(const Obj&lt;Mesh&gt;&amp; mesh, <A href="../../docs/manualpages/IS/PetscSection.html#PetscSection">PetscSection</A> pointSection, <A href="../../docs/manualpages/IS/IS.html#IS">IS</A> pointPartition, <A href="../../docs/manualpages/IS/PetscSection.html#PetscSection">PetscSection</A> *section, <A href="../../docs/manualpages/IS/IS.html#IS">IS</A> *partition, const int height = 0) {
+<a name="line1435">1435: </a>      <font color="#4169E1">typedef</font> ISieveVisitor::TransitiveClosureVisitor&lt;typename Mesh::sieve_type&gt; visitor_type;
+<a name="line1436">1436: </a>      const Obj&lt;typename Mesh::sieve_type&gt;&amp; sieve = mesh-&gt;getSieve();
+<a name="line1437">1437: </a>      const <A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>                       *partArray;
+<a name="line1438">1438: </a>      <A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>                             *allPoints;
+<a name="line1439">1439: </a>      <A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>                              rStart, rEnd, size;
+<a name="line1440">1440: </a>      <A href="../../docs/manualpages/Sys/PetscErrorCode.html#PetscErrorCode">PetscErrorCode</A>                        ierr;
+
+<a name="line1443">1443: </a><strong><font color="#FF0000">      PETSc:</font></strong>:Log::Event(<font color="#666666">"PartitionClosure"</font>).begin();
+<a name="line1444">1444: </a>      <A href="../../docs/manualpages/IS/PetscSectionGetChart.html#PetscSectionGetChart">PetscSectionGetChart</A>(pointSection, &amp;rStart, &amp;rEnd);
+<a name="line1445">1445: </a>      <A href="../../docs/manualpages/IS/ISGetIndices.html#ISGetIndices">ISGetIndices</A>(pointPartition, &amp;partArray);
+<a name="line1446">1446: </a>      <A href="../../docs/manualpages/IS/PetscSectionCreate.html#PetscSectionCreate">PetscSectionCreate</A>(mesh-&gt;comm(), section);
+<a name="line1447">1447: </a>      <A href="../../docs/manualpages/IS/PetscSectionSetChart.html#PetscSectionSetChart">PetscSectionSetChart</A>(*section, rStart, rEnd);
+<a name="line1448">1448: </a>      <font color="#4169E1">for</font>(<A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A> rank = rStart; rank &lt; rEnd; ++rank) {
+<a name="line1449">1449: </a>        <A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A> numPoints, offset;
+
+<a name="line1451">1451: </a>        <A href="../../docs/manualpages/IS/PetscSectionGetDof.html#PetscSectionGetDof">PetscSectionGetDof</A>(pointSection, rank, &amp;numPoints);
+<a name="line1452">1452: </a>        <A href="../../docs/manualpages/IS/PetscSectionGetOffset.html#PetscSectionGetOffset">PetscSectionGetOffset</A>(pointSection, rank, &amp;offset);
+<a name="line1453">1453: </a>        {
+<a name="line1454">1454: </a>          const <A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>                     *points = &amp;partArray[offset];
+<a name="line1455">1455: </a>          typename visitor_type::visitor_type nV;
+<a name="line1456">1456: </a>          visitor_type                        cV(*sieve, nV);
+
+<a name="line1458">1458: </a>          <font color="#4169E1">for</font>(<A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A> p = 0; p &lt; numPoints; ++p) {
+<a name="line1459">1459: </a>            sieve-&gt;cone(points[p], cV);
+<a name="line1460">1460: </a>            <font color="#4169E1">if</font> (height) {
+<a name="line1461">1461: </a>              cV.setIsCone(false);
+<a name="line1462">1462: </a>              sieve-&gt;support(points[p], cV);
+<a name="line1463">1463: </a>            }
+<a name="line1464">1464: </a>          }
+<a name="line1465">1465: </a>          <A href="../../docs/manualpages/IS/PetscSectionSetDof.html#PetscSectionSetDof">PetscSectionSetDof</A>(*section, rank, cV.getPoints().size());
+<a name="line1466">1466: </a>        }
+<a name="line1467">1467: </a>      }
+<a name="line1468">1468: </a>      <A href="../../docs/manualpages/IS/PetscSectionSetUp.html#PetscSectionSetUp">PetscSectionSetUp</A>(*section);
+<a name="line1469">1469: </a>      <A href="../../docs/manualpages/IS/PetscSectionGetStorageSize.html#PetscSectionGetStorageSize">PetscSectionGetStorageSize</A>(*section, &amp;size);
+<a name="line1470">1470: </a>      <A href="../../docs/manualpages/Sys/PetscMalloc.html#PetscMalloc">PetscMalloc</A>(size * <font color="#4169E1">sizeof</font>(<A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>), &amp;allPoints);
+
+<a name="line1472">1472: </a>      <font color="#4169E1">for</font>(<A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A> rank = rStart; rank &lt; rEnd; ++rank) {
+<a name="line1473">1473: </a>        <A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A> numPoints, offset, newOffset;
+
+<a name="line1475">1475: </a>        <A href="../../docs/manualpages/IS/PetscSectionGetDof.html#PetscSectionGetDof">PetscSectionGetDof</A>(pointSection, rank, &amp;numPoints);
+<a name="line1476">1476: </a>        <A href="../../docs/manualpages/IS/PetscSectionGetOffset.html#PetscSectionGetOffset">PetscSectionGetOffset</A>(pointSection, rank, &amp;offset);
+<a name="line1477">1477: </a>        {
+<a name="line1478">1478: </a>          const <A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>                     *points = &amp;partArray[offset];
+<a name="line1479">1479: </a>          typename visitor_type::visitor_type nV;
+<a name="line1480">1480: </a>          visitor_type                        cV(*sieve, nV);
+
+<a name="line1482">1482: </a>          <font color="#4169E1">for</font>(int p = 0; p &lt; numPoints; ++p) {
+<a name="line1483">1483: </a>            sieve-&gt;cone(points[p], cV);
+<a name="line1484">1484: </a>            <font color="#4169E1">if</font> (height) {
+<a name="line1485">1485: </a>              cV.setIsCone(false);
+<a name="line1486">1486: </a>              sieve-&gt;support(points[p], cV);
+<a name="line1487">1487: </a>            }
+<a name="line1488">1488: </a>          }
+<a name="line1489">1489: </a>          <A href="../../docs/manualpages/IS/PetscSectionGetOffset.html#PetscSectionGetOffset">PetscSectionGetOffset</A>(*section, rank, &amp;newOffset);
+
+<a name="line1491">1491: </a>          <font color="#4169E1">for</font>(typename std::set&lt;typename Mesh::point_type&gt;::const_iterator p_iter = cV.getPoints().begin(); p_iter != cV.getPoints().end(); ++p_iter, ++newOffset) {
+<a name="line1492">1492: </a>            allPoints[newOffset] = *p_iter;
+<a name="line1493">1493: </a>          }
+<a name="line1494">1494: </a>        }
+<a name="line1495">1495: </a>      }
+<a name="line1496">1496: </a>      <A href="../../docs/manualpages/IS/ISRestoreIndices.html#ISRestoreIndices">ISRestoreIndices</A>(pointPartition, &amp;partArray);
+<a name="line1497">1497: </a>      <A href="../../docs/manualpages/IS/ISCreateGeneral.html#ISCreateGeneral">ISCreateGeneral</A>(mesh-&gt;comm(), size, allPoints, PETSC_OWN_POINTER, partition);
+<a name="line1498">1498: </a><strong><font color="#FF0000">      PETSc:</font></strong>:Log::Event(<font color="#666666">"PartitionClosure"</font>).end();
+<a name="line1499">1499: </a>      <font color="#4169E1">return</font>(0);
+<a name="line1500">1500: </a>    }
+<a name="line1501">1501: </a>    // Create a section mapping points to partitions
+<a name="line1502">1502: </a>    template&lt;typename Section, typename MapSection&gt;
+<a name="line1503">1503: </a>    static void createPartitionMap(const Obj&lt;Section&gt;&amp; partition, const Obj&lt;MapSection&gt;&amp; partitionMap) {
+<a name="line1504">1504: </a>      const typename Section::chart_type&amp; chart = partition-&gt;getChart();
+
+<a name="line1506">1506: </a>      <font color="#4169E1">for</font>(typename Section::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
+<a name="line1507">1507: </a>        partitionMap-&gt;setFiberDimension(*p_iter, 1);
+<a name="line1508">1508: </a>      }
+<a name="line1509">1509: </a>      partitionMap-&gt;allocatePoint();
+<a name="line1510">1510: </a>      <font color="#4169E1">for</font>(typename Section::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
+<a name="line1511">1511: </a>        const typename Section::value_type *points = partition-&gt;restrictPoint(*p_iter);
+<a name="line1512">1512: </a>        const int                           size   = partition-&gt;getFiberDimension(*p_iter);
+<a name="line1513">1513: </a>        const typename Section::point_type  part   = *p_iter;
+
+<a name="line1515">1515: </a>        <font color="#4169E1">for</font>(int i = 0; i &lt; size; ++i) {
+<a name="line1516">1516: </a>          partitionMap-&gt;updatePoint(points[i], &amp;part);
+<a name="line1517">1517: </a>        }
+<a name="line1518">1518: </a>      }
+<a name="line1519">1519: </a>    }
+<a name="line1520">1520: </a>  };
+<a name="line1521">1521: </a><font color="#A020F0">#endif</font>
+
+<a name="line1523">1523: </a>  namespace New {
+<a name="line1524">1524: </a>    template&lt;typename Bundle_, typename Alloc_ = typename Bundle_::alloc_type&gt;
+<a name="line1525">1525: </a>    class Partitioner {
+<a name="line1526">1526: </a><strong><font color="#FF0000">    public:</font></strong>
+<a name="line1527">1527: </a>      <font color="#4169E1">typedef</font> Bundle_                          bundle_type;
+<a name="line1528">1528: </a>      <font color="#4169E1">typedef</font> Alloc_                           alloc_type;
+<a name="line1529">1529: </a>      <font color="#4169E1">typedef</font> typename bundle_type::sieve_type sieve_type;
+<a name="line1530">1530: </a>      <font color="#4169E1">typedef</font> typename bundle_type::point_type point_type;
+<a name="line1531">1531: </a><strong><font color="#FF0000">    public:</font></strong>
+<a name="line1534">1534: </a>      // This creates a CSR representation of the adjacency matrix <font color="#4169E1">for</font> cells
+<a name="line1535">1535: </a>      // - We allow an exception to contiguous numbering.
+<a name="line1536">1536: </a>      //   If the cell id &gt; numElements, we assign a new number starting at
+<a name="line1537">1537: </a>      //     the top and going downward. I know these might not match up with
+<a name="line1538">1538: </a>      //     the iterator order, but we can fix it later.
+<a name="line1539">1539: </a>      static void buildDualCSR(const Obj&lt;bundle_type&gt;&amp; bundle, const int dim, int **offsets, int **adjacency) {
+<a name="line1540">1540: </a>        ALE_LOG_EVENT_BEGIN;
+<a name="line1541">1541: </a>        <font color="#4169E1">typedef</font> typename ALE::New::Completion&lt;bundle_type, point_type, alloc_type&gt; completion;
+<a name="line1542">1542: </a>        const Obj&lt;sieve_type&gt;&amp;                           sieve        = bundle-&gt;getSieve();
+<a name="line1543">1543: </a>        const Obj&lt;typename bundle_type::label_sequence&gt;&amp; elements     = bundle-&gt;heightStratum(0);
+<a name="line1544">1544: </a>        Obj&lt;sieve_type&gt;                                  overlapSieve = new sieve_type(bundle-&gt;comm(), bundle-&gt;debug());
+<a name="line1545">1545: </a><strong><font color="#FF0000">        std:</font></strong>:map&lt;point_type, point_type&gt;                 newCells;
+<a name="line1546">1546: </a>        int  numElements = elements-&gt;size();
+<a name="line1547">1547: </a>        int  newCell     = numElements;
+<a name="line1548">1548: </a>        int *off         = new int[numElements+1];
+<a name="line1549">1549: </a>        int  offset      = 0;
+<a name="line1550">1550: </a>        int *adj;
+
+<a name="line1552">1552: </a><strong><font color="#FF0000">        completion:</font></strong>:scatterSupports(sieve, overlapSieve, bundle-&gt;getSendOverlap(), bundle-&gt;getRecvOverlap(), bundle);
+<a name="line1553">1553: </a>        <font color="#4169E1">if</font> (numElements == 0) {
+<a name="line1554">1554: </a>          *offsets   = NULL;
+<a name="line1555">1555: </a>          *adjacency = NULL;
+<a name="line1556">1556: </a>          ALE_LOG_EVENT_END;
+<a name="line1557">1557: </a>          <font color="#4169E1">return</font>;
+<a name="line1558">1558: </a>        }
+<a name="line1559">1559: </a>        <font color="#4169E1">if</font> (bundle-&gt;depth() == dim) {
+<a name="line1560">1560: </a>          int e = 1;
+
+<a name="line1562">1562: </a>          off[0] = 0;
+<a name="line1563">1563: </a>          <font color="#4169E1">for</font>(typename bundle_type::label_sequence::iterator e_iter = elements-&gt;begin(); e_iter != elements-&gt;end(); ++e_iter) {
+<a name="line1564">1564: </a>            const Obj&lt;typename sieve_type::traits::coneSequence&gt;&amp; faces  = sieve-&gt;cone(*e_iter);
+<a name="line1565">1565: </a>            typename sieve_type::traits::coneSequence::iterator   fBegin = faces-&gt;begin();
+<a name="line1566">1566: </a>            typename sieve_type::traits::coneSequence::iterator   fEnd   = faces-&gt;end();
+
+<a name="line1568">1568: </a>            off[e] = off[e-1];
+<a name="line1569">1569: </a>            <font color="#4169E1">for</font>(typename sieve_type::traits::coneSequence::iterator f_iter = fBegin; f_iter != fEnd; ++f_iter) {
+<a name="line1570">1570: </a>              <font color="#4169E1">if</font> (sieve-&gt;support(*f_iter)-&gt;size() == 2) {
+<a name="line1571">1571: </a>                off[e]++;
+<a name="line1572">1572: </a>              } <font color="#4169E1">else</font> <font color="#4169E1">if</font> ((sieve-&gt;support(*f_iter)-&gt;size() == 1) &amp;&amp; (overlapSieve-&gt;support(*f_iter)-&gt;size() == 1)) {
+<a name="line1573">1573: </a>                off[e]++;
+<a name="line1574">1574: </a>              }
+<a name="line1575">1575: </a>            }
+<a name="line1576">1576: </a>            e++;
+<a name="line1577">1577: </a>          }
+<a name="line1578">1578: </a>          adj = new int[off[numElements]];
+<a name="line1579">1579: </a>          <font color="#4169E1">for</font>(typename bundle_type::label_sequence::iterator e_iter = elements-&gt;begin(); e_iter != elements-&gt;end(); ++e_iter) {
+<a name="line1580">1580: </a>            const Obj&lt;typename sieve_type::traits::coneSequence&gt;&amp; faces  = sieve-&gt;cone(*e_iter);
+<a name="line1581">1581: </a>            typename sieve_type::traits::coneSequence::iterator   fBegin = faces-&gt;begin();
+<a name="line1582">1582: </a>            typename sieve_type::traits::coneSequence::iterator   fEnd   = faces-&gt;end();
+
+<a name="line1584">1584: </a>            <font color="#4169E1">for</font>(typename sieve_type::traits::coneSequence::iterator f_iter = fBegin; f_iter != fEnd; ++f_iter) {
+<a name="line1585">1585: </a>              const Obj&lt;typename sieve_type::traits::supportSequence&gt;&amp; neighbors = sieve-&gt;support(*f_iter);
+<a name="line1586">1586: </a>              typename sieve_type::traits::supportSequence::iterator   nBegin    = neighbors-&gt;begin();
+<a name="line1587">1587: </a>              typename sieve_type::traits::supportSequence::iterator   nEnd      = neighbors-&gt;end();
+
+<a name="line1589">1589: </a>              <font color="#4169E1">for</font>(typename sieve_type::traits::supportSequence::iterator n_iter = nBegin; n_iter != nEnd; ++n_iter) {
+<a name="line1590">1590: </a>                <font color="#4169E1">if</font> (*n_iter != *e_iter) adj[offset++] = *n_iter;
+<a name="line1591">1591: </a>              }
+<a name="line1592">1592: </a>              const Obj&lt;typename sieve_type::traits::supportSequence&gt;&amp; oNeighbors = overlapSieve-&gt;support(*f_iter);
+<a name="line1593">1593: </a>              typename sieve_type::traits::supportSequence::iterator   onBegin    = oNeighbors-&gt;begin();
+<a name="line1594">1594: </a>              typename sieve_type::traits::supportSequence::iterator   onEnd      = oNeighbors-&gt;end();
+
+<a name="line1596">1596: </a>              <font color="#4169E1">for</font>(typename sieve_type::traits::supportSequence::iterator n_iter = onBegin; n_iter != onEnd; ++n_iter) {
+<a name="line1597">1597: </a>                adj[offset++] = *n_iter;
+<a name="line1598">1598: </a>              }
+<a name="line1599">1599: </a>            }
+<a name="line1600">1600: </a>          }
+<a name="line1601">1601: </a>        } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (bundle-&gt;depth() == 1) {
+<a name="line1602">1602: </a><strong><font color="#FF0000">          std:</font></strong>:set&lt;point_type&gt; *neighborCells = new std::set&lt;point_type&gt;[numElements];
+<a name="line1603">1603: </a>          int corners      = sieve-&gt;cone(*elements-&gt;begin())-&gt;size();
+<a name="line1604">1604: </a>          int faceVertices = -1;
+
+<a name="line1606">1606: </a>          <font color="#4169E1">if</font> (corners == dim+1) {
+<a name="line1607">1607: </a>            faceVertices = dim;
+<a name="line1608">1608: </a>          } <font color="#4169E1">else</font> <font color="#4169E1">if</font> ((dim == 2) &amp;&amp; (corners == 4)) {
+<a name="line1609">1609: </a>            faceVertices = 2;
+<a name="line1610">1610: </a>          } <font color="#4169E1">else</font> <font color="#4169E1">if</font> ((dim == 3) &amp;&amp; (corners == 8)) {
+<a name="line1611">1611: </a>            faceVertices = 4;
+<a name="line1612">1612: </a>          } <font color="#4169E1">else</font> <font color="#4169E1">if</font> ((dim == 2) &amp;&amp; (corners == 6)) {
+<a name="line1613">1613: </a>            faceVertices = 3;
+<a name="line1614">1614: </a>          } <font color="#4169E1">else</font> <font color="#4169E1">if</font> ((dim == 2) &amp;&amp; (corners == 9)) {
+<a name="line1615">1615: </a>            faceVertices = 3;
+<a name="line1616">1616: </a>          } <font color="#4169E1">else</font> <font color="#4169E1">if</font> ((dim == 3) &amp;&amp; (corners == 10)) {
+<a name="line1617">1617: </a>            faceVertices = 6;
+<a name="line1618">1618: </a>          } <font color="#4169E1">else</font> <font color="#4169E1">if</font> ((dim == 3) &amp;&amp; (corners == 27)) {
+<a name="line1619">1619: </a>            faceVertices = 9;
+<a name="line1620">1620: </a>          } <font color="#4169E1">else</font> {
+<a name="line1621">1621: </a>            throw ALE::Exception(<font color="#666666">"Could not determine number of face vertices"</font>);
+<a name="line1622">1622: </a>          }
+<a name="line1623">1623: </a>          <font color="#4169E1">for</font>(typename bundle_type::label_sequence::iterator e_iter = elements-&gt;begin(); e_iter != elements-&gt;end(); ++e_iter) {
+<a name="line1624">1624: </a>            const Obj&lt;typename sieve_type::traits::coneSequence&gt;&amp; vertices  = sieve-&gt;cone(*e_iter);
+<a name="line1625">1625: </a>            typename sieve_type::traits::coneSequence::iterator vEnd = vertices-&gt;end();
+
+<a name="line1627">1627: </a>            <font color="#4169E1">for</font>(typename sieve_type::traits::coneSequence::iterator v_iter = vertices-&gt;begin(); v_iter != vEnd; ++v_iter) {
+<a name="line1628">1628: </a>              const Obj&lt;typename sieve_type::traits::supportSequence&gt;&amp; neighbors = sieve-&gt;support(*v_iter);
+<a name="line1629">1629: </a>              typename sieve_type::traits::supportSequence::iterator nEnd = neighbors-&gt;end();
+
+<a name="line1631">1631: </a>              <font color="#4169E1">for</font>(typename sieve_type::traits::supportSequence::iterator n_iter = neighbors-&gt;begin(); n_iter != nEnd; ++n_iter) {
+<a name="line1632">1632: </a>                <font color="#4169E1">if</font> (*e_iter == *n_iter) <font color="#4169E1">continue</font>;
+<a name="line1633">1633: </a>                <font color="#4169E1">if</font> ((int) sieve-&gt;nMeet(*e_iter, *n_iter, 1)-&gt;size() == faceVertices) {
+<a name="line1634">1634: </a>                  <font color="#4169E1">if</font> ((*e_iter &lt; numElements) &amp;&amp; (*n_iter &lt; numElements)) {
+<a name="line1635">1635: </a>                    neighborCells[*e_iter].insert(*n_iter);
+<a name="line1636">1636: </a>                  } <font color="#4169E1">else</font> {
+<a name="line1637">1637: </a>                    point_type e = *e_iter, n = *n_iter;
+
+<a name="line1639">1639: </a>                    <font color="#4169E1">if</font> (*e_iter &gt;= numElements) {
+<a name="line1640">1640: </a>                      <font color="#4169E1">if</font> (newCells.find(*e_iter) == newCells.end()) newCells[*e_iter] = --newCell;
+<a name="line1641">1641: </a>                      e = newCells[*e_iter];
+<a name="line1642">1642: </a>                    }
+<a name="line1643">1643: </a>                    <font color="#4169E1">if</font> (*n_iter &gt;= numElements) {
+<a name="line1644">1644: </a>                      <font color="#4169E1">if</font> (newCells.find(*n_iter) == newCells.end()) newCells[*n_iter] = --newCell;
+<a name="line1645">1645: </a>                      n = newCells[*n_iter];
+<a name="line1646">1646: </a>                    }
+<a name="line1647">1647: </a>                    neighborCells[e].insert(n);
+<a name="line1648">1648: </a>                  }
+<a name="line1649">1649: </a>                }
+<a name="line1650">1650: </a>              }
+<a name="line1651">1651: </a>            }
+<a name="line1652">1652: </a>          }
+<a name="line1653">1653: </a>          off[0] = 0;
+<a name="line1654">1654: </a>          <font color="#4169E1">for</font>(int e = 1; e &lt;= numElements; e++) {
+<a name="line1655">1655: </a>            off[e] = neighborCells[e-1].size() + off[e-1];
+<a name="line1656">1656: </a>          }
+<a name="line1657">1657: </a>          adj = new int[off[numElements]];
+<a name="line1658">1658: </a>          <font color="#4169E1">for</font>(int e = 0; e &lt; numElements; e++) {
+<a name="line1659">1659: </a>            <font color="#4169E1">for</font>(typename std::set&lt;point_type&gt;::iterator n_iter = neighborCells[e].begin(); n_iter != neighborCells[e].end(); ++n_iter) {
+<a name="line1660">1660: </a>              adj[offset++] = *n_iter;
+<a name="line1661">1661: </a>            }
+<a name="line1662">1662: </a>          }
+<a name="line1663">1663: </a>          delete [] neighborCells;
+<a name="line1664">1664: </a>        } <font color="#4169E1">else</font> {
+<a name="line1665">1665: </a>          throw ALE::Exception(<font color="#666666">"Dual creation not defined for partially interpolated meshes"</font>);
+<a name="line1666">1666: </a>        }
+<a name="line1667">1667: </a>        <font color="#4169E1">if</font> (offset != off[numElements]) {
+<a name="line1668">1668: </a>          ostringstream msg;
+<a name="line1669">1669: </a>          msg &lt;&lt; <font color="#666666">"ERROR: Total number of neighbors "</font> &lt;&lt; offset &lt;&lt; <font color="#666666">" does not match the offset array "</font> &lt;&lt; off[numElements];
+<a name="line1670">1670: </a>          throw ALE::Exception(msg.str().c_str());
+<a name="line1671">1671: </a>        }
+<a name="line1672">1672: </a>        //std::cout &lt;&lt; <font color="#666666">"numElements: "</font> &lt;&lt; numElements &lt;&lt; <font color="#666666">" newCell: "</font> &lt;&lt; newCell &lt;&lt; std::endl;
+<a name="line1673">1673: </a>        *offsets   = off;
+<a name="line1674">1674: </a>        *adjacency = adj;
+<a name="line1675">1675: </a>        ALE_LOG_EVENT_END;
+<a name="line1676">1676: </a>      };
+<a name="line1679">1679: </a>      // This creates a CSR representation of the adjacency hypergraph <font color="#4169E1">for</font> faces
+<a name="line1680">1680: </a>      static void buildFaceCSR(const Obj&lt;bundle_type&gt;&amp; bundle, const int dim, const Obj&lt;typename bundle_type::numbering_type&gt;&amp; fNumbering, int *numEdges, int **offsets, int **adjacency) {
+<a name="line1681">1681: </a>        ALE_LOG_EVENT_BEGIN;
+<a name="line1682">1682: </a>        const Obj&lt;sieve_type&gt;&amp;                           sieve    = bundle-&gt;getSieve();
+<a name="line1683">1683: </a>        const Obj&lt;typename bundle_type::label_sequence&gt;&amp; elements = bundle-&gt;heightStratum(0);
+<a name="line1684">1684: </a>        int  numElements = elements-&gt;size();
+<a name="line1685">1685: </a>        int *off         = new int[numElements+1];
+<a name="line1686">1686: </a>        int  e;
+
+<a name="line1688">1688: </a>        <font color="#4169E1">if</font> (bundle-&gt;depth() != dim) {
+<a name="line1689">1689: </a>          throw ALE::Exception(<font color="#666666">"Not yet implemented for non-interpolated meshes"</font>);
+<a name="line1690">1690: </a>        }
+<a name="line1691">1691: </a>        off[0] = 0;
+<a name="line1692">1692: </a>        e      = 1;
+<a name="line1693">1693: </a>        <font color="#4169E1">for</font>(typename bundle_type::label_sequence::iterator e_iter = elements-&gt;begin(); e_iter != elements-&gt;end(); ++e_iter) {
+<a name="line1694">1694: </a>          off[e] = sieve-&gt;cone(*e_iter)-&gt;size() + off[e-1];
+<a name="line1695">1695: </a>          e++;
+<a name="line1696">1696: </a>        }
+<a name="line1697">1697: </a>        int *adj    = new int[off[numElements]];
+<a name="line1698">1698: </a>        int  offset = 0;
+<a name="line1699">1699: </a>        <font color="#4169E1">for</font>(typename bundle_type::label_sequence::iterator e_iter = elements-&gt;begin(); e_iter != elements-&gt;end(); ++e_iter) {
+<a name="line1700">1700: </a>          const Obj&lt;typename sieve_type::traits::coneSequence&gt;&amp; faces = sieve-&gt;cone(*e_iter);
+<a name="line1701">1701: </a>          typename sieve_type::traits::coneSequence::iterator   fEnd  = faces-&gt;end();
+
+<a name="line1703">1703: </a>          <font color="#4169E1">for</font>(typename sieve_type::traits::coneSequence::iterator f_iter = faces-&gt;begin(); f_iter != fEnd; ++f_iter) {
+<a name="line1704">1704: </a>            adj[offset++] = fNumbering-&gt;getIndex(*f_iter);
+<a name="line1705">1705: </a>          }
+<a name="line1706">1706: </a>        }
+<a name="line1707">1707: </a>        <font color="#4169E1">if</font> (offset != off[numElements]) {
+<a name="line1708">1708: </a>          ostringstream msg;
+<a name="line1709">1709: </a>          msg &lt;&lt; <font color="#666666">"ERROR: Total number of neighbors "</font> &lt;&lt; offset &lt;&lt; <font color="#666666">" does not match the offset array "</font> &lt;&lt; off[numElements];
+<a name="line1710">1710: </a>          throw ALE::Exception(msg.str().c_str());
+<a name="line1711">1711: </a>        }
+<a name="line1712">1712: </a>        *numEdges  = numElements;
+<a name="line1713">1713: </a>        *offsets   = off;
+<a name="line1714">1714: </a>        *adjacency = adj;
+<a name="line1715">1715: </a>        ALE_LOG_EVENT_END;
+<a name="line1716">1716: </a>      };
+<a name="line1717">1717: </a>      template&lt;typename PartitionType&gt;
+<a name="line1718">1718: </a>      static PartitionType *subordinatePartition(const Obj&lt;bundle_type&gt;&amp; bundle, int levels, const Obj&lt;bundle_type&gt;&amp; subBundle, PartitionType assignment[]) {
+<a name="line1719">1719: </a>        const Obj&lt;typename bundle_type::numbering_type&gt;&amp; cNumbering = bundle-&gt;getFactory()-&gt;getLocalNumbering(bundle, bundle-&gt;depth());
+<a name="line1720">1720: </a>        const Obj&lt;typename bundle_type::label_sequence&gt;&amp; cells      = subBundle-&gt;heightStratum(0);
+<a name="line1721">1721: </a>        const Obj&lt;typename bundle_type::numbering_type&gt;&amp; sNumbering = bundle-&gt;getFactory()-&gt;getLocalNumbering(subBundle, subBundle-&gt;depth());
+<a name="line1722">1722: </a>        const int        numCells      = cells-&gt;size();
+<a name="line1723">1723: </a>        PartitionType   *subAssignment = new PartitionType[numCells];
+
+<a name="line1725">1725: </a>        <font color="#4169E1">if</font> (levels != 1) {
+<a name="line1726">1726: </a>          throw ALE::Exception(<font color="#666666">"Cannot calculate subordinate partition for any level separation other than 1"</font>);
+<a name="line1727">1727: </a>        } <font color="#4169E1">else</font> {
+<a name="line1728">1728: </a>          const Obj&lt;typename bundle_type::sieve_type&gt;&amp;   sieve    = bundle-&gt;getSieve();
+<a name="line1729">1729: </a>          const Obj&lt;typename bundle_type::sieve_type&gt;&amp;   subSieve = subBundle-&gt;getSieve();
+<a name="line1730">1730: </a>          Obj&lt;typename bundle_type::sieve_type::coneSet&gt; tmpSet   = new typename bundle_type::sieve_type::coneSet();
+<a name="line1731">1731: </a>          Obj&lt;typename bundle_type::sieve_type::coneSet&gt; tmpSet2  = new typename bundle_type::sieve_type::coneSet();
+
+<a name="line1733">1733: </a>          <font color="#4169E1">for</font>(typename bundle_type::label_sequence::iterator c_iter = cells-&gt;begin(); c_iter != cells-&gt;end(); ++c_iter) {
+<a name="line1734">1734: </a>            const Obj&lt;typename bundle_type::sieve_type::coneSequence&gt;&amp; cone = subSieve-&gt;cone(*c_iter);
+
+<a name="line1736">1736: </a>            Obj&lt;typename bundle_type::sieve_type::supportSet&gt; cell = sieve-&gt;nJoin1(cone);
+<a name="line1737">1737: </a>            <font color="#4169E1">if</font> (cell-&gt;size() != 1) {
+<a name="line1738">1738: </a><strong><font color="#FF0000">              std:</font></strong>:cout &lt;&lt; <font color="#666666">"Indeterminate subordinate partition for face "</font> &lt;&lt; *c_iter &lt;&lt; std::endl;
+<a name="line1739">1739: </a>              <font color="#4169E1">for</font>(typename bundle_type::sieve_type::supportSet::iterator s_iter = cell-&gt;begin(); s_iter != cell-&gt;end(); ++s_iter) {
+<a name="line1740">1740: </a><strong><font color="#FF0000">                std:</font></strong>:cout &lt;&lt; <font color="#666666">"  cell "</font> &lt;&lt; *s_iter &lt;&lt; std::endl;
+<a name="line1741">1741: </a>              }
+<a name="line1742">1742: </a>              // Could relax this to choosing the first one
+<a name="line1743">1743: </a>              throw ALE::Exception(<font color="#666666">"Indeterminate subordinate partition"</font>);
+<a name="line1744">1744: </a>            }
+<a name="line1745">1745: </a>            subAssignment[sNumbering-&gt;getIndex(*c_iter)] = assignment[cNumbering-&gt;getIndex(*cell-&gt;begin())];
+<a name="line1746">1746: </a>            tmpSet-&gt;clear();
+<a name="line1747">1747: </a>            tmpSet2-&gt;clear();
+<a name="line1748">1748: </a>          }
+<a name="line1749">1749: </a>        }
+<a name="line1750">1750: </a>        <font color="#4169E1">return</font> subAssignment;
+<a name="line1751">1751: </a>      }
+<a name="line1752">1752: </a>    };
+<a name="line1753">1753: </a><font color="#A020F0">#ifdef PETSC_HAVE_CHACO</font>
+<a name="line1754">1754: </a>    namespace Chaco {
+<a name="line1755">1755: </a>      template&lt;typename Bundle_&gt;
+<a name="line1756">1756: </a>      class Partitioner {
+<a name="line1757">1757: </a><strong><font color="#FF0000">      public:</font></strong>
+<a name="line1758">1758: </a>        <font color="#4169E1">typedef</font> Bundle_                          bundle_type;
+<a name="line1759">1759: </a>        <font color="#4169E1">typedef</font> typename bundle_type::sieve_type sieve_type;
+<a name="line1760">1760: </a>        <font color="#4169E1">typedef</font> typename bundle_type::point_type point_type;
+<a name="line1761">1761: </a>        <font color="#4169E1">typedef</font> short int                        part_type;
+<a name="line1762">1762: </a><strong><font color="#FF0000">      public:</font></strong>
+<a name="line1765">1765: </a>        static part_type *partitionSieve(const Obj&lt;bundle_type&gt;&amp; bundle, const int dim) {
+<a name="line1766">1766: </a>          part_type *assignment = NULL; <font color="#B22222">/* set number of each vtx (length n) */</font>
+<a name="line1767">1767: </a>          int       *start;             <font color="#B22222">/* start of edge list for each vertex */</font>
+<a name="line1768">1768: </a>          int       *adjacency;         <font color="#B22222">/* = adj -&gt; j; edge list data  */</font>
+
+<a name="line1770">1770: </a>          ALE_LOG_EVENT_BEGIN;
+<a name="line1771">1771: </a><strong><font color="#FF0000">          ALE:</font></strong>:New::Partitioner&lt;bundle_type&gt;::buildDualCSR(bundle, dim, &amp;start, &amp;adjacency);
+<a name="line1772">1772: </a>          <font color="#4169E1">if</font> (bundle-&gt;commRank() == 0) {
+<a name="line1773">1773: </a>            <font color="#B22222">/* arguments for Chaco library */</font>
+<a name="line1774">1774: </a>            FREE_GRAPH = 0;                         <font color="#B22222">/* Do not let Chaco free my memory */</font>
+<a name="line1775">1775: </a>            int nvtxs;                              <font color="#B22222">/* number of vertices in full graph */</font>
+<a name="line1776">1776: </a>            int *vwgts = NULL;                      <font color="#B22222">/* weights for all vertices */</font>
+<a name="line1777">1777: </a>            float *ewgts = NULL;                    <font color="#B22222">/* weights for all edges */</font>
+<a name="line1778">1778: </a>            float *x = NULL, *y = NULL, *z = NULL;  <font color="#B22222">/* coordinates for inertial method */</font>
+<a name="line1779">1779: </a>            char *outassignname = NULL;             <font color="#B22222">/*  name of assignment output file */</font>
+<a name="line1780">1780: </a>            char *outfilename = NULL;               <font color="#B22222">/* output file name */</font>
+<a name="line1781">1781: </a>            int architecture = dim;                 <font color="#B22222">/* 0 =&gt; hypercube, d =&gt; d-dimensional mesh */</font>
+<a name="line1782">1782: </a>            int ndims_tot = 0;                      <font color="#B22222">/* total number of cube dimensions to divide */</font>
+<a name="line1783">1783: </a>            int mesh_dims[3];                       <font color="#B22222">/* dimensions of mesh of processors */</font>
+<a name="line1784">1784: </a>            double *goal = NULL;                    <font color="#B22222">/* desired set sizes for each set */</font>
+<a name="line1785">1785: </a>            int global_method = 1;                  <font color="#B22222">/* global partitioning algorithm */</font>
+<a name="line1786">1786: </a>            int local_method = 1;                   <font color="#B22222">/* local partitioning algorithm */</font>
+<a name="line1787">1787: </a>            int rqi_flag = 0;                       <font color="#B22222">/* should I use RQI/Symmlq eigensolver? */</font>
+<a name="line1788">1788: </a>            int vmax = 200;                         <font color="#B22222">/* how many vertices to coarsen down to? */</font>
+<a name="line1789">1789: </a>            int ndims = 1;                          <font color="#B22222">/* number of eigenvectors (2^d sets) */</font>
+<a name="line1790">1790: </a>            double eigtol = 0.001;                  <font color="#B22222">/* tolerance on eigenvectors */</font>
+<a name="line1791">1791: </a>            long seed = 123636512;                  <font color="#B22222">/* for random graph mutations */</font>
+<a name="line1792">1792: </a>            float *vCoords[3];
+
+<a name="line1795">1795: </a>            <A href="../../docs/manualpages/Sys/PetscOptionsGetInt.html#PetscOptionsGetInt">PetscOptionsGetInt</A>(NULL, <font color="#666666">"-partitioner_chaco_global_method"</font>, &amp;global_method, NULL);CHKERROR(ierr, <font color="#666666">"Error in <A href="../../docs/manualpages/Sys/PetscOptionsGetInt.html#PetscOptionsGetInt">PetscOptionsGetInt</A>"</font>);
+<a name="line1796">1796: </a>            <A href="../../docs/manualpages/Sys/PetscOptionsGetInt.html#PetscOptionsGetInt">PetscOptionsGetInt</A>(NULL, <font color="#666666">"-partitioner_chaco_local_method"</font>,  &amp;local_method,  NULL);CHKERROR(ierr, <font color="#666666">"Error in <A href="../../docs/manualpages/Sys/PetscOptionsGetInt.html#PetscOptionsGetInt">PetscOptionsGetInt</A>"</font>);
+<a name="line1797">1797: </a>            <font color="#4169E1">if</font> (global_method == 3) {
+<a name="line1798">1798: </a>              // Inertial Partitioning
+<a name="line1799">1799: </a>              <A href="../../docs/manualpages/Sys/PetscMalloc3.html#PetscMalloc3">PetscMalloc3</A>(nvtxs,float,&amp;x,nvtxs,float,&amp;y,nvtxs,float,&amp;z);CHKERROR(ierr, <font color="#666666">"Error in <A href="../../docs/manualpages/Sys/PetscMalloc.html#PetscMalloc">PetscMalloc</A>"</font>);
+<a name="line1800">1800: </a>              vCoords[0] = x; vCoords[1] = y; vCoords[2] = z;
+<a name="line1801">1801: </a>              const Obj&lt;typename bundle_type::label_sequence&gt;&amp;    cells       = bundle-&gt;heightStratum(0);
+<a name="line1802">1802: </a>              const Obj&lt;typename bundle_type::real_section_type&gt;&amp; coordinates = bundle-&gt;getRealSection(<font color="#666666">"coordinates"</font>);
+<a name="line1803">1803: </a>              const int corners = bundle-&gt;size(coordinates, *(cells-&gt;begin()))/dim;
+<a name="line1804">1804: </a>              int       c       = 0;
+
+<a name="line1806">1806: </a>              <font color="#4169E1">for</font>(typename bundle_type::label_sequence::iterator c_iter = cells-&gt;begin(); c_iter !=cells-&gt;end(); ++c_iter, ++c) {
+<a name="line1807">1807: </a>                const double *coords = bundle-&gt;restrictClosure(coordinates, *c_iter);
+
+<a name="line1809">1809: </a>                <font color="#4169E1">for</font>(int d = 0; d &lt; dim; ++d) {
+<a name="line1810">1810: </a>                  vCoords[d][c] = 0.0;
+<a name="line1811">1811: </a>                }
+<a name="line1812">1812: </a>                <font color="#4169E1">for</font>(int v = 0; v &lt; corners; ++v) {
+<a name="line1813">1813: </a>                  <font color="#4169E1">for</font>(int d = 0; d &lt; dim; ++d) {
+<a name="line1814">1814: </a>                    vCoords[d][c] += coords[v*dim+d];
+<a name="line1815">1815: </a>                  }
+<a name="line1816">1816: </a>                }
+<a name="line1817">1817: </a>                <font color="#4169E1">for</font>(int d = 0; d &lt; dim; ++d) {
+<a name="line1818">1818: </a>                  vCoords[d][c] /= corners;
+<a name="line1819">1819: </a>                }
+<a name="line1820">1820: </a>              }
+<a name="line1821">1821: </a>            }
+
+<a name="line1823">1823: </a>            nvtxs = bundle-&gt;heightStratum(0)-&gt;size();
+<a name="line1824">1824: </a>            mesh_dims[0] = bundle-&gt;commSize(); mesh_dims[1] = 1; mesh_dims[2] = 1;
+<a name="line1825">1825: </a>            <font color="#4169E1">for</font>(int e = 0; e &lt; start[nvtxs]; e++) {
+<a name="line1826">1826: </a>              adjacency[e]++;
+<a name="line1827">1827: </a>            }
+<a name="line1828">1828: </a>            assignment = new part_type[nvtxs];
+<a name="line1829">1829: </a>            <A href="../../docs/manualpages/Sys/PetscMemzero.html#PetscMemzero">PetscMemzero</A>(assignment, nvtxs * <font color="#4169E1">sizeof</font>(part_type));CHKERROR(ierr, <font color="#666666">"Error in <A href="../../docs/manualpages/Sys/PetscMemzero.html#PetscMemzero">PetscMemzero</A>"</font>);
+
+<a name="line1831">1831: </a>            <font color="#B22222">/* redirect output to buffer: chaco -&gt; msgLog */</font>
+<a name="line1832">1832: </a><font color="#A020F0">#ifdef PETSC_HAVE_UNISTD_H</font>
+<a name="line1833">1833: </a>            char *msgLog;
+<a name="line1834">1834: </a>            int fd_stdout, fd_pipe[2], count;
+
+<a name="line1836">1836: </a>            fd_stdout = dup(1);
+<a name="line1837">1837: </a>            pipe(fd_pipe);
+<a name="line1838">1838: </a>            close(1);
+<a name="line1839">1839: </a>            dup2(fd_pipe[1], 1);
+<a name="line1840">1840: </a>            msgLog = new char[16284];
+<a name="line1841">1841: </a><font color="#A020F0">#endif</font>
+
+<a name="line1843">1843: </a>            interface(nvtxs, start, adjacency, vwgts, ewgts, x, y, z,
+<a name="line1844">1844: </a>                             outassignname, outfilename, assignment, architecture, ndims_tot,
+<a name="line1845">1845: </a>                             mesh_dims, goal, global_method, local_method, rqi_flag, vmax, ndims,
+<a name="line1846">1846: </a>                             eigtol, seed);
+
+<a name="line1848">1848: </a><font color="#A020F0">#ifdef PETSC_HAVE_UNISTD_H</font>
+<a name="line1849">1849: </a>            int SIZE_LOG  = 10000;
+
+<a name="line1851">1851: </a>            fflush(stdout);
+<a name="line1852">1852: </a>            count = read(fd_pipe[0], msgLog, (SIZE_LOG - 1) * <font color="#4169E1">sizeof</font>(char));
+<a name="line1853">1853: </a>            <font color="#4169E1">if</font> (count &lt; 0) count = 0;
+<a name="line1854">1854: </a>            msgLog[count] = 0;
+<a name="line1855">1855: </a>            close(1);
+<a name="line1856">1856: </a>            dup2(fd_stdout, 1);
+<a name="line1857">1857: </a>            close(fd_stdout);
+<a name="line1858">1858: </a>            close(fd_pipe[0]);
+<a name="line1859">1859: </a>            close(fd_pipe[1]);
+<a name="line1860">1860: </a>            <font color="#4169E1">if</font> (bundle-&gt;debug()) {
+<a name="line1861">1861: </a><strong><font color="#FF0000">              std:</font></strong>:cout &lt;&lt; msgLog &lt;&lt; std::endl;
+<a name="line1862">1862: </a>            }
+<a name="line1863">1863: </a>            delete [] msgLog;
+<a name="line1864">1864: </a><font color="#A020F0">#endif</font>
+<a name="line1865">1865: </a>            <font color="#4169E1">if</font> (global_method == 3) {
+<a name="line1866">1866: </a>              // Inertial Partitioning
+<a name="line1867">1867: </a>              <A href="../../docs/manualpages/Sys/PetscFree3.html#PetscFree3">PetscFree3</A>(x, y, z);CHKERROR(ierr, <font color="#666666">"Error in <A href="../../docs/manualpages/Sys/PetscFree.html#PetscFree">PetscFree</A>"</font>);
+<a name="line1868">1868: </a>            }
+<a name="line1869">1869: </a>          }
+<a name="line1870">1870: </a>          <font color="#4169E1">if</font> (adjacency) delete [] adjacency;
+<a name="line1871">1871: </a>          <font color="#4169E1">if</font> (start)     delete [] start;
+<a name="line1872">1872: </a>          ALE_LOG_EVENT_END;
+<a name="line1873">1873: </a>          <font color="#4169E1">return</font> assignment;
+<a name="line1874">1874: </a>        };
+<a name="line1875">1875: </a>        static part_type *partitionSieveByFace(const Obj&lt;bundle_type&gt;&amp; bundle, const int dim) {
+<a name="line1876">1876: </a>          throw ALE::Exception(<font color="#666666">"Chaco cannot partition a mesh by faces"</font>);
+<a name="line1877">1877: </a>        };
+<a name="line1878">1878: </a>      };
+<a name="line1879">1879: </a>    };
+<a name="line1880">1880: </a><font color="#A020F0">#endif</font>
+<a name="line1881">1881: </a><font color="#A020F0">#ifdef PETSC_HAVE_PARMETIS</font>
+<a name="line1882">1882: </a>    namespace ParMetis {
+<a name="line1883">1883: </a>      template&lt;typename Bundle_&gt;
+<a name="line1884">1884: </a>      class Partitioner {
+<a name="line1885">1885: </a><strong><font color="#FF0000">      public:</font></strong>
+<a name="line1886">1886: </a>        <font color="#4169E1">typedef</font> Bundle_                          bundle_type;
+<a name="line1887">1887: </a>        <font color="#4169E1">typedef</font> typename bundle_type::sieve_type sieve_type;
+<a name="line1888">1888: </a>        <font color="#4169E1">typedef</font> typename bundle_type::point_type point_type;
+<a name="line1889">1889: </a>        <font color="#4169E1">typedef</font> int                              part_type;
+<a name="line1890">1890: </a><strong><font color="#FF0000">      public:</font></strong>
+<a name="line1893">1893: </a>        static part_type *partitionSieve(const Obj&lt;bundle_type&gt;&amp; bundle, const int dim) {
+<a name="line1894">1894: </a>          <A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>    nvtxs      = 0;    // The number of vertices in full graph
+<a name="line1895">1895: </a>          <A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>   *vtxdist;           // Distribution of vertices across processes
+<a name="line1896">1896: </a>          <A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>   *xadj;              // Start of edge list <font color="#4169E1">for</font> each vertex
+<a name="line1897">1897: </a>          <A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>   *adjncy;            // Edge lists <font color="#4169E1">for</font> all vertices
+<a name="line1898">1898: </a>          <A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>   *vwgt       = NULL; // Vertex weights
+<a name="line1899">1899: </a>          <A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>   *adjwgt     = NULL; // Edge weights
+<a name="line1900">1900: </a>          <A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>    wgtflag    = 0;    // Indicates which weights are present
+<a name="line1901">1901: </a>          <A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>    numflag    = 0;    // Indicates initial offset (0 or 1)
+<a name="line1902">1902: </a>          <A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>    ncon       = 1;    // The number of weights per vertex
+<a name="line1903">1903: </a>          <A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>    nparts     = bundle-&gt;commSize(); // The number of partitions
+<a name="line1904">1904: </a>          <A href="../../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>  *tpwgts;            // The fraction of vertex weights assigned to each partition
+<a name="line1905">1905: </a>          <A href="../../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>  *ubvec;             // The balance intolerance <font color="#4169E1">for</font> vertex weights
+<a name="line1906">1906: </a>          int         options[5];        // Options
+<a name="line1907">1907: </a>          // Outputs
+<a name="line1908">1908: </a>          <A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>    edgeCut;           // The number of edges cut by the partition
+<a name="line1909">1909: </a>          <A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>   *assignment = NULL; // The vertex partition
+
+<a name="line1911">1911: </a>          options[0] = 0; // Use all defaults
+<a name="line1912">1912: </a>          vtxdist    = new <A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A>[nparts+1];
+<a name="line1913">1913: </a>          vtxdist[0] = 0;
+<a name="line1914">1914: </a>          tpwgts     = new <A href="../../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>[ncon*nparts];
+<a name="line1915">1915: </a>          <font color="#4169E1">for</font>(<A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A> p = 0; p &lt; nparts; ++p) {
+<a name="line1916">1916: </a>            tpwgts[p] = 1.0/nparts;
+<a name="line1917">1917: </a>          }
+<a name="line1918">1918: </a>          ubvec      = new <A href="../../docs/manualpages/Sys/PetscReal.html#PetscReal">PetscReal</A>[ncon];
+<a name="line1919">1919: </a>          ubvec[0]   = 1.05;
+<a name="line1920">1920: </a>          nvtxs      = bundle-&gt;heightStratum(0)-&gt;size();
+<a name="line1921">1921: </a>          assignment = new part_type[nvtxs];
+<a name="line1922">1922: </a>          <A href="http://www.mcs.anl.gov/mpi/www/www3/MPI_Allgather.html#MPI_Allgather">MPI_Allgather</A>(&amp;nvtxs, 1, MPIU_INT, &amp;vtxdist[1], 1, MPIU_INT, bundle-&gt;comm());
+<a name="line1923">1923: </a>          <font color="#4169E1">for</font>(<A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A> p = 2; p &lt;= nparts; ++p) {
+<a name="line1924">1924: </a>            vtxdist[p] += vtxdist[p-1];
+<a name="line1925">1925: </a>          }
+<a name="line1926">1926: </a>          <font color="#4169E1">if</font> (bundle-&gt;commSize() == 1) {
+<a name="line1927">1927: </a>            <A href="../../docs/manualpages/Sys/PetscMemzero.html#PetscMemzero">PetscMemzero</A>(assignment, nvtxs * <font color="#4169E1">sizeof</font>(part_type));
+<a name="line1928">1928: </a>          } <font color="#4169E1">else</font> {
+<a name="line1929">1929: </a><strong><font color="#FF0000">            ALE:</font></strong>:New::Partitioner&lt;bundle_type&gt;::buildDualCSR(bundle, dim, &amp;xadj, &amp;adjncy);
+
+<a name="line1931">1931: </a>            <font color="#4169E1">if</font> (bundle-&gt;debug() &amp;&amp; nvtxs) {
+<a name="line1932">1932: </a>              <font color="#4169E1">for</font>(<A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A> p = 0; p &lt;= nvtxs; ++p) {
+<a name="line1933">1933: </a><strong><font color="#FF0000">                std:</font></strong>:cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;bundle-&gt;commRank()&lt;&lt;<font color="#666666">"]xadj["</font>&lt;&lt;p&lt;&lt;<font color="#666666">"] = "</font> &lt;&lt; xadj[p] &lt;&lt; std::endl;
+<a name="line1934">1934: </a>              }
+<a name="line1935">1935: </a>              <font color="#4169E1">for</font>(<A href="../../docs/manualpages/Sys/PetscInt.html#PetscInt">PetscInt</A> i = 0; i &lt; xadj[nvtxs]; ++i) {
+<a name="line1936">1936: </a><strong><font color="#FF0000">                std:</font></strong>:cout &lt;&lt; <font color="#666666">"["</font>&lt;&lt;bundle-&gt;commRank()&lt;&lt;<font color="#666666">"]adjncy["</font>&lt;&lt;i&lt;&lt;<font color="#666666">"] = "</font> &lt;&lt; adjncy[i] &lt;&lt; std::endl;
+<a name="line1937">1937: </a>              }
+<a name="line1938">1938: </a>            }
+<a name="line1939">1939: </a>            <font color="#4169E1">if</font> (vtxdist[1] == vtxdist[nparts]) {
+<a name="line1940">1940: </a>              <font color="#4169E1">if</font> (bundle-&gt;commRank() == 0) {
+<a name="line1941">1941: </a>                <font color="#B22222">/* Parameters changes (Matt, check to make sure it's right):</font>
+<a name="line1942">1942: </a><font color="#B22222">                 * (removed) numflags</font>
+<a name="line1943">1943: </a><font color="#B22222">                 */</font>
+<a name="line1944">1944: </a>                METIS_PartGraphKway(&amp;nvtxs, &amp;ncon, xadj, adjncy, vwgt, NULL, adjwgt, &amp;nparts, tpwgts, ubvec, NULL, &amp;edgeCut, assignment);
+<a name="line1945">1945: </a>                <font color="#4169E1">if</font> (bundle-&gt;debug()) {std::cout &lt;&lt; <font color="#666666">"Metis: edgecut is "</font> &lt;&lt; edgeCut &lt;&lt; std::endl;}
+<a name="line1946">1946: </a>              }
+<a name="line1947">1947: </a>            } <font color="#4169E1">else</font> {
+<a name="line1948">1948: </a>              <A href="../../docs/manualpages/Sys/MPI_Comm.html#MPI_Comm">MPI_Comm</A> comm = bundle-&gt;comm();
+
+<a name="line1950">1950: </a>              ParMETIS_V3_PartKway(vtxdist, xadj, adjncy, vwgt, adjwgt, &amp;wgtflag, &amp;numflag, &amp;ncon, &amp;nparts, tpwgts, ubvec, options, &amp;edgeCut, assignment, &amp;comm);
+<a name="line1951">1951: </a>              <font color="#4169E1">if</font> (bundle-&gt;debug()) {std::cout &lt;&lt; <font color="#666666">"ParMetis: edgecut is "</font> &lt;&lt; edgeCut &lt;&lt; std::endl;}
+<a name="line1952">1952: </a>            }
+<a name="line1953">1953: </a>            <font color="#4169E1">if</font> (xadj   != NULL) delete [] xadj;
+<a name="line1954">1954: </a>            <font color="#4169E1">if</font> (adjncy != NULL) delete [] adjncy;
+<a name="line1955">1955: </a>          }
+<a name="line1956">1956: </a>          delete [] vtxdist;
+<a name="line1957">1957: </a>          delete [] tpwgts;
+<a name="line1958">1958: </a>          delete [] ubvec;
+<a name="line1959">1959: </a>          <font color="#4169E1">return</font> assignment;
+<a name="line1960">1960: </a>        };
+<a name="line1963">1963: </a>        static part_type *partitionSieveByFace(const Obj&lt;bundle_type&gt;&amp; bundle, const int dim) {
+<a name="line1964">1964: </a><font color="#A020F0">#ifdef PETSC_HAVE_HMETIS</font>
+<a name="line1965">1965: </a>          int   *assignment = NULL; // The vertex partition
+<a name="line1966">1966: </a>          int    nvtxs;      // The number of vertices
+<a name="line1967">1967: </a>          int    nhedges;    // The number of hyperedges
+<a name="line1968">1968: </a>          int   *vwgts;      // The vertex weights
+<a name="line1969">1969: </a>          int   *eptr;       // The offsets of each hyperedge
+<a name="line1970">1970: </a>          int   *eind;       // The vertices in each hyperedge, indexed by eptr
+<a name="line1971">1971: </a>          int   *hewgts;     // The hyperedge weights
+<a name="line1972">1972: </a>          int    nparts;     // The number of partitions
+<a name="line1973">1973: </a>          int    ubfactor;   // The allowed load imbalance (1-50)
+<a name="line1974">1974: </a>          int    options[9]; // Options
+<a name="line1975">1975: </a>          // Outputs
+<a name="line1976">1976: </a>          int    edgeCut;    // The number of edges cut by the partition
+<a name="line1977">1977: </a>          const Obj&lt;ALE::Mesh::numbering_type&gt;&amp; fNumbering = bundle-&gt;getFactory()-&gt;getNumbering(bundle, bundle-&gt;depth()-1);
+
+<a name="line1979">1979: </a>          <font color="#4169E1">if</font> (topology-&gt;commRank() == 0) {
+<a name="line1980">1980: </a>            nvtxs      = bundle-&gt;heightStratum(1)-&gt;size();
+<a name="line1981">1981: </a>            vwgts      = NULL;
+<a name="line1982">1982: </a>            hewgts     = NULL;
+<a name="line1983">1983: </a>            nparts     = bundle-&gt;commSize();
+<a name="line1984">1984: </a>            ubfactor   = 5;
+<a name="line1985">1985: </a>            options[0] = 1;  // Use all defaults
+<a name="line1986">1986: </a>            options[1] = 10; // Number of bisections tested
+<a name="line1987">1987: </a>            options[2] = 1;  // Vertex grouping scheme
+<a name="line1988">1988: </a>            options[3] = 1;  // Objective function
+<a name="line1989">1989: </a>            options[4] = 1;  // V-cycle refinement
+<a name="line1990">1990: </a>            options[5] = 0;
+<a name="line1991">1991: </a>            options[6] = 0;
+<a name="line1992">1992: </a>            options[7] = 1; // Random seed
+<a name="line1993">1993: </a>            options[8] = 24; // Debugging level
+<a name="line1994">1994: </a>            assignment = new part_type[nvtxs];
+
+<a name="line1996">1996: </a>            <font color="#4169E1">if</font> (bundle-&gt;commSize() == 1) {
+<a name="line1997">1997: </a>              <A href="../../docs/manualpages/Sys/PetscMemzero.html#PetscMemzero">PetscMemzero</A>(assignment, nvtxs * <font color="#4169E1">sizeof</font>(part_type));
+<a name="line1998">1998: </a>            } <font color="#4169E1">else</font> {
+<a name="line1999">1999: </a><strong><font color="#FF0000">              ALE:</font></strong>:New::Partitioner&lt;bundle_type&gt;::buildFaceCSR(bundle, dim, fNumbering, &amp;nhedges, &amp;eptr, &amp;eind);
+<a name="line2000">2000: </a>              HMETIS_PartKway(nvtxs, nhedges, vwgts, eptr, eind, hewgts, nparts, ubfactor, options, assignment, &amp;edgeCut);
+
+<a name="line2002">2002: </a>              delete [] eptr;
+<a name="line2003">2003: </a>              delete [] eind;
+<a name="line2004">2004: </a>            }
+<a name="line2005">2005: </a>            <font color="#4169E1">if</font> (bundle-&gt;debug()) {<font color="#4169E1">for</font> (int i = 0; i&lt;nvtxs; i++) printf(<font color="#666666">"[%d] %d\n"</font>, PetscGlobalRank, assignment[i]);}
+<a name="line2006">2006: </a>          } <font color="#4169E1">else</font> {
+<a name="line2007">2007: </a>            assignment = NULL;
+<a name="line2008">2008: </a>          }
+<a name="line2009">2009: </a>          <font color="#4169E1">return</font> assignment;
+<a name="line2010">2010: </a><font color="#A020F0">#else</font>
+<a name="line2011">2011: </a>          throw ALE::Exception(<font color="#666666">"hmetis partitioner is not available."</font>);
+<a name="line2012">2012: </a><font color="#A020F0">#endif</font>
+<a name="line2013">2013: </a>        };
+<a name="line2014">2014: </a>      };
+<a name="line2015">2015: </a>    };
+<a name="line2016">2016: </a><font color="#A020F0">#endif</font>
+<a name="line2017">2017: </a><font color="#A020F0">#ifdef PETSC_HAVE_ZOLTAN</font>
+<a name="line2018">2018: </a>    namespace Zoltan {
+<a name="line2019">2019: </a>      template&lt;typename Bundle_&gt;
+<a name="line2020">2020: </a>      class Partitioner {
+<a name="line2021">2021: </a><strong><font color="#FF0000">      public:</font></strong>
+<a name="line2022">2022: </a>        <font color="#4169E1">typedef</font> Bundle_                          bundle_type;
+<a name="line2023">2023: </a>        <font color="#4169E1">typedef</font> typename bundle_type::sieve_type sieve_type;
+<a name="line2024">2024: </a>        <font color="#4169E1">typedef</font> typename bundle_type::point_type point_type;
+<a name="line2025">2025: </a>        <font color="#4169E1">typedef</font> int                              part_type;
+<a name="line2026">2026: </a><strong><font color="#FF0000">      public:</font></strong>
+<a name="line2027">2027: </a>        static part_type *partitionSieve(const Obj&lt;bundle_type&gt;&amp; bundle, const int dim) {
+<a name="line2028">2028: </a>          throw ALE::Exception(<font color="#666666">"Zoltan partition by cells not implemented"</font>);
+<a name="line2029">2029: </a>        };
+<a name="line2032">2032: </a>        static part_type *partitionSieveByFace(const Obj&lt;bundle_type&gt;&amp; bundle, const int dim) {
+<a name="line2033">2033: </a>          // Outputs
+<a name="line2034">2034: </a>          float         version;           // The library version
+<a name="line2035">2035: </a>          int           changed;           // Did the partition change?
+<a name="line2036">2036: </a>          int           numGidEntries;     // Number of array entries <font color="#4169E1">for</font> a single global ID (1)
+<a name="line2037">2037: </a>          int           numLidEntries;     // Number of array entries <font color="#4169E1">for</font> a single local ID (1)
+<a name="line2038">2038: </a>          int           numImport;         // The number of imported points
+<a name="line2039">2039: </a>          ZOLTAN_ID_PTR import_global_ids; // The imported points
+<a name="line2040">2040: </a>          ZOLTAN_ID_PTR import_local_ids;  // The imported points
+<a name="line2041">2041: </a>          int          *import_procs;      // The proc each point was imported from
+<a name="line2042">2042: </a>          int          *import_to_part;    // The partition of each imported point
+<a name="line2043">2043: </a>          int           numExport;         // The number of exported points
+<a name="line2044">2044: </a>          ZOLTAN_ID_PTR export_global_ids; // The exported points
+<a name="line2045">2045: </a>          ZOLTAN_ID_PTR export_local_ids;  // The exported points
+<a name="line2046">2046: </a>          int          *export_procs;      // The proc each point was exported to
+<a name="line2047">2047: </a>          int          *export_to_part;    // The partition assignment of all local points
+<a name="line2048">2048: </a>          int          *assignment;        // The partition assignment of all local points
+<a name="line2049">2049: </a>          const Obj&lt;typename bundle_type::numbering_type&gt;&amp; fNumbering = bundle-&gt;getFactory()-&gt;getNumbering(bundle, bundle-&gt;depth()-1);
+
+<a name="line2051">2051: </a>          <font color="#4169E1">if</font> (bundle-&gt;commSize() == 1) {
+<a name="line2052">2052: </a>            <A href="../../docs/manualpages/Sys/PetscMemzero.html#PetscMemzero">PetscMemzero</A>(assignment, bundle-&gt;heightStratum(1)-&gt;size() * <font color="#4169E1">sizeof</font>(part_type));
+<a name="line2053">2053: </a>          } <font color="#4169E1">else</font> {
+<a name="line2054">2054: </a>            <font color="#4169E1">if</font> (bundle-&gt;commRank() == 0) {
+<a name="line2055">2055: </a>              nvtxs_Zoltan = bundle-&gt;heightStratum(1)-&gt;size();
+<a name="line2056">2056: </a><strong><font color="#FF0000">              ALE:</font></strong>:New::Partitioner&lt;bundle_type&gt;::buildFaceCSR(bundle, dim, fNumbering, &amp;nhedges_Zoltan, &amp;eptr_Zoltan, &amp;eind_Zoltan);
+<a name="line2057">2057: </a>              assignment = new int[nvtxs_Zoltan];
+<a name="line2058">2058: </a>            } <font color="#4169E1">else</font> {
+<a name="line2059">2059: </a>              nvtxs_Zoltan   = bundle-&gt;heightStratum(1)-&gt;size();
+<a name="line2060">2060: </a>              nhedges_Zoltan = 0;
+<a name="line2061">2061: </a>              eptr_Zoltan    = new int[1];
+<a name="line2062">2062: </a>              eind_Zoltan    = new int[1];
+<a name="line2063">2063: </a>              eptr_Zoltan[0] = 0;
+<a name="line2064">2064: </a>              assignment     = NULL;
+<a name="line2065">2065: </a>            }
+
+<a name="line2067">2067: </a>            int Zoltan_Initialize(0, NULL, &amp;version);
+<a name="line2068">2068: </a>            <font color="#4169E1">struct Zoltan_Struct</font> *zz = Zoltan_Create(bundle-&gt;comm());
+<a name="line2069">2069: </a>            // General parameters
+<a name="line2070">2070: </a>            Zoltan_Set_Param(zz, <font color="#666666">"DEBUG_LEVEL"</font>, <font color="#666666">"2"</font>);
+<a name="line2071">2071: </a>            Zoltan_Set_Param(zz, <font color="#666666">"LB_METHOD"</font>, <font color="#666666">"PHG"</font>);
+<a name="line2072">2072: </a>            Zoltan_Set_Param(zz, <font color="#666666">"RETURN_LISTS"</font>, <font color="#666666">"PARTITION"</font>);
+<a name="line2073">2073: </a>            // PHG parameters
+<a name="line2074">2074: </a>            Zoltan_Set_Param(zz, <font color="#666666">"PHG_OUTPUT_LEVEL"</font>, <font color="#666666">"2"</font>);
+<a name="line2075">2075: </a>            Zoltan_Set_Param(zz, <font color="#666666">"PHG_EDGE_SIZE_THRESHOLD"</font>, <font color="#666666">"1.0"</font>); // Do not throw out dense edges
+<a name="line2076">2076: </a>            // Call backs
+<a name="line2077">2077: </a>            Zoltan_Set_Num_Obj_Fn(zz, getNumVertices_Zoltan, NULL);
+<a name="line2078">2078: </a>            Zoltan_Set_Obj_List_Fn(zz, getLocalElements_Zoltan, NULL);
+<a name="line2079">2079: </a>            Zoltan_Set_HG_Size_CS_Fn(zz, getHgSizes_Zoltan, NULL);
+<a name="line2080">2080: </a>            Zoltan_Set_HG_CS_Fn(zz, getHg_Zoltan, NULL);
+<a name="line2081">2081: </a>            // Debugging
+<a name="line2082">2082: </a>            //Zoltan_Generate_Files(zz, <font color="#666666">"zoltan.debug"</font>, 1, 0, 0, 1); // <font color="#4169E1">if</font> using hypergraph callbacks
+
+<a name="line2084">2084: </a>            Zoltan_LB_Partition(zz, &amp;changed, &amp;numGidEntries, &amp;numLidEntries,
+<a name="line2085">2085: </a>                                       &amp;numImport, &amp;import_global_ids, &amp;import_local_ids, &amp;import_procs, &amp;import_to_part,
+<a name="line2086">2086: </a>                                       &amp;numExport, &amp;export_global_ids, &amp;export_local_ids, &amp;export_procs, &amp;export_to_part);
+<a name="line2087">2087: </a>            <font color="#4169E1">for</font>(int v = 0; v &lt; nvtxs_Zoltan; ++v) {
+<a name="line2088">2088: </a>              assignment[v] = export_to_part[v];
+<a name="line2089">2089: </a>            }
+<a name="line2090">2090: </a>            Zoltan_LB_Free_Part(&amp;import_global_ids, &amp;import_local_ids, &amp;import_procs, &amp;import_to_part);
+<a name="line2091">2091: </a>            Zoltan_LB_Free_Part(&amp;export_global_ids, &amp;export_local_ids, &amp;export_procs, &amp;export_to_part);
+<a name="line2092">2092: </a>            Zoltan_Destroy(&amp;zz);
+
+<a name="line2094">2094: </a>            delete [] eptr_Zoltan;
+<a name="line2095">2095: </a>            delete [] eind_Zoltan;
+<a name="line2096">2096: </a>          }
+<a name="line2097">2097: </a>          <font color="#4169E1">if</font> (assignment) {<font color="#4169E1">for</font> (int i=0; i&lt;nvtxs_Zoltan; i++) printf(<font color="#666666">"[%d] %d\n"</font>,PetscGlobalRank,assignment[i]);}
+<a name="line2098">2098: </a>          <font color="#4169E1">return</font> assignment;
+<a name="line2099">2099: </a>        };
+<a name="line2100">2100: </a>      };
+<a name="line2101">2101: </a>    };
+<a name="line2102">2102: </a><font color="#A020F0">#endif</font>
+<a name="line2103">2103: </a>  }
+<a name="line2104">2104: </a>}
+<a name="line2105">2105: </a><font color="#A020F0">#endif</font>
+</pre>
+</body>
+
+</html>
