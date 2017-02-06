@@ -31,7 +31,8 @@ Then link with these libraries
 
 For anyone who cares, here is the cygwin build script.
 
-```bash script
+```bash  
+
 #!/bin/bash
 
 #Run "vcvarsall.bat x86_amd64" from the VS2013 command prompt to set up the command line compile environment for windows 64 bit builds.  Then launch cygwin from that command prompt window.
